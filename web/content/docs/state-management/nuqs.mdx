@@ -1,0 +1,539 @@
+---
+title: nuqs
+description: URL search state management with nuqs in DeesseJS
+---
+
+# nuqs
+
+nuqs is included in DeesseJS for type-safe URL search state management, enabling you to manage filters, pagination, and search parameters in the URL.
+
+## Setup
+
+nuqs comes pre-configured in DeesseJS.
+
+## Basic Usage
+
+### Reading and Writing Query Strings
+
+```typescript
+'use client'
+
+import { useQueryState } from 'nuqs'
+
+export default function SearchPage() {
+  const [search, setSearch] = useQueryState('search')
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={search || ''}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search..."
+      />
+      <p>Searching for: {search || 'everything'}</p>
+    </div>
+  )
+}
+```
+
+### Default Values
+
+```typescript
+const [page, setPage] = useQueryState('page', {
+  defaultValue: 1,
+})
+```
+
+### With Parser for Type Safety
+
+```typescript
+const [page, setPage] = useQueryState('page', {
+  defaultValue: 1,
+  parse: (value) => parseInt(value),
+  serialize: (value) => value.toString(),
+})
+```
+
+## Common Patterns
+
+### Search and Filter
+
+```typescript
+'use client'
+
+import { useQueryState } from 'nuqs'
+
+export function ProductFilters() {
+  const [search, setSearch] = useQueryState('search')
+  const [category, setCategory] = useQueryState('category')
+  const [minPrice, setMinPrice] = useQueryState('minPrice', {
+    parse: (value) => parseInt(value) || 0,
+    serialize: (value) => value.toString(),
+  })
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={search || ''}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search products..."
+      />
+
+      <select
+        value={category || ''}
+        onChange={(e) => setCategory(e.target.value || null)}
+      >
+        <option value="">All Categories</option>
+        <option value="electronics">Electronics</option>
+        <option value="clothing">Clothing</option>
+      </select>
+
+      <input
+        type="number"
+        value={minPrice || 0}
+        onChange={(e) => setMinPrice(parseInt(e.target.value) || 0)}
+        placeholder="Min price"
+      />
+    </div>
+  )
+}
+```
+
+### Pagination
+
+```typescript
+'use client'
+
+import { useQueryState } from 'nuqs'
+
+export function Pagination({ totalPages }: { totalPages: number }) {
+  const [page, setPage] = useQueryState('page', {
+    defaultValue: 1,
+    parse: (value) => {
+      const parsed = parseInt(value)
+      return isNaN(parsed) ? 1 : parsed
+    },
+  })
+
+  return (
+    <div>
+      <button
+        onClick={() => setPage((p) => Math.max(1, p - 1))}
+        disabled={page <= 1}
+      >
+        Previous
+      </button>
+
+      <span>Page {page} of {totalPages}</span>
+
+      <button
+        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+        disabled={page >= totalPages}
+      >
+        Next
+      </button>
+    </div>
+  )
+}
+```
+
+### Sorting
+
+```typescript
+'use client'
+
+import { useQueryState } from 'nuqs'
+
+type SortOption = 'name' | 'date' | 'price'
+
+export function SortControl() {
+  const [sortBy, setSortBy] = useQueryState('sort', {
+    defaultValue: 'date' as SortOption,
+    parse: (value): SortOption => {
+      if (value === 'name' || value === 'date' || value === 'price') {
+        return value
+      }
+      return 'date'
+    },
+  })
+
+  const [order, setOrder] = useQueryState('order', {
+    defaultValue: 'desc' as 'asc' | 'desc',
+    parse: (value): 'asc' | 'desc' =>
+      value === 'asc' ? 'asc' : 'desc',
+  })
+
+  return (
+    <div>
+      <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortOption)}>
+        <option value="name">Name</option>
+        <option value="date">Date</option>
+        <option value="price">Price</option>
+      </select>
+
+      <button onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}>
+        {order === 'asc' ? '↑' : '↓'}
+      </button>
+    </div>
+  )
+}
+```
+
+## Advanced Usage
+
+### Multiple Values
+
+```typescript
+'use client'
+
+import { useQueryStates } from 'nuqs'
+
+export function Filters() {
+  const [filters, setFilters] = useQueryStates({
+    search: { defaultValue: '' },
+    category: { defaultValue: '' },
+    minPrice: {
+      defaultValue: 0,
+      parse: (value) => parseInt(value) || 0,
+    },
+  })
+
+  return (
+    <div>
+      <input
+        value={filters.search}
+        onChange={(e) => setFilters({ search: e.target.value })}
+      />
+
+      <select
+        value={filters.category}
+        onChange={(e) => setFilters({ category: e.target.value })}
+      >
+        <option value="">All</option>
+        <option value="electronics">Electronics</option>
+      </select>
+    </div>
+  )
+}
+```
+
+### Array Values
+
+```typescript
+'use client'
+
+import { useQueryState } from 'nuqs'
+
+export function TagFilter() {
+  const [tags, setTags] = useQueryState('tags', {
+    defaultValue: [] as string[],
+    parse: (value) => value.split(','),
+    serialize: (values) => values.join(','),
+  })
+
+  const toggleTag = (tag: string) => {
+    setTags(tags.includes(tag)
+      ? tags.filter((t) => t !== tag)
+      : [...tags, tag]
+    )
+  }
+
+  return (
+    <div>
+      {['javascript', 'typescript', 'react'].map((tag) => (
+        <button
+          key={tag}
+          onClick={() => toggleTag(tag)}
+          style={{
+            background: tags.includes(tag) ? 'blue' : 'gray',
+          }}
+        >
+          {tag}
+        </button>
+      ))}
+    </div>
+  )
+}
+```
+
+### Clear State
+
+```typescript
+const [search, setSearch] = useQueryState('search')
+
+// Clear by setting to null
+setSearch(null)
+
+// Or use the clear method
+setSearch(null, { history: 'push' })
+```
+
+## Server-Side Rendering
+
+### Reading Query Params in Server Components
+
+```typescript
+// app/posts/page.tsx
+import { searchParams } from 'nuqs/server'
+
+export default async function PostsPage({
+  searchParams,
+}: {
+  searchParams: { search?: string; category?: string }
+}) {
+  const { search, category } = await searchParams
+
+  const posts = await db.posts.findMany({
+    where: {
+      ...(search && {
+        title: { contains: search },
+      }),
+      ...(category && {
+        category,
+      }),
+    },
+  })
+
+  return (
+    <div>
+      <PostsFilters />
+      <PostsList posts={posts} />
+    </div>
+  )
+}
+```
+
+### Type-Safe Server Params
+
+```typescript
+import { parseServerSearchParams } from 'nuqs/server'
+
+interface PostFilters {
+  search: string
+  category: string
+  page: number
+}
+
+export default async function PostsPage({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>
+}) {
+  const filters = await parseServerSearchParams<PostFilters>(searchParams, {
+    search: { defaultValue: '' },
+    category: { defaultValue: '' },
+    page: {
+      defaultValue: 1,
+      parse: (value) => parseInt(value),
+    },
+  })
+
+  const posts = await db.posts.findMany({
+    where: {
+      ...(filters.search && {
+        title: { contains: filters.search },
+      }),
+    },
+    skip: (filters.page - 1) * 10,
+    take: 10,
+  })
+
+  return <PostsList posts={posts} />
+}
+```
+
+## Shallow Routing
+
+### Update URL Without Page Navigation
+
+```typescript
+const [search, setSearch] = useQueryState('search', {
+  // Update URL but don't trigger page navigation
+  shallow: false, // Default - updates URL and navigates
+  // or
+  shallow: true, // Only updates URL, no navigation
+})
+```
+
+## History Management
+
+### Push vs Replace
+
+```typescript
+const [search, setSearch] = useQueryState('search')
+
+// Push new state (adds to history) - default
+setSearch('query')
+
+// Replace current state (doesn't add to history)
+setSearch('query', { history: 'replace' })
+
+// Push state (explicit)
+setSearch('query', { history: 'push' })
+```
+
+## Debouncing
+
+### Debounce Search Input
+
+```typescript
+'use client'
+
+import { useQueryState } from 'nuqs'
+import { useEffect, useState } from 'react'
+
+export function DebouncedSearch() {
+  const [search, setSearch] = useQueryState('search')
+  const [localValue, setLocalValue] = useState(search || '')
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(localValue)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [localValue, setSearch])
+
+  return (
+    <input
+      type="text"
+      value={localValue}
+      onChange={(e) => setLocalValue(e.target.value)}
+      placeholder="Search..."
+    />
+  )
+}
+```
+
+## Syncing with Server State
+
+### Combine with TanStack Query
+
+```typescript
+'use client'
+
+import { useQueryState } from 'nuqs'
+import { useQuery } from '@deessejs/query'
+
+export function PostsPage() {
+  const [search, setSearch] = useQueryState('search', {
+    defaultValue: '',
+  })
+
+  const { data: posts } = useQuery({
+    queryKey: ['posts', search],
+    queryFn: () =>
+      fetch(`/api/posts?search=${search}`).then((res) => res.json()),
+  })
+
+  return (
+    <div>
+      <input
+        value={search || ''}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search posts..."
+      />
+
+      <ul>
+        {posts?.map((post) => (
+          <li key={post.id}>{post.title}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+```
+
+## Preserving State
+
+### Keep Query Params on Navigation
+
+```typescript
+'use client'
+
+import Link from 'next/link'
+import { useQueryState } from 'nuqs'
+
+export function PostLink({ post }: { post: Post }) {
+  const [search] = useQueryState('search')
+
+  return (
+    <Link
+      href={`/posts/${post.id}?${new URLSearchParams({ search: search || '' })}`}
+    >
+      {post.title}
+    </Link>
+  )
+}
+```
+
+## Best Practices
+
+1. **Type Safety** - Always use parsers for non-string values
+2. **Default Values** - Provide meaningful defaults for better UX
+3. **Debouncing** - Debounce search inputs to avoid excessive updates
+4. **Null vs Empty** - Use `null` to clear, empty string for valid empty state
+5. **Server-Side** - Use `nuqs/server` for reading params in Server Components
+
+## Common Use Cases
+
+### Faceted Search
+
+```typescript
+'use client'
+
+import { useQueryStates } from 'nuqs'
+
+export function FacetedSearch() {
+  const [filters, setFilters] = useQueryStates({
+    q: { defaultValue: '' },
+    category: { defaultValue: '' },
+    brand: { defaultValue: '' },
+    priceMin: {
+      defaultValue: 0,
+      parse: (value) => parseInt(value) || 0,
+    },
+    priceMax: {
+      defaultValue: 1000,
+      parse: (value) => parseInt(value) || 1000,
+    },
+  })
+
+  const clearFilters = () => {
+    setFilters({
+      q: '',
+      category: '',
+      brand: '',
+      priceMin: 0,
+      priceMax: 1000,
+    })
+  }
+
+  return (
+    <div>
+      <input
+        value={filters.q}
+        onChange={(e) => setFilters({ q: e.target.value })}
+        placeholder="Search..."
+      />
+
+      <select
+        value={filters.category}
+        onChange={(e) => setFilters({ category: e.target.value })}
+      >
+        {/* Categories */}
+      </select>
+
+      <button onClick={clearFilters}>Clear Filters</button>
+    </div>
+  )
+}
+```
+
+## Next Steps
+
+- Learn about [Zustand](/docs/state-management/zustand)
+- Explore [TanStack Query](/docs/state-management/tanstack-query)
+- Return to [State Management Overview](/docs/state-management/overview)

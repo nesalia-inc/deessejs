@@ -1,0 +1,491 @@
+---
+title: Zustand
+description: Client state management with Zustand in DeesseJS
+---
+
+# Zustand
+
+Zustand is included in DeesseJS for simple, scalable client state management without the complexity of Redux.
+
+## Setup
+
+Zustand comes pre-configured in DeesseJS.
+
+## Basic Usage
+
+### Creating a Store
+
+```typescript
+// store/auth.ts
+import { create } from '@deessejs/zustand'
+
+interface AuthState {
+  user: User | null
+  login: (user: User) => void
+  logout: () => void
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  user: null,
+  login: (user) => set({ user }),
+  logout: () => set({ user: null }),
+}))
+```
+
+### Using the Store
+
+```typescript
+'use client'
+
+import { useAuthStore } from '@/store/auth'
+
+export function UserProfile() {
+  const user = useAuthStore((state) => state.user)
+  const logout = useAuthStore((state) => state.logout)
+
+  if (!user) return <div>Please log in</div>
+
+  return (
+    <div>
+      <h1>Welcome, {user.name}</h1>
+      <button onClick={logout}>Logout</button>
+    </div>
+  )
+}
+```
+
+## Patterns
+
+### Multiple Selectors
+
+```typescript
+// Select specific state slices
+const user = useAuthStore((state) => state.user)
+const login = useAuthStore((state) => state.login)
+const logout = useAuthStore((state) => state.logout)
+```
+
+### Object Selector
+
+```typescript
+// Select multiple values at once
+const { user, logout } = useAuthStore(
+  (state) => ({ user: state.user, logout: state.logout })
+)
+```
+
+### Shallow Comparison
+
+For objects and arrays, use shallow comparison to prevent unnecessary re-renders:
+
+```typescript
+import { shallow } from 'zustand/shallow'
+
+// Only re-renders if user or notifications change
+const { user, notifications } = useStore(
+  (state) => ({ user: state.user, notifications: state.notifications }),
+  shallow
+)
+```
+
+## Advanced Patterns
+
+### Actions
+
+Separate actions from state:
+
+```typescript
+interface BearState {
+  bears: number
+  actions: {
+    increase: () => void
+    decrease: () => void
+  }
+}
+
+export const useBearStore = create<BearState>((set) => ({
+  bears: 0,
+  actions: {
+    increase: () => set((state) => ({ bears: state.bears + 1 })),
+    decrease: () => set((state) => ({ bears: state.bears - 1 })),
+  },
+}))
+
+// Usage
+const bears = useBearStore((state) => state.bears)
+const { increase, decrease } = useBearStore((state) => state.actions)
+```
+
+### Async Actions
+
+```typescript
+interface StoreState {
+  users: User[]
+  loading: boolean
+  error: string | null
+  fetchUsers: () => Promise<void>
+}
+
+export const useUserStore = create<StoreState>((set) => ({
+  users: [],
+  loading: false,
+  error: null,
+  fetchUsers: async () => {
+    set({ loading: true, error: null })
+    try {
+      const response = await fetch('/api/users')
+      const users = await response.json()
+      set({ users, loading: false })
+    } catch (error) {
+      set({ error: error.message, loading: false })
+    }
+  },
+}))
+```
+
+### Computed State
+
+```typescript
+interface TodoState {
+  todos: Todo[]
+  addTodo: (todo: Todo) => void
+  // Computed
+  completedCount: () => number
+}
+
+export const useTodoStore = create<TodoState>((set, get) => ({
+  todos: [],
+  addTodo: (todo) => set((state) => ({ todos: [...state.todos, todo] })),
+  completedCount: () => {
+    return get().todos.filter((t) => t.completed).length
+  },
+}))
+
+// Usage
+const completedCount = useTodoStore((state) => state.completedCount())
+```
+
+## Slices
+
+For large stores, split into slices:
+
+```typescript
+// store/slices/auth.ts
+import { create } from '@deessejs/zustand'
+
+export interface AuthSlice {
+  user: User | null
+  setUser: (user: User | null) => void
+  clearUser: () => void
+}
+
+export const createAuthSlice = create<AuthSlice>((set) => ({
+  user: null,
+  setUser: (user) => set({ user }),
+  clearUser: () => set({ user: null }),
+}))
+```
+
+```typescript
+// store/slices/preferences.ts
+export interface PreferencesSlice {
+  theme: 'light' | 'dark'
+  language: string
+  setTheme: (theme: 'light' | 'dark') => void
+  setLanguage: (language: string) => void
+}
+
+export const createPreferencesSlice: StateCreator<
+  StoreState,
+  [],
+  [],
+  PreferencesSlice
+> = (set) => ({
+  theme: 'light',
+  language: 'en',
+  setTheme: (theme) => set({ theme }),
+  setLanguage: (language) => set({ language }),
+})
+```
+
+```typescript
+// store/index.ts
+import { create } from '@deessejs/zustand'
+import { createAuthSlice, AuthSlice } from './slices/auth'
+import { createPreferencesSlice, PreferencesSlice } from './slices/preferences'
+
+interface StoreState extends AuthSlice, PreferencesSlice {}
+
+export const useStore = create<StoreState>()(
+  (...a) => ({
+    ...createAuthSlice(...a),
+    ...createPreferencesSlice(...a),
+  })
+)
+```
+
+## Middleware
+
+### Persist Middleware
+
+Persist state to localStorage:
+
+```typescript
+import { persist } from '@deessejs/zustand/middleware'
+
+export const useAuthStore = create(
+  persist<AuthState>(
+    (set) => ({
+      user: null,
+      login: (user) => set({ user }),
+      logout: () => set({ user: null }),
+    }),
+    {
+      name: 'auth-storage', // localStorage key
+    }
+  )
+)
+```
+
+### DevTools Middleware
+
+Enable Redux DevTools:
+
+```typescript
+import { devtools } from '@deessejs/zustand/middleware'
+
+export const useStore = create(
+  devtools<StoreState>(
+    (set) => ({
+      // ...store implementation
+    }),
+    { name: 'MyStore' } // Store name in DevTools
+  )
+)
+```
+
+### Combine Middleware
+
+```typescript
+import { create } from '@deessejs/zustand'
+import { devtools, persist } from '@deessejs/zustand/middleware'
+
+export const useStore = create(
+  devtools(
+    persist<StoreState>(
+      (set) => ({
+        // ...store implementation
+      }),
+      { name: 'app-storage' }
+    ),
+    { name: 'AppStore' }
+  )
+)
+```
+
+## Integration with Next.js
+
+### Client Components
+
+```typescript
+'use client'
+
+import { useStore } from '@/store'
+
+export default function ClientComponent() {
+  const count = useStore((state) => state.count)
+
+  return <div>Count: {count}</div>
+}
+```
+
+### Server Components
+
+State from Zustand is not available in Server Components. Use for client-only state:
+
+```typescript
+'use client'
+
+import { useStore } from '@/store'
+import { useEffect } from 'react'
+
+export function ThemeToggle() {
+  const theme = useStore((state) => state.theme)
+  const setTheme = useStore((state) => state.setTheme)
+
+  // Hydrate theme from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('theme')
+    if (stored) setTheme(stored as 'light' | 'dark')
+  }, [setTheme])
+
+  return (
+    <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+      Toggle Theme
+    </button>
+  )
+}
+```
+
+## Common Use Cases
+
+### Theme Management
+
+```typescript
+// store/theme.ts
+import { create } from '@deessejs/zustand'
+import { persist } from '@deessejs/zustand/middleware'
+
+type Theme = 'light' | 'dark' | 'system'
+
+interface ThemeState {
+  theme: Theme
+  setTheme: (theme: Theme) => void
+}
+
+export const useThemeStore = create<ThemeState>()(
+  persist(
+    (set) => ({
+      theme: 'system',
+      setTheme: (theme) => set({ theme }),
+    }),
+    { name: 'theme-storage' }
+  )
+)
+```
+
+### Modal State
+
+```typescript
+// store/modals.ts
+import { create } from '@deessejs/zustand'
+
+interface ModalsState {
+  isLoginModalOpen: boolean
+  isSignUpModalOpen: boolean
+  openLoginModal: () => void
+  closeLoginModal: () => void
+  openSignUpModal: () => void
+  closeSignUpModal: () => void
+  closeAllModals: () => void
+}
+
+export const useModalsStore = create<ModalsState>((set) => ({
+  isLoginModalOpen: false,
+  isSignUpModalOpen: false,
+  openLoginModal: () => set({ isLoginModalOpen: true }),
+  closeLoginModal: () => set({ isLoginModalOpen: false }),
+  openSignUpModal: () => set({ isSignUpModalOpen: true }),
+  closeSignUpModal: () => set({ isSignUpModalOpen: false }),
+  closeAllModals: () =>
+    set({ isLoginModalOpen: false, isSignUpModalOpen: false }),
+}))
+```
+
+### Shopping Cart
+
+```typescript
+// store/cart.ts
+import { create } from '@deessejs/zustand'
+import { persist } from '@deessejs/zustand/middleware'
+
+interface CartItem {
+  id: string
+  name: string
+  price: number
+  quantity: number
+}
+
+interface CartState {
+  items: CartItem[]
+  addItem: (item: Omit<CartItem, 'quantity'>) => void
+  removeItem: (id: string) => void
+  updateQuantity: (id: string, quantity: number) => void
+  clearCart: () => void
+  total: () => number
+}
+
+export const useCartStore = create<CartState>()(
+  persist(
+    (set, get) => ({
+      items: [],
+      addItem: (item) =>
+        set((state) => {
+          const existing = state.items.find((i) => i.id === item.id)
+          if (existing) {
+            return {
+              items: state.items.map((i) =>
+                i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+              ),
+            }
+          }
+          return { items: [...state.items, { ...item, quantity: 1 }] }
+        }),
+      removeItem: (id) =>
+        set((state) => ({
+          items: state.items.filter((i) => i.id !== id),
+        })),
+      updateQuantity: (id, quantity) =>
+        set((state) => ({
+          items: state.items.map((i) =>
+            i.id === id ? { ...i, quantity } : i
+          ),
+        })),
+      clearCart: () => set({ items: [] }),
+      total: () =>
+        get().items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    }),
+    { name: 'cart-storage' }
+  )
+)
+```
+
+## Testing
+
+### Testing Stores
+
+```typescript
+import { renderHook, act } from '@testing-library/react'
+import { useAuthStore } from '@/store/auth'
+
+describe('Auth Store', () => {
+  beforeEach(() => {
+    useAuthStore.setState({ user: null })
+  })
+
+  it('should login user', () => {
+    const { result } = renderHook(() => useAuthStore())
+
+    act(() => {
+      result.current.login({ id: '1', name: 'John' })
+    })
+
+    expect(result.current.user).toEqual({ id: '1', name: 'John' })
+  })
+
+  it('should logout user', () => {
+    const { result } = renderHook(() => useAuthStore())
+
+    act(() => {
+      result.current.login({ id: '1', name: 'John' })
+      result.current.logout()
+    })
+
+    expect(result.current.user).toBeNull()
+  })
+})
+```
+
+## Best Practices
+
+1. **Keep stores small** - Split into multiple stores for different concerns
+2. **Use selectors** - Select only what you need to prevent unnecessary re-renders
+3. **Persist important state** - Use persist middleware for user preferences
+4. **Avoid putting everything in state** - Some state belongs in URL or local component state
+5. **TypeScript** - Always use TypeScript for type safety
+
+## Next Steps
+
+- Learn about [nuqs](/docs/state-management/nuqs)
+- Explore [TanStack Query](/docs/state-management/tanstack-query)
+- Return to [State Management Overview](/docs/state-management/overview)

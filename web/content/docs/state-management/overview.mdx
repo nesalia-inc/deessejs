@@ -1,0 +1,257 @@
+---
+title: State Management Overview
+description: Understanding state management in DeesseJS
+---
+
+# State Management Overview
+
+DeesseJS includes a comprehensive state management solution out of the box, combining the best tools for different use cases:
+
+## Included Libraries
+
+### TanStack Query (React Query)
+Server state management, caching, and synchronization.
+- **Use case:** Server data fetching, caching, and synchronization
+- **Features:** Automatic caching, background refetching, optimistic updates
+- **Documentation:** [tanstack.com/query](https://tanstack.com/query/latest)
+
+### Zustand
+Client state management for global application state.
+- **Use case:** Global UI state, modals, themes, user preferences
+- **Features:** Simple API, minimal boilerplate, TypeScript support
+- **Documentation:** [zustand-demo.pmnd.rs](https://zustand-demo.pmnd.rs/)
+
+### nuqs
+URL search state management.
+- **Use case:** Filters, pagination, search params in URL
+- **Features:** Type-safe URL state, SSR support, history management
+- **Documentation:** [nuqs.47ng.com](https://nuqs.47ng.com/)
+
+## When to Use Each
+
+| Scenario | Library | Example |
+|----------|---------|---------|
+| Fetch data from API | TanStack Query | `useQuery({ queryKey: ['posts'], queryFn: fetchPosts })` |
+| Global UI state | Zustand | `useAuthStore((state) => state.user)` |
+| URL search params | nuqs | `const [search, setSearch] = useQueryState('search')` |
+| Local component state | React useState | `const [count, setCount] = useState(0)` |
+
+## Quick Start
+
+### TanStack Query - Fetching Data
+
+```typescript
+// app/posts/page.tsx
+import { useQuery } from '@deessejs/query'
+
+export default function PostsPage() {
+  const { data: posts, isLoading } = useQuery({
+    queryKey: ['posts'],
+    queryFn: () => fetch('/api/posts').then((res) => res.json()),
+  })
+
+  if (isLoading) return <div>Loading...</div>
+
+  return (
+    <div>
+      {posts.map((post) => (
+        <div key={post.id}>{post.title}</div>
+      ))}
+    </div>
+  )
+}
+```
+
+### Zustand - Global State
+
+```typescript
+// store/auth.ts
+import { create } from '@deessejs/zustand'
+
+export const useAuthStore = create<{
+  user: User | null
+  setUser: (user: User | null) => void
+}>((set) => ({
+  user: null,
+  setUser: (user) => set({ user }),
+}))
+
+// app/layout.tsx
+import { useAuthStore } from '@/store/auth'
+
+export default function Layout({ children }) {
+  const user = useAuthStore((state) => state.user)
+
+  return (
+    <div>
+      {user ? <Dashboard /> : <Login />}
+      {children}
+    </div>
+  )
+}
+```
+
+### nuqs - URL State
+
+```typescript
+// app/posts/page.tsx
+import { useQueryState } from 'nuqs'
+
+export default function PostsPage() {
+  const [search, setSearch] = useQueryState('search')
+  const [page, setPage] = useQueryState('page', {
+    defaultValue: 1,
+    parse: (value) => parseInt(value),
+  })
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={search || ''}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search posts..."
+      />
+      <button onClick={() => setPage((p) => p + 1)}>Next</button>
+    </div>
+  )
+}
+```
+
+## Integration with DeesseJS
+
+### Built-in Hooks
+
+DeesseJS provides pre-configured hooks for common tasks:
+
+```typescript
+import {
+  useCollection,
+  useItem,
+  useCreateItem,
+  useUpdateItem,
+  useDeleteItem,
+} from '@deessejs/query'
+
+// Fetch a collection
+function PostsList() {
+  const { data: posts, isLoading } = useCollection('posts')
+
+  return <div>{/* ... */}</div>
+}
+
+// Fetch a single item
+function PostDetail({ id }) {
+  const { data: post, isLoading } = useItem('posts', id)
+
+  return <div>{/* ... */}</div>
+}
+
+// Create item
+function CreatePost() {
+  const createPost = useCreateItem('posts')
+
+  const handleSubmit = async (data) => {
+    await createPost.mutateAsync(data)
+  }
+
+  return <form onSubmit={handleSubmit}>{/* ... */}</form>
+}
+```
+
+### Server Actions Integration
+
+```typescript
+// app/actions/posts.ts
+'use server'
+
+import { db } from '@deessejs/db'
+import { revalidatePath } from 'next/cache'
+
+export async function getPosts() {
+  return await db.posts.findMany()
+}
+
+export async function createPost(data: any) {
+  const post = await db.posts.create({ data })
+  revalidatePath('/posts')
+  return post
+}
+
+// app/posts/page.tsx
+import { useAction } from '@deessejs/query'
+
+export default function PostsPage() {
+  const { data: posts } = useAction(getPosts)
+  const createPost = useAction(createPost)
+
+  return (
+    <div>
+      <button onClick={() => createPost.mutate({ title: 'New Post' })}>
+        Create Post
+      </button>
+    </div>
+  )
+}
+```
+
+## Best Practices
+
+### TanStack Query
+- **Use for:** Server data, API calls, database queries
+- **Cache keys:** Use stable, serializable keys
+- **Invalidation:** Invalidate related queries after mutations
+- **Optimistic updates:** Update UI immediately, rollback on error
+
+### Zustand
+- **Use for:** Global UI state, theme, auth state, modals
+- **Slices:** Split large stores into separate slices
+- **Selectors:** Use selectors to prevent unnecessary re-renders
+- **Persistence:** Add middleware for localStorage persistence
+
+### nuqs
+- **Use for:** Search params, filters, pagination, sorting
+- **Type safety:** Define parsers for type-safe URL state
+- **Default values:** Always provide meaningful defaults
+- **Debouncing:** Debounce search inputs to avoid excessive updates
+
+### Combining Libraries
+
+```typescript
+// Example: Combining all three
+export default function ProductsPage() {
+  // TanStack Query for server data
+  const { data: products } = useQuery({
+    queryKey: ['products'],
+    queryFn: fetchProducts,
+  })
+
+  // nuqs for URL state (filters, search)
+  const [search, setSearch] = useQueryState('search')
+  const [category, setCategory] = useQueryState('category')
+
+  // Zustand for UI state (sidebar open/closed)
+  const isSidebarOpen = useFiltersSidebar((state) => state.isOpen)
+
+  // Filter products based on URL params
+  const filteredProducts = products?.filter((product) => {
+    return (
+      (!search || product.name.includes(search)) &&
+      (!category || product.category === category)
+    )
+  })
+
+  return (
+    <div>
+      <FiltersSidebar open={isSidebarOpen} />
+      <ProductList products={filteredProducts} />
+    </div>
+  )
+}
+```
+
+## Next Steps
+
+- Learn about [TanStack Query](/docs/state-management/tanstack-query)
+- Explore [Zustand](/docs/state-management/zustand)
+- Discover [nuqs](/docs/state-management/nuqs)
