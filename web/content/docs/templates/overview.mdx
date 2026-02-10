@@ -1,0 +1,473 @@
+---
+title: Templates Overview
+description: Understanding DeesseJS templates for quick project setup
+---
+
+# Templates Overview
+
+DeesseJS templates are pre-configured project setups that include collections, plugins, extensions, and settings for common use cases. Start with a template instead of building from scratch.
+
+## What are Templates?
+
+Templates are complete DeesseJS configurations that include:
+
+- **Collections**: Pre-defined content schemas
+- **Plugins**: Essential plugins pre-installed
+- **Extensions**: Configured extensions (cache, logger, etc.)
+- **Settings**: Optimized default settings
+- **Pages**: Pre-built admin pages
+- **Components**: Ready-to-use frontend components
+- **Styles**: Complete styling system
+
+## Benefits of Using Templates
+
+### Speed
+- **Start in minutes**: Get a fully configured application in minutes
+- **Skip setup**: No need to configure collections, plugins, or extensions
+- **Production-ready**: Optimized settings out of the box
+
+### Best Practices
+- **Proven architecture**: Battle-tested configurations
+- **Security**: Security best practices built-in
+- **Performance**: Optimized for performance
+- **Scalability**: Designed to scale
+
+### Consistency
+- **Standardized**: Consistent structure across projects
+- **Documentation**: Comprehensive docs for each template
+- **Updates**: Regular updates and improvements
+
+## Available Templates
+
+### Official Templates
+
+#### Blog Template
+Perfect for blogs and personal websites:
+- Posts collection with rich text editor
+- Categories and tags
+- SEO plugin installed
+- Comments system
+- RSS feed generation
+- Sitemap generation
+
+#### Documentation Template
+Ideal for documentation sites:
+- Pages collection with hierarchical structure
+- Version control
+- Search functionality
+- Table of contents auto-generation
+- Syntax highlighting for code
+- Navigation by categories
+
+#### E-commerce Template
+For online stores:
+- Products collection with variants
+- Categories and filters
+- Shopping cart
+- Stripe payments
+- Order management
+- Inventory tracking
+
+#### SaaS Template
+For SaaS applications:
+- Users and subscriptions
+- Billing integration
+- Feature flags
+- Usage-based pricing
+- Team management
+- API keys generation
+
+#### Portfolio Template
+For personal portfolios:
+- Projects collection
+- Gallery/media management
+- Contact form
+- Skills/expertise showcase
+- Resume/CV section
+
+#### Corporate Template
+For business websites:
+- Pages with flexible content blocks
+- Team members collection
+- Services/capabilities
+- Testimonials
+- Case studies
+- Contact forms
+
+## Using Templates
+
+### Create with Template
+
+When creating a new project, choose a template:
+
+```bash
+npx create-deesse-app my-app --template blog
+
+# Interactive prompts:
+? Select template: Blog
+? Configure options...
+✓ Template applied successfully
+```
+
+### Available Templates
+
+```bash
+# List all templates
+npx create-deesse-app --list-templates
+
+# Output:
+Available templates:
+  - default       Standard DeesseJS setup
+  - blog          Blog with posts, categories, SEO
+  - docs          Documentation with search, versions
+  - ecommerce     E-commerce with products, payments
+  - saas          SaaS with subscriptions, billing
+  - portfolio     Portfolio with projects, gallery
+  - corporate     Corporate with pages, team
+```
+
+### Template Customization
+
+Templates are fully customizable after creation:
+
+```typescript
+// After creating with a template, you can modify everything
+// deesse.config.ts
+
+// Add/remove collections
+export const config = defineConfig({
+  collections: [
+    // Template collections
+    ...blogCollections,
+    // Your custom collections
+    {
+      name: 'podcasts',
+      fields: [/* ... */],
+    },
+  ],
+
+  // Add more plugins
+  plugins: [
+    ...blogPlugins,
+    analyticsPlugin(),
+  ],
+
+  // Configure settings
+  admin: {
+    ...blogConfig,
+    branding: {
+      title: 'My Custom Blog',
+    },
+  },
+})
+```
+
+## What's Included
+
+### Blog Template
+
+**Collections:**
+- Posts (title, content, excerpt, featuredImage, status, publishedAt)
+- Categories (name, slug, description)
+- Tags (name, slug)
+- Authors (name, bio, photo, social)
+
+**Plugins:**
+- @deessejs/plugin-seo (meta tags, sitemap, RSS)
+- @deessejs/plugin-media (image optimization)
+- @deessejs/plugin-comments (comments system)
+
+**Extensions:**
+- Cache (Redis)
+- Logger (Pino)
+- Storage (Local or S3)
+
+**Settings:**
+- Auto-save drafts
+- Post scheduling
+- SEO defaults
+
+**Pages:**
+- Posts list
+- Editor
+- Media library
+- Comments moderation
+
+### Documentation Template
+
+**Collections:**
+- Pages (title, content, slug, order, parent, status)
+- Versions (version number, status, createdAt)
+- Categories (name, slug, icon)
+
+**Plugins:**
+- @deessejs/plugin-seo (search, sitemap)
+- @deessejs/plugin-search (Meilisearch integration)
+- @deessejs/plugin-versions (version control)
+
+**Extensions:**
+- Search (Meilisearch)
+- Cache (Redis)
+- Logger (Pino)
+
+**Settings:**
+- Hierarchical pages
+- Auto-generated TOC
+- Search indexing
+- Version publishing
+
+**Pages:**
+- Page tree view
+- Version comparison
+- Search interface
+
+### E-commerce Template
+
+**Collections:**
+- Products (name, description, price, sku, images, variants, inventory)
+- Categories (name, slug, products)
+- Orders (customer, items, total, status)
+- Customers (name, email, address, orders)
+
+**Plugins:**
+- @deessejs/plugin-payments (Stripe integration)
+- @deessejs/plugin-inventory (stock management)
+- @deessejs/plugin-shipping (shipping providers)
+
+**Extensions:**
+- Queue (BullMQ for order processing)
+- Logger (Pino)
+- Storage (S3 for product images)
+
+**Settings:**
+- Tax configuration
+- Shipping zones
+- Payment methods
+- Inventory tracking
+
+**Pages:**
+- Products catalog
+- Order management
+- Customer management
+- Analytics dashboard
+
+## Template Structure
+
+A template is a npm package with this structure:
+
+```
+@deessejs/template-blog/
+├── collections/
+│   ├── posts.ts
+│   ├── categories.ts
+│   └── tags.ts
+├── plugins/
+│   ├── index.ts
+│   └── config.ts
+├── extensions/
+│   └── index.ts
+├── pages/
+│   ├── PostsList.tsx
+│   └── PostEditor.tsx
+├── components/
+│   ├── PostCard.tsx
+│   └── CategoryFilter.tsx
+├── styles/
+│   └── globals.css
+├── config/
+│   └── deesse.config.ts
+├── package.json
+└── README.md
+```
+
+## Installing from Marketplace
+
+### Browse Templates
+
+Visit the [Template Marketplace](/docs/templates/marketplace) to browse available templates with:
+- Screenshots and demos
+- Feature comparisons
+- User reviews
+- Installation stats
+
+### One-Click Installation
+
+Install a template directly in an existing project:
+
+```typescript
+// Apply a template to your project
+npx deessejs template apply blog
+
+# Or via CLI
+npx deessejs template install @deessejs/template-blog
+```
+
+The template will:
+- Add required dependencies
+- Configure collections
+- Install plugins
+- Set up extensions
+- Create pages and components
+- Update settings
+
+### Update Existing Project
+
+Apply a template to an existing project:
+
+```bash
+# In your project directory
+npx deessejs template apply blog --merge
+
+# --merge  : Preserves existing config, merges with template
+# --force  : Overwrites existing config (use with caution)
+```
+
+## Template Options
+
+Templates can have configuration options:
+
+```bash
+npx create-deesse-app my-app --template blog
+
+# Interactive prompts:
+? Blog name: My Tech Blog
+? Enable comments? Yes
+? Enable RSS? Yes
+? Default post status: draft
+
+✓ Template configured
+```
+
+Options are stored in `deesse.config.ts`:
+
+```typescript
+export const config = defineConfig({
+  template: {
+    name: 'blog',
+    options: {
+      blogName: 'My Tech Blog',
+      enableComments: true,
+      enableRSS: true,
+      defaultStatus: 'draft',
+    },
+  },
+})
+```
+
+## Extending Templates
+
+### Add Collections
+
+```typescript
+// Add to template
+export const config = defineConfig({
+  collections: [
+    ...blogTemplate.collections,
+    {
+      name: 'podcasts',
+      fields: [
+        { name: 'title', type: 'string' },
+        { name: 'audio', type: 'media' },
+        { name: 'duration', type: 'number' },
+      ],
+    },
+  ],
+})
+```
+
+### Modify Template
+
+```typescript
+// Modify template collections
+export const config = defineConfig({
+  collections: [
+    {
+      name: 'posts',
+      ...blogTemplate.collections.posts,
+      fields: [
+        // Add field to template collection
+        ...blogTemplate.collections.posts.fields,
+        { name: 'views', type: 'number', defaultValue: 0 },
+      ],
+    },
+  ],
+})
+```
+
+### Remove Template Features
+
+```typescript
+// Remove SEO plugin from blog template
+export const config = defineConfig({
+  plugins: [
+    ...blogTemplate.plugins.filter(p => p !== seoPlugin),
+  ],
+})
+```
+
+## Template Variants
+
+Some templates have variants:
+
+```bash
+# Blog template variants
+npx create-deesse-app my-app --template blog:minimal
+npx create-deesse-app my-app --template blog:full-featured
+npx create-deesse-app my-app --template blog:podcast
+```
+
+Available variants:
+- **minimal**: Core features only
+- **full-featured**: All plugins and features
+- **podcast**: Blog + podcast support
+- **newsletter**: Blog + newsletter integration
+
+## Template Updates
+
+Templates receive regular updates:
+
+```bash
+# Check for template updates
+npx deessejs template check-updates
+
+# Update template
+npx deessejs template update
+
+# View changelog
+npx deessejs template changelog blog
+```
+
+Update process:
+1. Shows what will change
+2. Backs up current config
+3. Applies updates
+4. Shows migration guide if needed
+
+## Best Practices
+
+### Choosing a Template
+
+1. **Start Simple**: Begin with minimal template, add what you need
+2. **Match Your Use Case**: Choose template closest to your needs
+3. **Consider Growth**: Ensure template can scale with your needs
+4. **Check Updates**: Active templates are maintained regularly
+
+### Customizing Templates
+
+1. **Don't Fight the Template**: Work with the template structure
+2. **Document Changes**: Keep notes on customizations
+3. **Version Control**: Commit your customizations
+4. **Test Updates**: Test in development before updating
+
+### Production Considerations
+
+1. **Remove Unused Features**: Disable unneeded plugins/collections
+2. **Optimize Settings**: Tune settings for your workload
+3. **Monitor Performance**: Track performance after customization
+4. **Backup Before Updates**: Always backup before major updates
+
+## Next Steps
+
+- Explore the [Template Marketplace](/docs/templates/marketplace)
+- Learn about [Available Templates](/docs/templates/available)
+- Discover [Creating Templates](/docs/templates/creating)

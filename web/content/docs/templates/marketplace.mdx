@@ -1,0 +1,446 @@
+---
+title: Template Marketplace
+description: Discover and install templates from the marketplace
+---
+
+# Template Marketplace
+
+The Template Marketplace is a curated collection of community-created templates that you can browse, review, and install for your DeesseJS projects.
+
+## Accessing the Marketplace
+
+### Via CLI
+
+```bash
+# List all available templates
+npx deessejs template list
+
+# Search templates
+npx deessejs template search blog
+
+# Get template info
+npx deessejs template info @deessejs/template-blog
+```
+
+### Via Documentation
+
+Visit the online marketplace at:
+- **Official Marketplace**: [templates.deessejs.com](https://templates.deessejs.com)
+- **Community Templates**: [github.com/deessejs/templates](https://github.com/deessejs/templates)
+
+## Browsing Templates
+
+### Categories
+
+Templates are organized into categories:
+
+#### Business & E-commerce
+- **E-commerce**: Online stores and marketplaces
+- **SaaS**: Subscription-based applications
+- **Corporate**: Business websites
+- **Restaurant**: Food delivery and reservations
+- **Real Estate**: Property listings
+
+#### Content & Publishing
+- **Blog**: Personal and company blogs
+- **Documentation**: Technical docs and knowledge bases
+- **News/Magazine**: News sites and magazines
+- **Portfolio**: Designer and developer portfolios
+
+#### Community & Social
+- **Forum**: Discussion forums
+- **Social Network**: Community platforms
+- **Events**: Event management
+- **Directory**: Business and resource directories
+
+#### Developer Tools
+- **API**: API documentation and portals
+- **Developer Portal**: SDKs and tools
+- **Documentation**: Technical documentation
+- **Internal Tools**: Admin dashboards
+
+### Filter Options
+
+Filter templates by:
+- **Category**: Business, Content, Community, Developer
+- **Complexity**: Simple, Moderate, Advanced
+- **Popularity**: Most installed, trending
+- **Rating**: Average user rating
+- **Updates**: Recently updated
+- **Compatibility**: Your DeesseJS version
+
+## Template Details
+
+Click on any template to see detailed information:
+
+### Overview Section
+
+```json
+{
+  "id": "@deessejs/template-blog",
+  "name": "Blog Template",
+  "description": "A full-featured blog with posts, categories, SEO, and comments",
+  "version": "2.1.0",
+  "author": "DeesseJS Team",
+  "license": "MIT",
+  "homepage": "https://github.com/deessejs/template-blog",
+  "demo": "https://blog-template.demo.deessejs.com"
+}
+```
+
+### Features Section
+
+Lists all features included:
+- Collections (with field details)
+- Plugins (with versions)
+- Extensions (with providers)
+- Pages (with descriptions)
+- Components (list)
+- Settings (default values)
+
+### Screenshots Section
+
+Multiple screenshots showing:
+- Homepage
+- Admin dashboard
+- Content editor
+- User-facing pages
+- Mobile responsive views
+
+### Reviews Section
+
+Community feedback:
+- Star rating (1-5)
+- Written reviews
+- User testimonials
+- Usage statistics
+
+### Changelog Section
+
+Version history:
+- Version numbers
+- Release dates
+- New features
+- Bug fixes
+- Breaking changes
+
+## Installing Templates
+
+### From CLI
+
+```bash
+# Install official template
+npx deessejs template install blog
+
+# Install community template
+npx deessejs template install @user/my-template
+
+# With specific version
+npx deessejs template install blog@2.0.0
+```
+
+### With Options
+
+```bash
+# Interactive installation with options
+npx deessejs template install blog
+
+# Prompts:
+? Enable comments? Yes
+? Enable RSS feed? Yes
+? Default post status? draft
+? Enable analytics? Yes
+
+✓ Template installed with options
+```
+
+### Into Existing Project
+
+Apply a template to an existing project:
+
+```bash
+# In your project directory
+npx deessejs template apply blog
+
+# Options:
+# --merge     - Merge with existing config
+# --force     - Overwrite existing config
+# --dry-run   - Preview changes without applying
+```
+
+### Marketplace Installation
+
+Install directly from the marketplace UI:
+
+1. Visit template page
+2. Click **Install Template**
+3. Configure template options
+4. Copy installation command
+5. Run in your project directory
+
+```bash
+# Command provided by marketplace
+npx deessejs template install @deessejs/template-blog --enable-comments --enable-rss
+```
+
+## Template Metrics
+
+### Installation Statistics
+
+Each template displays:
+- **Total Installs**: All-time installation count
+- **Active Installs**: Currently active installations
+- **Trend**: Installation trend (rising/stable/falling)
+
+### Rating Breakdown
+
+Detailed rating distribution:
+- 5 stars: 85%
+- 4 stars: 12%
+- 3 stars: 2%
+- 2 stars: 1%
+- 1 star: 0%
+
+### Last Updated
+
+Shows when the template was last updated:
+- **Recently**: Within last 30 days
+- **Stable**: Within last 6 months
+- **Legacy**: Over 6 months ago (use with caution)
+
+## Official vs Community Templates
+
+### Official Templates ✅
+
+Created and maintained by the DeesseJS team:
+- **Quality**: High quality and well-maintained
+- **Support**: Official support available
+- **Updates**: Regular updates with new features
+- **Security**: Security audited
+- **Verified**: Blue checkmark badge
+
+### Community Templates 🌟
+
+Created by the community:
+- **Variety**: Wide range of use cases
+- **Innovation**: Experimental and creative solutions
+- **Reviews**: Community-rated
+- **Support**: Community-based support
+- **Caution**: Review code before using in production
+
+## Submitting Templates
+
+Share your template with the community:
+
+### Submission Process
+
+1. **Create Template**
+   ```bash
+   npx deessejs template create my-template
+   ```
+
+2. **Package Template**
+   ```bash
+   cd my-template
+   npm install
+   npm run build
+   npm pack
+   ```
+
+3. **Publish to npm**
+   ```bash
+   npm publish --access public
+   ```
+
+4. **Submit to Marketplace**
+   - Go to [templates.deessejs.com/submit](https://templates.deessejs.com/submit)
+   - Fill in template details
+   - Upload screenshots
+   - Add description
+   - Submit for review
+
+5. **Review Process**
+   - Automated quality checks
+   - Manual review by team
+   - Security audit
+   - Code quality check
+
+6. **Publication**
+   - Template appears in marketplace
+   - Community can discover and install
+   - Receive feedback and updates
+
+### Template Requirements
+
+For a template to be accepted:
+
+#### Quality Standards
+- **Clean Code**: Well-written, documented code
+- **TypeScript**: Full TypeScript support
+- **Best Practices**: Follow DeesseJS conventions
+- **No Vulnerabilities**: Security audit passed
+
+#### Documentation
+- **README**: Comprehensive documentation
+- **Comments**: Code comments where needed
+- **Examples**: Usage examples
+- **Changelog**: Version history
+
+#### Features
+- **Working**: All features must work
+- **Tested**: Unit tests included
+- **Performance**: Optimized for performance
+- **Responsive**: Mobile-friendly
+
+#### Support
+- **Issues**: Respond to issues in timely manner
+- **Updates**: Regular updates for bug fixes
+- **Compatibility**: Maintain compatibility with latest DeesseJS
+
+### Earning Revenue
+
+Premium templates can earn revenue:
+
+```typescript
+{
+  "pricing": {
+    "type": "paid",
+    "amount": 49,
+    "currency": "USD",
+    "period": "one-time"
+  },
+  "revenueShare": 0.7  // You earn 70% of each sale
+}
+```
+
+## Template Reviews
+
+### Leaving a Review
+
+After using a template, leave a review:
+
+1. Go to template page in marketplace
+2. Click **Write Review**
+3. Select rating (1-5 stars)
+4. Write review title and content
+5. Submit review
+
+### Review Guidelines
+
+**Good Reviews:**
+- Specific and detailed
+- Mention use case
+- Honest about pros and cons
+- Constructive feedback
+
+**Avoid:**
+- Vague or unhelpful
+- Offensive language
+- False information
+- Self-promotion
+
+### Moderation
+
+Reviews are moderated to ensure quality:
+- Spam filtering
+- Conflict of interest detection
+- Fact-checking
+- Toxic language filtering
+
+## Template Updates
+
+### Checking for Updates
+
+```bash
+# Check for template updates
+npx deessejs template check-updates
+
+# Update a specific template
+npx deessejs template update blog
+
+# View changelog
+npx deessejs template changelog blog
+```
+
+### Update Notifications
+
+Get notified about updates:
+- **Email**: Subscribe to template updates
+- **CLI**: Check updates with `npx deessejs template check-updates`
+- **Dashboard**: See notifications in admin panel
+
+### Updating Process
+
+1. Review changes in changelog
+2. Backup your project
+3. Run update command
+4. Review breaking changes
+5. Test your application
+6. Commit changes
+
+## Template Support
+
+### Getting Help
+
+Need help with a template?
+
+**Official Templates:**
+- **Documentation**: Complete docs available
+- **GitHub Issues**: Report bugs and request features
+- **Discord**: Community support
+- **Email**: Support for enterprise customers
+
+**Community Templates:**
+- **GitHub Issues**: Report to template author
+- **Discussions**: Community discussions
+- **Discord**: Community help channels
+
+### Troubleshooting
+
+Common issues and solutions:
+
+**Installation Fails**
+```bash
+# Clear cache and retry
+npx deessejs template clear-cache
+npx deessejs template install blog
+```
+
+**Merge Conflicts**
+```bash
+# Use --force to overwrite
+npx deessejs template apply blog --force
+
+# Or manually resolve conflicts
+```
+
+**Missing Dependencies**
+```bash
+# Reinstall dependencies
+rm -rf node_modules package-lock.json
+npm install
+```
+
+## Best Practices
+
+### Choosing a Template
+
+1. **Match Your Needs**: Choose template closest to your use case
+2. **Check Reviews**: Read reviews from other users
+3. **Verify Updates**: Active templates are maintained
+4. **Test First**: Try in development before production
+5. **Customize**: Don't be afraid to customize
+
+### Using Templates
+
+1. **Start Simple**: Begin with template, add what you need
+2. **Version Control**: Commit your customizations
+3. **Document Changes**: Keep notes on modifications
+4. **Test Updates**: Test in development before applying
+5. **Backup**: Backup before major changes
+
+## Next Steps
+
+- Browse [Available Templates](/docs/templates/available)
+- Learn about [Creating Templates](/docs/templates/creating)
+- Return to [Templates Overview](/docs/templates/overview)

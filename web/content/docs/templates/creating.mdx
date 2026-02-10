@@ -1,0 +1,800 @@
+---
+title: Creating Templates
+description: How to create custom DeesseJS templates
+---
+
+# Creating Templates
+
+This guide explains how to create your own DeesseJS templates that can be shared with the community or used across multiple projects.
+
+## Template Structure
+
+A DeesseJS template is a structured npm package:
+
+```
+@deessejs/template-my-template/
+├── collections/
+│   ├── index.ts
+│   └── posts.ts
+├── plugins/
+│   ├── index.ts
+│   └── config.ts
+├── extensions/
+│   └── index.ts
+├── pages/
+│   └── index.tsx
+├── components/
+│   └── PostCard.tsx
+├── styles/
+│   └── globals.css
+├── config/
+│   ├── deesse.config.ts
+│   └── settings.schema.ts
+├── scripts/
+│   ├── postinstall.ts
+│   └── migrate.ts
+├── template.json
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+## Getting Started
+
+### Create Template Skeleton
+
+Use the CLI to generate a template:
+
+```bash
+npx deessejs template create my-template
+
+# Interactive prompts:
+? Template name: My Template
+? Description: A brief description
+? Category: Blog
+? Author: Your Name
+? License: MIT
+
+✓ Template skeleton created
+```
+
+### Manual Setup
+
+Or create from scratch:
+
+```bash
+mkdir my-template
+cd my-template
+npm init -y
+
+npm install @deessejs/core
+npm install -D typescript @types/react
+```
+
+## Core Files
+
+### template.json
+
+Define template metadata:
+
+```json
+{
+  "name": "my-template",
+  "version": "1.0.0",
+  "description": "A brief description of your template",
+  "author": "Your Name",
+  "license": "MIT",
+  "category": "Blog",
+  "keywords": ["blog", "cms", "content"],
+  "homepage": "https://github.com/username/my-template",
+  "repository": "https://github.com/username/my-template",
+  "demo": "https://my-template-demo.vercel.app",
+  "deessejs": ">=1.0.0",
+  "features": [
+    "Blog with posts",
+    "Category support",
+    "SEO optimization",
+    "Comments system"
+  ]
+}
+```
+
+### package.json
+
+```json
+{
+  "name": "@deessejs/template-my-template",
+  "version": "1.0.0",
+  "description": "My awesome DeesseJS template",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "collections", "plugins", "extensions", "pages", "components"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@deessejs/core": "^1.0.0"
+  },
+  "devDependencies": {
+    "@deessejs/core": "workspace:*",
+    "typescript": "^5.0.0",
+    "tsup": "^8.0.0"
+  },
+  "keywords": [
+    "deessejs",
+    "template",
+    "cms",
+    "headless"
+  ]
+}
+```
+
+## Defining Collections
+
+### Collections Index
+
+```typescript
+// collections/index.ts
+export { default as blog } from './blog'
+
+export const collections = [blog]
+```
+
+### Blog Collection
+
+```typescript
+// collections/blog.ts
+import { CollectionDefinition } from '@deessejs/core'
+
+export const blog: CollectionDefinition[] = [
+  {
+    name: 'posts',
+    fields: [
+      {
+        name: 'title',
+        type: 'string',
+        required: true,
+      },
+      {
+        name: 'slug',
+        type: 'string',
+        admin: {
+          description: 'URL-friendly version of the title',
+        },
+      },
+      {
+        name: 'content',
+        type: 'richtext',
+        required: true,
+      },
+      {
+        name: 'excerpt',
+        type: 'text',
+        admin: {
+          description: 'Short description for listings',
+        },
+      },
+      {
+        name: 'featuredImage',
+        type: 'media',
+      },
+      {
+        name: 'status',
+        type: 'enum',
+        enum: ['draft', 'published', 'archived'],
+        defaultValue: 'draft',
+      },
+      {
+        name: 'publishedAt',
+        type: 'datetime',
+      },
+      {
+        name: 'author',
+        type: 'reference',
+        relation: 'users',
+        admin: {
+          description: 'Post author',
+        },
+      },
+    ],
+    admin: {
+      columns: ['title', 'status', 'publishedAt', 'author'],
+      defaultSort: { field: 'publishedAt', direction: 'desc' },
+      pagination: 20,
+    },
+  },
+  {
+    name: 'categories',
+    fields: [
+      {
+        name: 'name',
+        type: 'string',
+        required: true,
+      },
+      {
+        name: 'slug',
+        type: 'string',
+      },
+      {
+        name: 'description',
+        type: 'text',
+      },
+      {
+        name: 'parent',
+        type: 'reference',
+        relation: 'categories',
+        admin: {
+          description: 'Parent category for hierarchy',
+        },
+      },
+    ],
+    admin: {
+      columns: ['name', 'parent'],
+    },
+  },
+]
+```
+
+## Defining Plugins
+
+### Plugins Index
+
+```typescript
+// plugins/index.ts
+export { default as plugins } from './config'
+```
+
+### Plugin Configuration
+
+```typescript
+// plugins/config.ts
+import { seoPlugin } from '@deessejs/plugin-seo'
+import { mediaPlugin } from '@deessejs/plugin-media'
+
+export const plugins = [
+  seoPlugin({
+    features: {
+      sitemap: true,
+      rss: true,
+      openGraph: true,
+      twitterCard: true,
+    },
+  }),
+  mediaPlugin({
+    maxFileSize: 10485760, // 10MB
+    allowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+  }),
+]
+```
+
+## Defining Extensions
+
+### Extensions Index
+
+```typescript
+// extensions/index.ts
+export { default as extensions } from './config'
+```
+
+### Extension Configuration
+
+```typescript
+// extensions/config.ts
+import { RedisCacheProvider } from '@deessejs/extensions-cache-redis'
+import { PinoLoggerProvider } from '@deessejs/extensions-logger-pino'
+import { RedisQueueProvider } from '@deessejs/extensions-queue-bullmq'
+
+export const extensions = {
+  cache: {
+    provider: new RedisCacheProvider({
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379'),
+    }),
+    options: {
+      prefix: 'deesse:',
+      defaultTTL: 3600,
+    },
+  },
+  logger: {
+    provider: new PinoLoggerProvider({
+      level: 'info',
+      transport: {
+        target: 'pino/file',
+        options: {
+          destination: './logs/app.log',
+        },
+      },
+    }),
+  },
+  queue: {
+    provider: new RedisQueueProvider({
+      connection: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: 6379,
+      },
+    }),
+    options: {
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 1000,
+        },
+      },
+    },
+  },
+}
+```
+
+## Creating Admin Pages
+
+### Pages Index
+
+```typescript
+// pages/index.ts
+export { default as pages } from './pages'
+```
+
+### Page Definitions
+
+```typescript
+// pages/pages.ts
+import { AdminPage } from '@deessejs/admin'
+
+export const pages = [
+  {
+    id: 'analytics',
+    title: 'Analytics',
+    path: '/analytics',
+    component: './AnalyticsPage',
+    icon: 'BarChart',
+    permissions: ['analytics:view'],
+    layout: 'default',
+  },
+  {
+    id: 'comments',
+    title: 'Comments',
+    path: '/comments',
+    component: './CommentsPage',
+    icon: 'MessageSquare',
+    permissions: ['comments:moderate'],
+  },
+]
+```
+
+### Page Component
+
+```typescript
+// pages/AnalyticsPage.tsx
+import { useCollection } from '@deessejs/query'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+export default function AnalyticsPage() {
+  const { data: posts } = useCollection('posts')
+
+  return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-3xl font-bold">Analytics</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Posts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{posts?.length || 0}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Published</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {posts?.filter(p => p.status === 'published').length || 0}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Drafts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {posts?.filter(p => p.status === 'draft').length || 0}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+```
+
+## Creating Components
+
+### Components Index
+
+```typescript
+// components/index.ts
+export { PostCard } from './PostCard'
+export { CategoryList } from './CategoryList'
+export { TagCloud } from './TagCloud'
+```
+
+### Post Card Component
+
+```typescript
+// components/PostCard.tsx
+import Link from 'next/link'
+import Image from 'next/image'
+
+interface PostCardProps {
+  post: {
+    id: string
+    title: string
+    slug: string
+    excerpt: string
+    featuredImage: string | null
+    publishedAt: string
+    author: {
+      name: string
+      avatar?: string | null
+    }
+  }
+}
+
+export function PostCard({ post }: PostCardProps) {
+  return (
+    <article className="border rounded-lg overflow-hidden hover:shadow-lg transition">
+      {post.featuredImage && (
+        <Link href={`/blog/${post.slug}`}>
+          <Image
+            src={post.featuredImage}
+            alt={post.title}
+            width={800}
+            height={400}
+            className="w-full h-48 object-cover"
+          />
+        </Link>
+      )}
+
+      <div className="p-6">
+        <h2 className="text-xl font-bold mb-2">
+          <Link href={`/blog/${post.slug}`} className="hover:underline">
+            {post.title}
+          </Link>
+        </h2>
+
+        <p className="text-gray-600 mb-4 line-clamp-2">
+          {post.excerpt}
+        </p>
+
+        <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex items-center gap-2">
+            {post.author.avatar && (
+              <Image
+                src={post.author.avatar}
+                alt={post.author.name}
+                width={32}
+                height={32}
+                className="rounded-full"
+              />
+            )}
+            <span>{post.author.name}</span>
+          </div>
+
+          <time>
+            {new Date(post.publishedAt).toLocaleDateString()}
+          </time>
+        </div>
+      </div>
+    </article>
+  )
+}
+```
+
+## Adding Styles
+
+### Global Styles
+
+```css
+/* styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+  }
+}
+
+@layer components {
+  /* Custom component styles */
+}
+
+body {
+  color: rgb(var(--foreground));
+  background: rgb(var(--background));
+}
+```
+
+## Configuration Files
+
+### DeesseJS Config
+
+```typescript
+// config/deesse.config.ts
+import { defineConfig } from '@deessejs/core'
+import { collections } from '../../collections'
+import { plugins } from '../../plugins'
+import { extensions } from '../../extensions'
+
+export const config = defineConfig({
+  collections,
+  plugins,
+  extensions,
+
+  admin: {
+    branding: {
+      title: 'My Blog',
+      logo: '/logo.png',
+      favicon: '/favicon.ico',
+    },
+  },
+
+  // Template-specific settings
+  template: {
+    name: 'my-template',
+    version: '1.0.0',
+    features: {
+      comments: true,
+      rss: true,
+      seo: true,
+    },
+  },
+})
+```
+
+### Settings Schema
+
+```typescript
+// config/settings.schema.ts
+export const settingsSchema = {
+  type: 'object',
+  properties: {
+    blogName: {
+      type: 'string',
+      title: 'Blog Name',
+      default: 'My Blog',
+    },
+    postsPerPage: {
+      type: 'number',
+      title: 'Posts Per Page',
+      default: 10,
+      minimum: 1,
+      maximum: 100,
+    },
+    enableComments: {
+      type: 'boolean',
+      title: 'Enable Comments',
+      default: true,
+    },
+    enableRSS: {
+      type: 'boolean',
+      title: 'Enable RSS Feed',
+      default: true,
+    },
+  },
+}
+```
+
+## Installation Scripts
+
+### Post-Install Script
+
+```typescript
+// scripts/postinstall.ts
+import { copyFile, mkdir } from 'node:fs/promises'
+
+export async function postinstall() {
+  console.log('Setting up My Template...')
+
+  // Create necessary directories
+  await mkdir('./public/uploads', { recursive: true })
+
+  // Copy configuration files
+  await copyFile('./template/env.example', './.env.example')
+
+  console.log('✓ Template setup complete')
+  console.log('✓ Run npm install to install dependencies')
+  console.log('✓ Copy .env.example to .env.local')
+}
+```
+
+Add to package.json:
+
+```json
+{
+  "scripts": {
+    "postinstall": "ts-node scripts/postinstall.ts"
+  }
+}
+```
+
+## Migration Scripts
+
+### Version Migration
+
+```typescript
+// scripts/migrate.ts
+export async function migrate(from: string, to: string) {
+  console.log(`Migrating from ${from} to ${to}`)
+
+  // Perform migration steps
+  await step1_addAuthorField()
+  await step2_updateRoutes()
+  await step3_migrateData()
+
+  console.log('✓ Migration complete')
+}
+
+async function step1_addAuthorField() {
+  // Add author field to posts collection
+}
+
+async function step2_updateRoutes() {
+  // Update route structure
+}
+
+async function step3_migrateData() {
+  // Migrate existing data
+}
+```
+
+## Documentation
+
+### README.md
+
+```markdown
+# My Template
+
+A beautiful blog template for DeesseJS.
+
+## Features
+
+- 📝 Blog posts with rich text editor
+- 🏷️ Categories and tags
+- 🔍 SEO optimization
+- 💬 Comments system
+- 📊 Analytics dashboard
+- 🎨 Beautiful design
+
+## Installation
+
+\`\`\`bash
+npx create-deesse-app my-app --template my-template
+\`\`\`
+
+## Usage
+
+See [Documentation](https://github.com/username/my-template#readme) for detailed usage instructions.
+
+## Screenshots
+
+![Homepage](/screenshots/home.png)
+![Admin](/screenshots/admin.png)
+![Editor](/screenshots/editor.png)
+
+## Customization
+
+See [Customization Guide](https://github.com/username/my-template/blob/main/docs/customizing.md) for customization options.
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/username/my-template/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/username/my-template/discussions)
+```
+
+### Changelog
+
+```markdown
+# Changelog
+
+## [1.0.0] - 2025-01-15
+
+### Added
+- Initial release
+- Blog with posts and categories
+- SEO plugin
+- Comments system
+- Analytics dashboard
+
+### Features
+- Rich text editor (TipTap)
+- Image uploads
+- Category hierarchy
+- Tag support
+- SEO meta tags
+- RSS feed
+- Sitemap generation
+```
+
+## Publishing
+
+### Build Template
+
+```bash
+npm run build
+```
+
+### Publish to npm
+
+```bash
+npm publish --access public
+```
+
+### Submit to Marketplace
+
+1. Go to [templates.deessejs.com/submit](https://templates.deessejs.com/submit)
+2. Fill in template details
+3. Upload screenshots
+4. Submit for review
+
+## Best Practices
+
+### Template Design
+
+1. **Keep it Simple**: Don't over-engineer
+2. **Be Flexible**: Allow for customization
+3. **Document Well**: Comprehensive documentation
+4. **Test Thoroughly**: Test on fresh projects
+5. **Maintain Regularly**: Keep template updated
+
+### Code Quality
+
+1. **TypeScript**: Use TypeScript throughout
+2. **Clean Code**: Follow best practices
+3. **Comments**: Add helpful comments
+4. **Consistency**: Follow consistent patterns
+5. **Performance**: Optimize for performance
+
+### User Experience
+
+1. **Clear Instructions**: Easy to follow setup
+2. **Sensible Defaults**: Good default values
+3. **Error Messages**: Helpful error messages
+4. **Examples**: Provide usage examples
+5. **Support**: Be responsive to issues
+
+## Template Checklist
+
+Before publishing, ensure:
+
+- [ ] All features work correctly
+- [ ] TypeScript compiles without errors
+- [ ] No console warnings or errors
+- [ ] Mobile responsive
+- [ ] Accessible (WCAG 2.1 AA)
+- [ ] SEO optimized
+- [ ] Documentation complete
+- [ ] Screenshots provided
+- [ ] License specified
+- [ ] Support channel available
+
+## Next Steps
+
+- Explore the [Template Marketplace](/docs/templates/marketplace)
+- Browse [Available Templates](/docs/templates/available)
+- Return to [Templates Overview](/docs/templates/overview)
