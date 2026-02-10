@@ -1,0 +1,296 @@
+---
+title: User Management
+description: Managing users in DeesseJS
+---
+
+# User Management
+
+Complete guide to managing users in your DeesseJS application.
+
+## Creating Users
+
+### Via Admin Dashboard
+
+1. Navigate to **Users** section in the admin dashboard
+2. Click **+ New User**
+3. Fill in user details:
+   - Email (required, unique)
+   - Name
+   - Role
+   - Password (or send invitation email)
+4. Click **Create**
+
+### Via API
+
+```typescript
+import { db } from '@deessejs/db'
+import { hashPassword } from '@deessejs/auth'
+
+await db.users.create({
+  data: {
+    email: 'user@example.com',
+    name: 'John Doe',
+    password: await hashPassword('secure-password'),
+    role: 'editor',
+  },
+})
+```
+
+### Server Action
+
+```typescript
+// app/actions/users.ts
+'use server'
+
+import { db } from '@deessejs/db'
+import { hashPassword } from '@deessejs/auth'
+import { revalidatePath } from 'next/cache'
+
+export async function createUser(formData: FormData) {
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+  const name = formData.get('name') as string
+  const role = formData.get('role') as string
+
+  await db.users.create({
+    data: {
+      email,
+      name,
+      password: await hashPassword(password),
+      role: role || 'author',
+    },
+  })
+
+  revalidatePath('/admin/users')
+}
+```
+
+## Updating Users
+
+### Change Password
+
+```typescript
+import { hashPassword } from '@deessejs/auth'
+
+await db.users.update({
+  where: { id: userId },
+  data: {
+    password: await hashPassword('new-password'),
+  },
+})
+```
+
+### Change Role
+
+```typescript
+await db.users.update({
+  where: { id: userId },
+  data: {
+    role: 'admin',
+  },
+})
+```
+
+### Update Profile
+
+```typescript
+await db.users.update({
+  where: { id: userId },
+  data: {
+    name: 'Updated Name',
+    email: 'newemail@example.com',
+  },
+})
+```
+
+## Deleting Users
+
+### Soft Delete
+
+```typescript
+await db.users.update({
+  where: { id: userId },
+  data: {
+    deletedAt: new Date(),
+    isActive: false,
+  },
+})
+```
+
+### Hard Delete
+
+```bash
+# Warning: This cannot be undone
+await db.users.delete({
+  where: { id: userId },
+})
+```
+
+## User Invitations
+
+### Send Invitation
+
+```typescript
+import { sendInvitation } from '@deessejs/auth'
+
+await sendInvitation({
+  email: 'newuser@example.com',
+  role: 'editor',
+  invitedBy: currentUserId,
+})
+
+// Sends email with invitation link
+// User clicks link to set password and activate account
+```
+
+### Accept Invitation
+
+```typescript
+// Handle invitation link
+import { acceptInvitation } from '@deessejs/auth'
+
+await acceptInvitation({
+  token: invitationToken,
+  password: 'user-password',
+})
+```
+
+## Password Reset
+
+### Request Reset
+
+```typescript
+import { requestPasswordReset } from '@deessejs/auth'
+
+await requestPasswordReset('user@example.com')
+// Sends email with reset link
+```
+
+### Complete Reset
+
+```typescript
+import { resetPassword } from '@deessejs/auth'
+
+await resetPassword({
+  token: resetToken,
+  password: 'new-password',
+})
+```
+
+## User Sessions
+
+### View Active Sessions
+
+```typescript
+import { getUserSessions } from '@deessejs/auth'
+
+const sessions = await getUserSessions(userId)
+```
+
+### Revoke Session
+
+```typescript
+import { revokeSession } from '@deessejs/auth'
+
+await revokeSession(sessionId)
+```
+
+### Revoke All Sessions
+
+```typescript
+import { revokeAllSessions } from '@deessejs/auth'
+
+await revokeAllSessions(userId)
+```
+
+## Two-Factor Authentication
+
+### Enable 2FA for User
+
+```typescript
+import { enableTwoFactor } from '@deessejs/auth'
+
+const { secret, qrCode } = await enableTwoFactor(userId)
+// Returns secret key and QR code for authenticator app
+```
+
+### Verify 2FA Setup
+
+```typescript
+import { verifyTwoFactorSetup } from '@deessejs/auth'
+
+await verifyTwoFactorSetup(userId, token)
+```
+
+## User Queries
+
+### Get Current User
+
+```typescript
+import { getServerSession } from '@deessejs/auth'
+
+const session = await getServerSession()
+const user = session?.user
+```
+
+### Get User by ID
+
+```typescript
+const user = await db.users.findUnique({
+  where: { id: userId },
+})
+```
+
+### Get User by Email
+
+```typescript
+const user = await db.users.findUnique({
+  where: { email: 'user@example.com' },
+})
+```
+
+### List Users
+
+```typescript
+const users = await db.users.findMany({
+  orderBy: { createdAt: 'desc' },
+  take: 20,
+})
+```
+
+### Filter by Role
+
+```typescript
+const editors = await db.users.findMany({
+  where: { role: 'editor' },
+})
+```
+
+## Best Practices
+
+### Security
+- Always hash passwords before storing
+- Use strong password requirements
+- Implement rate limiting on login attempts
+- Enable 2FA for admin accounts
+- Log authentication attempts
+
+### User Experience
+- Send invitation emails for new users
+- Provide clear password requirements
+- Offer password reset functionality
+- Allow users to manage their own sessions
+- Display helpful error messages
+
+### Data Privacy
+- Comply with GDPR/CCPA requirements
+- Provide data export functionality
+- Allow account deletion
+- Implement data retention policies
+- Log consent for data processing
+
+## Next Steps
+
+- Learn about [Role-Based Access Control](/docs/auth/rbac)
+- Explore [Security Best Practices](/docs/auth/security)
+- Return to [Authentication Overview](/docs/auth/overview)

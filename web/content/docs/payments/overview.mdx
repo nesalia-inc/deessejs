@@ -1,0 +1,362 @@
+---
+title: Payments Overview
+description: Understanding the payment system in DeesseJS
+---
+
+# Payments Overview
+
+DeesseJS includes a built-in payment system that allows you to process payments, manage subscriptions, and handle transactions through multiple payment providers.
+
+## Features
+
+### Multi-Provider Support
+- **Stripe** - Full-featured payment processing
+- **PayPal** - Popular payment gateway
+- **Paddle** - SaaS subscription management
+- **LemonSqueezy** - Merchant of Record for global sales
+
+### Payment Types
+- **One-time payments** - Single charge transactions
+- **Subscriptions** - Recurring billing with trials
+- **Payment plans** - Installments and buy-now-pay-later
+- **Donations** - Voluntary contributions
+
+### Management Tools
+- **Dashboard UI** - View and manage transactions
+- **Webhook handling** - Automated payment status updates
+- **Refund processing** - Handle refunds and partial refunds
+- **Invoice generation** - Automatic invoice creation
+
+## Getting Started
+
+### Initial Setup
+
+When creating a new DeesseJS project with payment support:
+
+```bash
+npx create-deesse-app my-app --template ecommerce
+
+# Configure your payment provider
+? Select payment provider: Stripe
+? Enter your Stripe publishable key: pk_test_...
+? Enter your Stripe secret key: sk_test_...
+? Enable webhook handling? Yes
+? Webhook secret: whsec_...
+
+✓ Payment system configured
+```
+
+### Environment Variables
+
+```bash
+# .env.local
+
+# Stripe
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# PayPal (optional)
+PAYPAL_CLIENT_ID=...
+PAYPAL_CLIENT_SECRET=...
+
+# Paddle (optional)
+PADDLE_VENDOR_ID=...
+PADDLE_API_KEY=...
+```
+
+### Configuration
+
+```typescript
+// deesse.config.ts
+import { defineConfig } from '@deessejs/core'
+
+export const config = defineConfig({
+  payments: {
+    provider: 'stripe', // or 'paypal', 'paddle', 'lemonsqueezy'
+
+    credentials: {
+      publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+      secretKey: process.env.STRIPE_SECRET_KEY,
+      webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+    },
+
+    webhooks: {
+      endpoint: '/api/webhooks/payments',
+      events: [
+        'payment_intent.succeeded',
+        'payment_intent.failed',
+        'invoice.paid',
+        'invoice.payment_failed',
+        'customer.subscription.created',
+        'customer.subscription.deleted',
+      ],
+    },
+
+    currency: 'usd',
+    locale: 'en',
+  },
+})
+```
+
+## Payment Flow
+
+### 1. Create Payment Intent
+
+```typescript
+// app/api/create-payment-intent/route.ts
+import { NextResponse } from 'next/server'
+import { createPaymentIntent } from '@deessejs/payments'
+
+export async function POST(request: Request) {
+  const { amount, currency = 'usd' } = await request.json()
+
+  const paymentIntent = await createPaymentIntent({
+    amount: amount * 100, // Convert to cents
+    currency,
+    metadata: {
+      orderId: 'order_123',
+    },
+  })
+
+  return NextResponse.json({
+    clientSecret: paymentIntent.client_secret,
+  })
+}
+```
+
+### 2. Collect Payment on Client
+
+```typescript
+// app/checkout/page.tsx
+'use client'
+
+import { loadStripe } from '@stripe/stripe-js'
+
+const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+
+export function CheckoutForm() {
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+
+    const response = await fetch('/api/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 99.99 }),
+    })
+
+    const { clientSecret } = await response.json()
+
+    const { error } = await stripe!.confirmPayment({
+      clientSecret,
+      confirmationParams: {
+        return_url: `${window.location.origin}/success`,
+      },
+    })
+
+    if (error) {
+      console.error('Payment failed:', error)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <button type="submit">Pay $99.99</button>
+    </form>
+  )
+}
+```
+
+### 3. Handle Webhook
+
+```typescript
+// app/api/webhooks/payments/route.ts
+import { headers } from 'next/headers'
+import { handleWebhook } from '@deessejs/payments'
+import Stripe from 'stripe'
+
+export async function POST(request: Request) {
+  const body = await request.text()
+  const signature = headers().get('stripe-signature')!
+
+  const event = await handleWebhook(body, signature)
+
+  switch (event.type) {
+    case 'payment_intent.succeeded':
+      const paymentIntent = event.data.object as Stripe.PaymentIntent
+      await fulfillOrder(paymentIntent)
+      break
+
+    case 'payment_intent.failed':
+      const failedPayment = event.data.object as Stripe.PaymentIntent
+      await handleFailedPayment(failedPayment)
+      break
+  }
+
+  return NextResponse.json({ received: true })
+}
+
+async function fulfillOrder(paymentIntent: Stripe.PaymentIntent) {
+  // Update order status
+  // Send confirmation email
+  // Grant access to purchased content
+}
+```
+
+## Subscriptions
+
+### Create Subscription
+
+```typescript
+// app/api/create-subscription/route.ts
+import { createSubscription } from '@deessejs/payments'
+
+export async function POST(request: Request) {
+  const { priceId, customerId } = await request.json()
+
+  const subscription = await createSubscription({
+    customer: customerId,
+    items: [{ price: priceId }],
+    payment_behavior: 'default_incomplete',
+    payment_settings: { save_default_payment_method: 'on_subscription' },
+    expand: ['latest_invoice.payment_intent'],
+  })
+
+  return NextResponse.json({
+    subscriptionId: subscription.id,
+    clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+  })
+}
+```
+
+### Subscription Tiers
+
+```typescript
+// deesse.config.ts
+export const config = defineConfig({
+  payments: {
+    subscriptions: {
+      plans: [
+        {
+          name: 'Basic',
+          priceId: 'price_basic',
+          amount: 9.99,
+          interval: 'month',
+          features: [
+            '5 projects',
+            'Basic support',
+            '1GB storage',
+          ],
+        },
+        {
+          name: 'Pro',
+          priceId: 'price_pro',
+          amount: 29.99,
+          interval: 'month',
+          features: [
+            'Unlimited projects',
+            'Priority support',
+            '100GB storage',
+            'Advanced analytics',
+          ],
+        },
+        {
+          name: 'Enterprise',
+          priceId: 'price_enterprise',
+          amount: 99.99,
+          interval: 'month',
+          features: [
+            'Everything in Pro',
+            'Dedicated support',
+            'Unlimited storage',
+            'Custom integrations',
+            'SLA guarantee',
+          ],
+        },
+      ],
+    },
+  },
+})
+```
+
+## Managing Transactions
+
+### View Transactions in Dashboard
+
+Navigate to `/admin/payments` to view:
+- All transactions
+- Filter by status, date, amount
+- View transaction details
+- Process refunds
+
+### Process Refund
+
+```typescript
+// app/api/refund/route.ts
+import { processRefund } from '@deessejs/payments'
+
+export async function POST(request: Request) {
+  const { paymentIntentId, amount, reason } = await request.json()
+
+  const refund = await processRefund({
+    paymentIntent: paymentIntentId,
+    amount: amount ? amount * 100 : undefined, // Full refund if no amount
+    reason: reason || 'requested_by_customer',
+    metadata: {
+      refundedBy: 'admin@example.com',
+    },
+  })
+
+  return NextResponse.json({ refundId: refund.id })
+}
+```
+
+### Sync Payment Status
+
+```typescript
+// Sync payment status from provider
+import { syncPayment } from '@deessejs/payments'
+
+const payment = await syncPayment(paymentIntentId)
+
+// Updates local database with latest status
+```
+
+## Testing
+
+### Test Mode
+
+Use test mode during development:
+
+```bash
+# Stripe test keys
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+```
+
+### Test Cards
+
+Stripe provides test card numbers:
+
+```
+Visa (Success): 4242 4242 4242 4242
+Visa (Decline): 4000 0000 0000 0002
+Mastercard (Success): 5555 5555 5555 4444
+Mastercard (Decline): 5105 1051 0000 0000
+```
+
+### Test Webhooks Locally
+
+```bash
+# Use Stripe CLI to forward webhooks locally
+stripe listen --forward-to localhost:3000/api/webhooks/payments
+
+# Or use ngrok
+ngrok http 3000
+```
+
+## Next Steps
+
+- Learn about [Stripe Integration](/docs/payments/stripe)
+- Configure [Subscription Management](/docs/payments/subscriptions)
+- Explore [Payment Components](/docs/payments/components)

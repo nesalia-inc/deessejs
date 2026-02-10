@@ -1,0 +1,10 @@
+{
+  "title": "Authentication",
+  "description": "Authentication and user management documentation",
+  "pages": [
+    "overview",
+    "user-management",
+    "rbac",
+    "security"
+  ]
+}

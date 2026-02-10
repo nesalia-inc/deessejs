@@ -1,0 +1,385 @@
+---
+title: Role-Based Access Control
+description: Managing roles and permissions in DeesseJS
+---
+
+# Role-Based Access Control (RBAC)
+
+DeesseJS includes a flexible role-based access control system that allows you to define granular permissions for different user types.
+
+## Default Roles
+
+### Admin
+Full access to all features and settings:
+- Create, edit, and delete all content
+- Manage users and roles
+- Configure system settings
+- Install and manage plugins
+- View system logs
+- Access all admin features
+
+### Editor
+Content management access:
+- Create, edit, and publish all content
+- Upload and manage media
+- View content analytics
+- No access to system settings
+- Cannot manage users
+
+### Author
+Limited content access:
+- Create and edit own content only
+- Cannot delete content
+- Cannot publish (requires editor approval)
+- Read-only access to other content
+
+### Viewer
+Read-only access:
+- View all content
+- No editing capabilities
+- Useful for stakeholders who need visibility
+
+## Custom Roles
+
+### Creating Custom Roles
+
+```typescript
+// deesse.config.ts
+export const config = defineConfig({
+  auth: {
+    roles: {
+      contentManager: {
+        label: 'Content Manager',
+        description: 'Can manage posts and pages',
+        permissions: [
+          'posts:read',
+          'posts:write',
+          'posts:delete',
+          'pages:read',
+          'pages:write',
+          'media:upload',
+        ],
+      },
+      seoSpecialist: {
+        label: 'SEO Specialist',
+        description: 'Can edit SEO fields only',
+        permissions: [
+          'posts:read',
+          'posts:update:seo',
+          'pages:read',
+          'pages:update:seo',
+        ],
+      },
+      moderator: {
+        label: 'Content Moderator',
+        description: 'Can review and approve content',
+        permissions: [
+          'posts:read',
+          'posts:update:status',
+          'comments:read',
+          'comments:delete',
+        ],
+      },
+    },
+  },
+})
+```
+
+### Assigning Custom Roles
+
+```typescript
+await db.users.create({
+  data: {
+    email: 'manager@example.com',
+    password: await hashPassword('password'),
+    role: 'contentManager',
+  },
+})
+```
+
+## Permission Format
+
+Permissions follow the pattern: `resource:action:scope`
+
+### Resources
+- `posts` - Blog posts/articles
+- `pages` - Static pages
+- `users` - User management
+- `settings` - System settings
+- `media` - File management
+- `comments` - Comments
+- `analytics` - Analytics data
+
+### Actions
+- `read` - View content
+- `write` - Create and edit (combines create + update)
+- `create` - Create new items
+- `update` - Edit existing items
+- `delete` - Remove items
+- `publish` - Make content live
+
+### Scopes (Optional)
+- `:own` - Only own items
+- `:seo` - SEO fields only
+- `:status` - Status field only
+- `:published` - Only published items
+
+### Examples
+
+```typescript
+// Full access to posts
+'posts:*'
+
+// Can read all posts
+'posts:read'
+
+// Can create posts
+'posts:create'
+
+// Can update own posts only
+'posts:update:own'
+
+// Can update SEO fields
+'posts:update:seo'
+
+// Can delete posts
+'posts:delete'
+
+// Can publish posts
+'posts:publish'
+```
+
+## Checking Permissions
+
+### In Server Components
+
+```typescript
+import { getServerSession, hasPermission } from '@deessejs/auth'
+import { redirect } from 'next/navigation'
+
+export default async function AdminPage() {
+  const session = await getServerSession()
+
+  if (!session) {
+    redirect('/login')
+  }
+
+  // Check specific permission
+  const canDeletePosts = await hasPermission(session.user, 'posts:delete')
+
+  if (!canDeletePosts) {
+    return <div>You don't have permission to delete posts</div>
+  }
+
+  return <div>Admin content</div>
+}
+```
+
+### In Server Actions
+
+```typescript
+'use server'
+
+import { getServerSession, hasPermission } from '@deessejs/auth'
+import { db } from '@deessejs/db'
+
+export async function deletePost(postId: string) {
+  const session = await getServerSession()
+
+  if (!session) {
+    return { error: 'Unauthorized' }
+  }
+
+  // Check permission
+  const canDelete = await hasPermission(session.user, 'posts:delete')
+
+  if (!canDelete) {
+    return { error: 'Permission denied' }
+  }
+
+  // Perform deletion
+  await db.posts.delete({ where: { id: postId } })
+
+  return { success: true }
+}
+```
+
+### In API Routes
+
+```typescript
+import { getServerSession, hasPermission } from '@deessejs/auth'
+import { NextResponse } from 'next/server'
+
+export async function DELETE(request: Request) {
+  const session = await getServerSession()
+
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const canDelete = await hasPermission(session.user, 'posts:delete')
+
+  if (!canDelete) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  // Process deletion
+  return NextResponse.json({ success: true })
+}
+```
+
+### Custom Permission Hook
+
+```typescript
+// hooks/use-permission.ts
+'use client'
+
+import { useSession } from '@deessejs/auth'
+
+export function usePermission(permission: string) {
+  const { data: session } = useSession()
+
+  const hasPermission = session?.user?.permissions?.includes(permission)
+
+  return { hasPermission, isLoading: !session }
+}
+
+// Usage
+function DeleteButton({ postId }: { postId: string }) {
+  const { hasPermission, isLoading } = usePermission('posts:delete')
+
+  if (isLoading) return <Skeleton />
+  if (!hasPermission) return null
+
+  return <button>Delete Post</button>
+}
+```
+
+## Conditional UI
+
+### Show/Hide Based on Permissions
+
+```typescript
+import { Permission } from '@deessejs/auth'
+
+export function AdminSidebar() {
+  return (
+    <nav>
+      <Link href="/admin/posts">Posts</Link>
+
+      {/* Only show if user can manage users */}
+      <Permission permission="users:write">
+        <Link href="/admin/users">Users</Link>
+      </Permission>
+
+      {/* Only show if user can access settings */}
+      <Permission permission="settings:read">
+        <Link href="/admin/settings">Settings</Link>
+      </Permission>
+    </nav>
+  )
+}
+```
+
+### Multiple Permissions
+
+```typescript
+import { Permissions } from '@deessejs/auth'
+
+export function BulkActions() {
+  return (
+    <Permissions all={true} permissions={['posts:delete', 'posts:publish']}>
+      <button>Delete Selected</button>
+      <button>Publish Selected</button>
+    </Permissions>
+  )
+}
+```
+
+## Advanced RBAC
+
+### Dynamic Permissions
+
+```typescript
+// Grant permissions based on content ownership
+export async function checkPermission(
+  user: User,
+  permission: string,
+  resource?: any
+) {
+  // Admin has all permissions
+  if (user.role === 'admin') return true
+
+  // Check specific permission
+  if (!user.permissions.includes(permission)) return false
+
+  // Check ownership for scoped permissions
+  if (permission.includes(':own') && resource) {
+    return resource.authorId === user.id
+  }
+
+  return true
+}
+```
+
+### Team-Based Permissions
+
+```typescript
+// Users can access content created by their team
+await db.users.update({
+  where: { id: userId },
+  data: {
+    teamId: 'team-123',
+  },
+})
+
+// Check team membership
+const canAccess = await db.posts.findFirst({
+  where: {
+    id: postId,
+    OR: [
+      { authorId: userId },
+      { author: { teamId: user.teamId } },
+    ],
+  },
+})
+```
+
+### Temporary Permissions
+
+```typescript
+// Grant temporary elevated access
+await db.userPermissions.create({
+  data: {
+    userId: userId,
+    permission: 'posts:delete',
+    expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+  },
+})
+```
+
+## Best Practices
+
+### Principle of Least Privilege
+- Grant minimum required permissions
+- Use scoped permissions (`:own`, `:seo`) when possible
+- Review permissions regularly
+- Remove access when no longer needed
+
+### Role Design
+- Create roles based on job functions
+- Avoid overly permissive roles
+- Document permission requirements
+- Test role permissions thoroughly
+
+### Permission Management
+- Use environment-specific permission checks
+- Log permission denials for security auditing
+- Provide clear feedback for permission errors
+- Implement permission caching for performance
+
+## Next Steps
+
+- Learn about [User Management](/docs/auth/user-management)
+- Explore [Security Best Practices](/docs/auth/security)
+- Return to [Authentication Overview](/docs/auth/overview)

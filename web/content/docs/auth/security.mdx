@@ -1,0 +1,455 @@
+---
+title: Security Best Practices
+description: Security guidelines for authentication in DeesseJS
+---
+
+# Security Best Practices
+
+Comprehensive security guidelines for implementing authentication in DeesseJS applications.
+
+## Password Security
+
+### Strong Password Requirements
+
+```typescript
+// deesse.config.ts
+export const config = defineConfig({
+  auth: {
+    passwordPolicy: {
+      minLength: 12,                    // At least 12 characters
+      requireUppercase: true,           // Require uppercase letters
+      requireLowercase: true,           // Require lowercase letters
+      requireNumbers: true,             // Require numbers
+      requireSpecialChars: true,        // Require special characters
+      preventCommonPasswords: true,     // Block common passwords
+      preventPersonalInfo: true,        // Block email/name in password
+    },
+  },
+})
+```
+
+### Password Hashing
+
+DeesseJS uses bcrypt by default with appropriate work factor:
+
+```typescript
+// Default configuration
+bcrypt.hash(password, 12) // 12 rounds is recommended
+```
+
+### Password Validation
+
+```typescript
+import { z } from 'zod'
+
+const passwordSchema = z.string()
+  .min(12, 'Password must be at least 12 characters')
+  .regex(/[A-Z]/, 'Must contain uppercase letter')
+  .regex(/[a-z]/, 'Must contain lowercase letter')
+  .regex(/[0-9]/, 'Must contain number')
+  .regex(/[^A-Za-z0-9]/, 'Must contain special character')
+```
+
+## Session Security
+
+### Secure Session Configuration
+
+```typescript
+auth: {
+  session: {
+    maxAge: 60 * 60 * 24 * 7,         // 7 days max
+    updateAge: 60 * 60 * 24,          // Refresh every 24 hours
+    cookieName: 'deesse-session',
+    secure: true,                      // HTTPS only
+    httpOnly: true,                    // Not accessible via JavaScript
+    sameSite: 'strict',                // Strict CSRF protection
+    domain: process.env.NODE_ENV === 'production'
+      ? '.yourdomain.com'
+      : undefined,
+  },
+}
+```
+
+### Session Fixation Prevention
+
+DeesseJS automatically regenerates session IDs after login:
+
+```typescript
+// Automatic - no configuration needed
+// Session ID is regenerated after authentication
+```
+
+### Concurrent Session Limits
+
+```typescript
+auth: {
+  session: {
+    maxConcurrentSessions: 3,          // Max 3 active sessions per user
+    onSessionLimit: 'revoke-oldest',   // Strategy when limit reached
+  },
+}
+```
+
+## Two-Factor Authentication
+
+### Enforce 2FA for Admins
+
+```typescript
+// Require 2FA for admin role
+auth: {
+  twoFactor: {
+    enabled: true,
+    requiredFor: ['admin'],            // Require for admin role
+    issuer: 'MyApp',
+    digits: 6,
+    period: 30,
+  },
+}
+```
+
+### Backup Codes
+
+```typescript
+// Generate backup codes for 2FA
+import { generateBackupCodes } from '@deessejs/auth'
+
+const codes = await generateBackupCodes(userId)
+// Returns array of 10 single-use codes
+```
+
+## Rate Limiting
+
+### Login Attempts
+
+```typescript
+// middleware.ts
+import { rateLimit } from '@deessejs/auth'
+
+export const middleware = rateLimit({
+  identifier: 'auth-login',
+  limit: 5,                           // 5 attempts
+  window: 60 * 1000,                  // per minute
+  blockDuration: 15 * 60 * 1000,      // block for 15 minutes
+})
+```
+
+### API Rate Limiting
+
+```typescript
+export const apiRateLimit = rateLimit({
+  identifier: 'api-requests',
+  limit: 100,                         // 100 requests
+  window: 60 * 1000,                  // per minute
+  skipSuccessfulRequests: false,
+})
+```
+
+## Protection Against Common Attacks
+
+### CSRF Protection
+
+DeesseJS includes built-in CSRF protection:
+
+```typescript
+// Automatic - no configuration needed
+// CSRF tokens are validated on all state-changing requests
+```
+
+### XSS Prevention
+
+Input sanitization is automatic:
+
+```typescript
+// All user input is sanitized
+// Use React's built-in XSS protection
+const sanitized = input // Already safe
+```
+
+### SQL Injection Prevention
+
+```typescript
+// Prisma prevents SQL injection
+// Never use raw queries with user input
+const users = await db.users.findMany({
+  where: {
+    email: userInput, // Safe - Prisma handles escaping
+  },
+})
+```
+
+### Brute Force Protection
+
+```typescript
+auth: {
+  bruteForceProtection: {
+    enabled: true,
+    maxAttempts: 5,
+    lockoutDuration: 15 * 60 * 1000, // 15 minutes
+    decayTime: 60 * 60 * 1000,        // Reset after 1 hour
+  },
+}
+```
+
+## Data Protection
+
+### Sensitive Data Logging
+
+```typescript
+// Never log sensitive data
+console.log('User:', {
+  id: user.id,        // OK
+  email: user.email,  // OK
+  password: '***',    // NEVER log actual password
+})
+```
+
+### PII Protection
+
+```typescript
+// Encrypt sensitive PII in database
+import { encrypt, decrypt } from '@deessejs/crypto'
+
+await db.users.create({
+  data: {
+    email: 'user@example.com',
+    ssn: encrypt('123-45-6789'), // Encrypt SSN
+  },
+})
+
+// Retrieve and decrypt
+const user = await db.users.findUnique({ where: { id } })
+const ssn = decrypt(user.ssn)
+```
+
+### Audit Logging
+
+```typescript
+auth: {
+  auditLogging: {
+    enabled: true,
+    events: [
+      'login',
+      'logout',
+      'password-change',
+      'role-change',
+      'permission-denied',
+    ],
+    retain: 90, // Days to keep logs
+  },
+}
+```
+
+## HTTPS and SSL
+
+### Enforce HTTPS in Production
+
+```typescript
+// next.config.js
+module.exports = {
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+        ],
+      },
+    ]
+  },
+}
+```
+
+### Secure Cookies
+
+```typescript
+auth: {
+  session: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'strict',
+  },
+}
+```
+
+## Environment Variables
+
+### Never Commit Secrets
+
+```bash
+# .gitignore
+.env
+.env.local
+.env.production
+*.key
+*.pem
+```
+
+### Use Environment-Specific Configs
+
+```typescript
+// deesse.config.ts
+export const config = defineConfig({
+  auth: {
+    session: {
+      secret: process.env.SESSION_SECRET, // Required
+      secure: process.env.NODE_ENV === 'production',
+    },
+  },
+})
+```
+
+### Generate Strong Secrets
+
+```bash
+# Generate secure random secret
+openssl rand -base64 32
+
+# Or use Node.js
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+## Third-Party Integrations
+
+### OAuth Security
+
+```typescript
+// Use state parameter to prevent CSRF
+export const config = defineConfig({
+  auth: {
+    providers: [
+      GoogleProvider({
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        authorization: {
+          params: {
+            prompt: 'consent',
+            access_type: 'offline',
+          },
+        },
+      }),
+    ],
+  },
+})
+```
+
+### API Key Security
+
+```typescript
+// Never expose API keys to client
+const API_KEY = process.env.API_KEY // Server-side only
+
+// Use API routes to proxy requests
+// app/api/external/route.ts
+export async function GET() {
+  const response = await fetch('https://external-api.com', {
+    headers: {
+      'Authorization': `Bearer ${process.env.EXTERNAL_API_KEY}`,
+    },
+  })
+  return NextResponse.json(await response.json())
+}
+```
+
+## Monitoring and Alerting
+
+### Failed Login Alerts
+
+```typescript
+auth: {
+  alerts: {
+    failedLogins: {
+      enabled: true,
+      threshold: 5,
+      window: 300, // 5 minutes
+      notify: ['admin@example.com'],
+    },
+  },
+}
+```
+
+### Suspicious Activity Detection
+
+```typescript
+// Detect unusual patterns
+import { detectSuspiciousActivity } from '@deessejs/auth'
+
+const suspicious = await detectSuspiciousActivity({
+  userId,
+  action: 'delete-all-posts',
+  context: {
+    ip: request.ip,
+    userAgent: request.headers.get('user-agent'),
+  },
+})
+
+if (suspicious) {
+  // Block action and alert admin
+  await blockUser(userId)
+  await sendAlert('Suspicious activity detected')
+}
+```
+
+## Compliance
+
+### GDPR Compliance
+
+```typescript
+// Export user data
+export async function exportUserData(userId: string) {
+  const user = await db.users.findUnique({ where: { id: userId } })
+  const posts = await db.posts.findMany({ where: { authorId: userId } })
+  const sessions = await getSessions(userId)
+
+  return {
+    personalInfo: user,
+    content: posts,
+    activity: sessions,
+    exportedAt: new Date(),
+  }
+}
+
+// Delete user account
+export async function deleteAccount(userId: string) {
+  await db.users.delete({ where: { id: userId } })
+  // Also delete associated data or anonymize it
+}
+```
+
+### Data Retention
+
+```typescript
+auth: {
+  dataRetention: {
+    sessions: 90,        // Days to keep session logs
+    auditLogs: 365,      // Days to keep audit logs
+    deletedUsers: 30,    // Days before hard delete
+  },
+}
+```
+
+## Security Checklist
+
+- [ ] Strong password requirements enabled
+- [ ] HTTPS enforced in production
+- [ ] Secure cookie configuration
+- [ ] Rate limiting implemented
+- [ ] 2FA enabled for admin accounts
+- [ ] Audit logging enabled
+- [ ] Environment variables secured
+- [ ] CSRF protection active
+- [ ] XSS prevention in place
+- [ ] SQL injection protection verified
+- [ ] Brute force protection enabled
+- [ ] Session expiration configured
+- [ ] API keys not exposed to client
+- [ ] Regular security audits scheduled
+- [ ] Incident response plan documented
+
+## Next Steps
+
+- Learn about [User Management](/docs/auth/user-management)
+- Explore [Role-Based Access Control](/docs/auth/rbac)
+- Return to [Authentication Overview](/docs/auth/overview)

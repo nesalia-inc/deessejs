@@ -1,0 +1,420 @@
+---
+title: Subscription Management
+description: Managing subscriptions and recurring payments in DeesseJS
+---
+
+# Subscription Management
+
+Complete guide to managing subscriptions and recurring billing with DeesseJS.
+
+## Subscription Models
+
+### Fixed Price Subscriptions
+
+```typescript
+// deesse.config.ts
+export const config = defineConfig({
+  payments: {
+    subscriptions: {
+      plans: [
+        {
+          id: 'basic',
+          name: 'Basic',
+          price: 9.99,
+          interval: 'month',
+          currency: 'usd',
+          features: [
+            '5 projects',
+            'Basic support',
+            '1GB storage',
+          ],
+        },
+        {
+          id: 'pro',
+          name: 'Pro',
+          price: 29.99,
+          interval: 'month',
+          currency: 'usd',
+          features: [
+            'Unlimited projects',
+            'Priority support',
+            '100GB storage',
+            'Advanced analytics',
+          ],
+        },
+      ],
+    },
+  },
+})
+```
+
+### Tiered Pricing
+
+```typescript
+plans: [
+  {
+    id: 'starter',
+    name: 'Starter',
+    price: 0,
+    interval: 'month',
+    features: ['1 project', 'Community support'],
+  },
+  {
+    id: 'growth',
+    name: 'Growth',
+    price: 29,
+    interval: 'month',
+    features: ['Unlimited projects', 'Email support'],
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: 99,
+    interval: 'month',
+    features: ['Custom solutions', 'Dedicated support'],
+  },
+]
+```
+
+### Usage-Based Pricing
+
+```typescript
+// Charge based on usage
+export async function createUsageBasedSubscription() {
+  const subscription = await stripe.subscriptions.create({
+    customer: customerId,
+    items: [
+      {
+        price: 'price_usage_based', // Created in Stripe Dashboard
+      },
+    ],
+    add_invoice_items: [
+      {
+        price: 'price_base_fee',
+        quantity: 1,
+      },
+    ],
+  })
+}
+```
+
+## Creating Subscriptions
+
+### With Free Trial
+
+```typescript
+// app/api/create-subscription/route.ts
+import { createSubscription } from '@deessejs/payments'
+
+export async function POST(request: Request) {
+  const { priceId, customerId, trialDays = 14 } = await request.json()
+
+  const subscription = await createSubscription({
+    customer: customerId,
+    items: [{ price: priceId }],
+    trial_period_days: trialDays,
+    payment_behavior: 'default_incomplete',
+    expand: ['latest_invoice.payment_intent'],
+  })
+
+  return NextResponse.json({
+    subscriptionId: subscription.id,
+    status: subscription.status,
+    trialEnd: subscription.trial_end,
+  })
+}
+```
+
+### With Setup Fee
+
+```typescript
+export async function createSubscriptionWithSetupFee() {
+  const subscription = await stripe.subscriptions.create({
+    customer: customerId,
+    items: [{ price: priceId }],
+    add_invoice_items: [
+      {
+        price: 'price_setup_fee',
+        quantity: 1,
+      },
+    ],
+  })
+}
+```
+
+### With Coupon
+
+```typescript
+export async function createSubscriptionWithCoupon() {
+  const subscription = await stripe.subscriptions.create({
+    customer: customerId,
+    items: [{ price: priceId }],
+    coupon: 'coupon_50_percent_off', // Created in Stripe Dashboard
+  })
+}
+```
+
+## Managing Subscriptions
+
+### Update Subscription
+
+```typescript
+// Change plan
+export async function changePlan(subscriptionId: string, newPriceId: string) {
+  const subscription = await stripe.subscriptions.update(subscriptionId, {
+    items: [{ price: newPriceId }],
+    proration_behavior: 'create_prorations',
+  })
+
+  return subscription
+}
+```
+
+### Cancel Subscription
+
+```typescript
+// Cancel at period end
+export async function cancelSubscription(subscriptionId: string) {
+  const subscription = await stripe.subscriptions.update(subscriptionId, {
+    cancel_at_period_end: true,
+  })
+
+  // Notify user of cancellation
+  await sendCancellationNotice(subscription.customer)
+}
+```
+
+### Pause Subscription
+
+```typescript
+export async function pauseSubscription(subscriptionId: string) {
+  const subscription = await stripe.subscriptions.update(subscriptionId, {
+    pause_collection: {
+      behavior: 'keep_as_draft',
+    },
+  })
+}
+```
+
+### Resume Subscription
+
+```typescript
+export async function resumeSubscription(subscriptionId: string) {
+  const subscription = await stripe.subscriptions.update(subscriptionId, {
+    pause_collection: null as any,
+  })
+}
+```
+
+## Subscription Status
+
+### Check Subscription Status
+
+```typescript
+export async function getSubscriptionStatus(subscriptionId: string) {
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+
+  return {
+    status: subscription.status,
+    currentPeriodStart: subscription.current_period_start,
+    currentPeriodEnd: subscription.current_period_end,
+    cancelAtPeriodEnd: subscription.cancel_at_period_end,
+  }
+}
+```
+
+### Status Values
+
+- `active` - Subscription is active and billing
+- `trialing` - In free trial period
+- `past_due` - Payment failed, retrying
+- `canceled` - Canceled but still active until period end
+- `unpaid` - Payment failed, not retrying
+- `incomplete` - Initial payment failed
+
+### Sync with Database
+
+```typescript
+// Webhook handler for subscription updates
+async function handleSubscriptionUpdated(event: Stripe.Subscription) {
+  await db.subscriptions.update({
+    where: { stripeSubscriptionId: event.id },
+    data: {
+      status: event.status,
+      currentPeriodStart: new Date(event.current_period_start * 1000),
+      currentPeriodEnd: new Date(event.current_period_end * 1000),
+      cancelAtPeriodEnd: event.cancel_at_period_end,
+    },
+  })
+}
+```
+
+## Payment Methods
+
+### Add Payment Method
+
+```typescript
+export async function addPaymentMethod(
+  customerId: string,
+  paymentMethodId: string
+) {
+  await stripe.paymentMethods.attach(paymentMethodId, {
+    customer: customerId,
+  })
+
+  // Set as default
+  await stripe.customers.update(customerId, {
+    invoice_settings: {
+      default_payment_method: paymentMethodId,
+    },
+  })
+}
+```
+
+### Update Payment Method
+
+```typescript
+export async function updateSubscriptionPaymentMethod(
+  subscriptionId: string,
+  paymentMethodId: string
+) {
+  await stripe.subscriptions.update(subscriptionId, {
+    default_payment_method: paymentMethodId,
+  })
+}
+```
+
+## Invoices
+
+### List Invoices
+
+```typescript
+export async function getCustomerInvoices(customerId: string) {
+  const invoices = await stripe.invoices.list({
+    customer: customerId,
+    limit: 20,
+  })
+
+  return invoices.data.map((invoice) => ({
+    id: invoice.id,
+    amount: invoice.total,
+    currency: invoice.currency,
+    status: invoice.status,
+    created: new Date(invoice.created * 1000),
+    pdf: invoice.invoice_pdf,
+  }))
+}
+```
+
+### Upcoming Invoice
+
+```typescript
+export async function getUpcomingInvoice(subscriptionId: string) {
+  const invoice = await stripe.invoices.retrieveUpcoming({
+    subscription: subscriptionId,
+  })
+
+  return {
+    amount: invoice.total,
+    currency: invoice.currency,
+    date: new Date(invoice.period_end * 1000),
+  }
+}
+```
+
+## Usage-Based Billing
+
+### Report Usage
+
+```typescript
+// For metered billing
+export async function reportUsage(subscriptionItemId: string, quantity: number) {
+  await stripe.subscriptionItems.createUsageRecord(subscriptionItemId, {
+    quantity,
+    timestamp: Math.floor(Date.now() / 1000),
+    action: 'increment',
+  })
+}
+```
+
+### Check Usage
+
+```typescript
+export async function getUsage(subscriptionItemId: string) {
+  const usage = await stripe.subscriptionItems.listUsageRecords(
+    subscriptionItemId,
+    { limit: 1 }
+  )
+
+  return usage.data[0]?.total_usage || 0
+}
+```
+
+## Trial Management
+
+### Start Trial
+
+```typescript
+export async function startTrial(
+  customerId: string,
+  priceId: string,
+  trialDays: number
+) {
+  const subscription = await stripe.subscriptions.create({
+    customer: customerId,
+    items: [{ price: priceId }],
+    trial_period_days: trialDays,
+    trial_settings: {
+      end_behavior: {
+        missing_payment_method: 'cancel',
+      },
+    },
+  })
+
+  return subscription
+}
+```
+
+### Extend Trial
+
+```typescript
+export async function extendTrial(subscriptionId: string, additionalDays: number) {
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+
+  const newTrialEnd = Math.floor(Date.now() / 1000) + additionalDays * 24 * 60 * 60
+
+  await stripe.subscriptions.update(subscriptionId, {
+    trial_end: newTrialEnd,
+  })
+}
+```
+
+## Analytics
+
+### Subscription Metrics
+
+```typescript
+export async function getSubscriptionMetrics() {
+  const subscriptions = await stripe.subscriptions.list({
+    status: 'active',
+    limit: 100,
+  })
+
+  const mrr = subscriptions.data.reduce((total, sub) => {
+    return total + sub.items.data[0].price.unit_amount
+  }, 0)
+
+  return {
+    activeSubscriptions: subscriptions.data.length,
+    monthlyRecurringRevenue: mrr,
+    churnRate: await calculateChurnRate(),
+    trialCount: await getTrialCount(),
+  }
+}
+```
+
+## Next Steps
+
+- Learn about [Stripe Integration](/docs/payments/stripe)
+- Explore [Payment Components](/docs/payments/components)
+- Return to [Payments Overview](/docs/payments/overview)

@@ -9,10 +9,59 @@ Complete reference for all DeesseJS CLI commands.
 
 ## `create`
 
-Create a new DeesseJS project.
+Create a new DeesseJS project with interactive setup.
 
 ```bash
 deessejs create <project-name> [options]
+```
+
+### Interactive Prompts
+
+The command will guide you through the setup process:
+
+```bash
+npx create-deesse-app my-app
+
+# Step-by-step prompts:
+? Enter your database connection string: postgresql://user:password@localhost:5432/mydb
+? Create first admin user
+? Admin email: admin@example.com
+? Admin password: ********
+? Confirm password: ********
+
+✓ Database configured
+✓ Admin user created
+✓ Project created successfully
+
+cd my-app
+npm run dev
+```
+
+### Database Connection String
+
+The database URL format depends on your database provider:
+
+**PostgreSQL:**
+```
+postgresql://USER:PASSWORD@HOST:PORT/DATABASE
+postgresql://postgres:mypassword@localhost:5432/myapp
+```
+
+**MySQL:**
+```
+mysql://USER:PASSWORD@HOST:PORT/DATABASE
+mysql://root:mypassword@localhost:3306/myapp
+```
+
+**MongoDB:**
+```
+mongodb://USER:PASSWORD@HOST:PORT/DATABASE
+mongodb://user:mypassword@localhost:27017/myapp
+```
+
+**SQLite (for development):**
+```
+file:./dev.db
 ```
 
 ### Options
@@ -22,13 +71,21 @@ deessejs create <project-name> [options]
 | `--template` | `-t` | `default` | Project template to use |
 | `--install` | `-i` | `true` | Install dependencies |
 | `--git` | | `true` | Initialize git repository |
-| `--yes` | `-y` | `false` | Skip prompts |
+| `--db-url` | | | Skip database prompt, use provided URL |
+| `--admin-email` | | | Skip email prompt, use provided email |
+| `--yes` | `-y` | `false` | Skip prompts (use defaults) |
 
 ### Examples
 
 ```bash
-# Create with default template
+# Create with interactive prompts
 deessejs create my-app
+
+# Create with database URL (skip prompt)
+deessejs create my-app --db-url "postgresql://user:pass@localhost:5432/mydb"
+
+# Create with admin email
+deessejs create my-app --admin-email "admin@example.com"
 
 # Create with specific template
 deessejs create my-app --template blog
@@ -36,15 +93,42 @@ deessejs create my-app --template blog
 # Create without installing dependencies
 deessejs create my-app --no-install
 
-# Create and skip all prompts
+# Create and skip all prompts (not recommended - you'll need to configure manually)
 deessejs create my-app --yes
 ```
+
+### What Happens During Creation
+
+1. **Project Setup**
+   - Creates project directory
+   - Copies template files
+   - Initializes package.json
+
+2. **Database Configuration**
+   - Stores database URL in `.env.local`
+   - Creates Prisma schema
+   - Generates Prisma client
+
+3. **Admin User Creation**
+   - Hashes admin password with bcrypt
+   - Creates user in database
+   - Assigns admin role
+
+4. **Dependencies Installation**
+   - Installs npm packages
+   - Sets up TypeScript
+   - Configures Next.js
+
+5. **Git Initialization**
+   - Initializes git repository
+   - Creates initial commit
 
 ### Available Templates
 
 - `default` - Standard DeesseJS setup
 - `blog` - Blog starter with markdown support
-- `ecommerce` - E-commerce template with products
+- `ecommerce` - E-commerce template with products and payments
+- `saas` - SaaS starter with subscriptions and authentication
 - `minimal` - Minimal configuration
 - `typescript` - TypeScript-first setup
 

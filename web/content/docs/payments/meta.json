@@ -1,0 +1,10 @@
+{
+  "title": "Payments",
+  "description": "Payment and subscription documentation",
+  "pages": [
+    "overview",
+    "stripe",
+    "subscriptions",
+    "components"
+  ]
+}
