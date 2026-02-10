@@ -2,6 +2,7 @@
   "title": "Admin Dashboard",
   "description": "Admin Dashboard documentation",
   "icon": "LayoutDashboard",
+  "root": true,
   "pages": [
     "overview",
     "content-management",
