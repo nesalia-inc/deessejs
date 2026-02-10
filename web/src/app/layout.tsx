@@ -7,10 +7,10 @@ import "./global.css";
 
 export const metadata = createMetadata({
   title: {
-    template: "%s | Better Notion",
-    default: "Better Notion",
+    template: "%s | DeesseJS",
+    default: "DeesseJS",
   },
-  description: "The modern Python SDK for Notion API",
+  description: "A modern headless CMS framework built for Next.js",
   metadataBase: baseUrl,
 });
 
