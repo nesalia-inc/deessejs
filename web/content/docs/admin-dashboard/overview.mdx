@@ -15,6 +15,12 @@ The DeesseJS Admin Dashboard is a powerful, intuitive interface for managing you
 - **Bulk Operations**: Perform actions on multiple items at once
 - **Draft System**: Save work in progress and publish when ready
 
+### Plugin Marketplace
+- **Browse Plugins**: Discover and install plugins from the official marketplace
+- **One-Click Installation**: Install plugins directly from the dashboard
+- **Plugin Management**: Enable, disable, configure, and remove plugins
+- **Plugin Reviews**: See ratings and reviews from other users
+
 ### User Management
 - **User Accounts**: Manage user roles and permissions
 - **Authentication**: Built-in auth system with secure login
@@ -22,7 +28,6 @@ The DeesseJS Admin Dashboard is a powerful, intuitive interface for managing you
 
 ### System Configuration
 - **Settings**: Configure application-wide settings
-- **Plugins**: Manage and configure installed plugins
 - **API Keys**: Generate and manage API tokens
 - **Logs**: View system logs and error reports
 
@@ -44,9 +49,9 @@ https://yourdomain.com/admin
 The left sidebar provides quick access to all major sections:
 - **Collections**: Quick access to all your content collections
 - **Media**: File and media management
+- **Marketplace**: Plugin marketplace
 - **Users**: User management
 - **Settings**: Application configuration
-- **Plugins**: Plugin management
 
 ### Main Content Area
 The main area displays the content for the selected section, with:
@@ -65,14 +70,19 @@ The top bar contains:
 ## Authentication & Authorization
 
 ### Default Admin User
-When you first install DeesseJS, a default admin user is created:
+When you create a new DeesseJS project, you're prompted to create the first admin user:
 
 ```bash
-Email: admin@deessejs.local
-Password: admin123
-```
+npx create-deesse-app my-app
 
-**Important:** Change the default password immediately after first login!
+# During setup:
+? Create first admin user
+? Admin email: admin@example.com
+? Admin password: ********
+? Confirm password: ********
+
+✓ Admin user created successfully
+```
 
 ### Role-Based Access Control
 DeesseJS includes built-in roles:
@@ -81,26 +91,119 @@ DeesseJS includes built-in roles:
 - **Author**: Can create and edit own content
 - **Viewer**: Read-only access to content
 
-### Custom Roles
-Create custom roles with specific permissions:
-```typescript
-// deesse.config.ts
-export const config = defineConfig({
-  auth: {
-    roles: [
-      {
-        name: 'content-manager',
-        permissions: ['content:read', 'content:write', 'media:upload'],
-      },
-    ],
-  },
-})
+## Plugin Marketplace
+
+The built-in plugin marketplace allows you to discover and install plugins without leaving the dashboard.
+
+### Accessing the Marketplace
+
+Navigate to **Marketplace** in the sidebar or go to `/admin/marketplace`
+
+### Marketplace Features
+
+- **Categories**: Browse plugins by category (SEO, Analytics, Integrations, etc.)
+- **Search**: Search for plugins by name, keywords, or functionality
+- **Ratings**: See community ratings and reviews
+- **Screenshots**: View plugin screenshots and demos
+- **One-Click Install**: Install plugins with a single click
+- **Version Info**: See compatible versions and changelogs
+
+### Installing from Marketplace
+
+1. Navigate to **Marketplace** in the sidebar
+2. Browse or search for a plugin
+3. Click **Install Plugin**
+4. Configure plugin options if needed
+5. Plugin is automatically installed and enabled
+
+```bash
+# Installation happens automatically via the dashboard
+# Equivalent CLI command:
+npx deessejs plugin add @deessejs/plugin-seo
 ```
+
+### Managing Installed Plugins
+
+Navigate to **Settings** > **Plugins** to manage installed plugins:
+
+- **Enable/Disable**: Toggle plugins on or off
+- **Configure**: Access plugin configuration
+- **View Logs**: See plugin activity logs
+- **Uninstall**: Remove plugins from your project
+
+## Settings
+
+The Settings page provides a centralized location for configuring all aspects of your DeesseJS application.
+
+### Accessing Settings
+
+Navigate to **Settings** in the sidebar or go to `/admin/settings`
+
+### Settings Sections
+
+#### General Settings
+- **Site Name**: Your application name
+- **Site URL**: Your application URL
+- **Site Description**: Meta description for SEO
+- **Timezone**: Set your application timezone
+- **Language**: Default language for the dashboard
+
+#### Appearance
+- **Theme**: Light, dark, or system theme
+- **Brand Colors**: Customize dashboard colors
+- **Logo**: Upload your logo
+- **Favicon**: Upload your favicon
+
+#### Extensions Configuration
+Configure installed extensions:
+
+```typescript
+// Cache settings
+{
+  "cache": {
+    "provider": "redis",
+    "ttl": 3600,
+    "prefix": "deesse:"
+  }
+}
+
+// Logger settings
+{
+  "logger": {
+    "level": "info",
+    "destination": "file"
+  }
+}
+```
+
+#### Plugin Settings
+Each plugin can have its own settings section:
+
+```typescript
+// Example: SEO plugin settings
+{
+  "seo": {
+    "defaultTitle": "My Site",
+    "defaultDescription": "My awesome site",
+    "ogImage": "/images/og-default.jpg",
+    "twitterCard": "summary_large_image"
+  }
+}
+```
+
+#### API Keys
+Generate and manage API keys for external integrations:
+- **Create Key**: Generate new API keys
+- **Revoke Key**: Disable compromised keys
+- **View Usage**: See key usage statistics
+- **Key Types**: Different keys for different purposes
 
 ## Customization
 
 ### Branding
+
 Customize the dashboard appearance:
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -116,19 +219,56 @@ export const config = defineConfig({
 ```
 
 ### Custom Pages
-Add custom pages to the admin dashboard:
+
+Plugins can add custom pages to the dashboard:
+
 ```typescript
-// deesse.config.ts
-export const config = defineConfig({
-  admin: {
-    customPages: [
-      {
-        path: '/analytics',
-        component: './admin/pages/analytics',
-        icon: 'BarChart',
-        title: 'Analytics',
+// A plugin adds an analytics page
+export const analyticsPlugin = definePlugin({
+  name: 'analytics-plugin',
+
+  activate(options, { extensions }) {
+    return {
+      admin: {
+        pages: [
+          {
+            id: 'analytics',
+            title: 'Analytics',
+            path: '/analytics',
+            component: './pages/AnalyticsPage',
+            icon: 'BarChart',
+            permissions: ['analytics:view'],
+          },
+        ],
       },
-    ],
+    }
+  },
+})
+```
+
+The page automatically appears in the sidebar navigation.
+
+### Dashboard Widgets
+
+Plugins can add widgets to the dashboard home:
+
+```typescript
+export const statsPlugin = definePlugin({
+  name: 'stats-plugin',
+
+  activate(options, { extensions }) {
+    return {
+      admin: {
+        widgets: [
+          {
+            id: 'stats',
+            component: './widgets/StatsWidget',
+            position: 'top',
+            size: 'large',
+          },
+        ],
+      },
+    }
   },
 })
 ```
@@ -159,7 +299,6 @@ The admin dashboard is optimized for performance:
 
 ## Next Steps
 
-- Learn about [Dashboard Configuration](/docs/admin-dashboard/configuration)
-- Explore [Content Management](/docs/admin-dashboard/content-management)
-- Understand [User Management](/docs/admin-dashboard/user-management)
-- Discover [Plugin Integration](/docs/plugins)
+- Learn about the [Plugin Marketplace](/docs/admin-dashboard/marketplace)
+- Explore [Settings](/docs/admin-dashboard/settings)
+- Understand [Content Management](/docs/admin-dashboard/content-management)

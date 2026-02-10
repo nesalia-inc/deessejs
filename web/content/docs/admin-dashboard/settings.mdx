@@ -1,0 +1,499 @@
+---
+title: Settings
+description: Configure and manage your DeesseJS application settings
+---
+
+# Settings
+
+The Settings page provides a centralized interface for configuring all aspects of your DeesseJS application, from general settings to extension configurations.
+
+## Accessing Settings
+
+Navigate to **Settings** in the sidebar or go to `/admin/settings`
+
+## Settings Navigation
+
+The Settings page is organized into sections:
+
+### General
+Basic application configuration
+
+### Appearance
+Dashboard branding and theme
+
+### Extensions
+Configure installed extensions
+
+### Plugins
+Manage installed plugins
+
+### API Keys
+Generate and manage API tokens
+
+### Webhooks
+Configure webhook endpoints
+
+### Logs
+View system logs
+
+## General Settings
+
+### Site Information
+
+```typescript
+{
+  "siteName": "My Application",
+  "siteUrl": "https://example.com",
+  "siteDescription": "My awesome application built with DeesseJS",
+  "siteLocale": "en",
+  "timezone": "America/New_York"
+}
+```
+
+### Default Settings
+
+Configure defaults for new content:
+
+```typescript
+{
+  "defaults": {
+    "author": "Admin User",
+    "status": "draft",
+    "commentsEnabled": true,
+    "seoIndex": true
+  }
+}
+```
+
+### Limits & Quotas
+
+Set limits for resources:
+
+```typescript
+{
+  "limits": {
+    "maxUploadSize": 10485760,    // 10MB in bytes
+    "maxApiRequests": 1000,        // Per minute
+    "maxStorage": 1073741824,      // 1GB in bytes
+    "maxUsers": 100
+  }
+}
+```
+
+## Appearance Settings
+
+### Branding
+
+Customize the dashboard appearance:
+
+```typescript
+{
+  "branding": {
+    "title": "My App Admin",
+    "logo": "/uploads/logo.png",
+    "logoWidth": 40,
+    "favicon": "/favicon.ico",
+    "coverImage": "/uploads/cover.jpg"
+  }
+}
+```
+
+### Theme
+
+Configure the dashboard theme:
+
+```typescript
+{
+  "theme": {
+    "mode": "system",              // 'light' | 'dark' | 'system'
+    "primaryColor": "#3b82f6",
+    "font": "Inter, sans-serif",
+    "borderRadius": "medium"       // 'none' | 'small' | 'medium' | 'large'
+  }
+}
+```
+
+### Custom CSS
+
+Add custom CSS to override dashboard styles:
+
+```typescript
+{
+  "customCss": `
+    .custom-header {
+      background: linear-gradient(to right, #3b82f6, #8b5cf6);
+    }
+  `
+}
+```
+
+## Extensions Settings
+
+Each extension has its own settings section.
+
+### Cache Settings
+
+```typescript
+{
+  "cache": {
+    "provider": "redis",            // 'memory' | 'redis' | 'memcached'
+    "defaultTTL": 3600,             // Default TTL in seconds
+    "prefix": "deesse:",            // Key prefix
+    "maxItems": 10000,              // For memory provider
+    "redis": {
+      "host": "localhost",
+      "port": 6379,
+      "password": "",
+      "db": 0
+    }
+  }
+}
+```
+
+### Queue Settings
+
+```typescript
+{
+  "queue": {
+    "provider": "bullmq",           // 'memory' | 'bullmq' | 'bull'
+    "concurrency": 5,               // Concurrent jobs
+    "maxRetries": 3,
+    "backoff": {
+      "type": "exponential",
+      "delay": 1000
+    },
+    "redis": {
+      "host": "localhost",
+      "port": 6379
+    }
+  }
+}
+```
+
+### Logger Settings
+
+```typescript
+{
+  "logger": {
+    "provider": "pino",             // 'console' | 'pino' | 'winston'
+    "level": "info",                // 'debug' | 'info' | 'warn' | 'error'
+    "destination": "file",          // 'console' | 'file' | 'both'
+    "filePath": "./logs/app.log",
+    "maxFiles": 7,
+    "maxSize": "10M"
+  }
+}
+```
+
+### Storage Settings
+
+```typescript
+{
+  "storage": {
+    "provider": "s3",               // 'local' | 's3' | 'r2' | 'azure'
+    "publicUrl": "https://cdn.example.com",
+    "local": {
+      "uploadPath": "./public/uploads",
+      "publicPath": "/uploads"
+    },
+    "s3": {
+      "region": "us-east-1",
+      "bucket": "my-bucket",
+      "acl": "public-read"
+    }
+  }
+}
+```
+
+### Search Settings
+
+```typescript
+{
+  "search": {
+    "provider": "meilisearch",     // 'algolia' | 'meilisearch' | 'typesense'
+    "host": "http://localhost:7700",
+    "apiKey": "masterKey",
+    "indexes": ["posts", "pages", "products"]
+  }
+}
+```
+
+## Plugins Settings
+
+Each plugin can define its own settings section.
+
+### SEO Plugin Example
+
+```typescript
+{
+  "seo": {
+    "defaultTitle": "My Site",
+    "defaultDescription": "My awesome site",
+    "defaultOgImage": "/images/og-default.jpg",
+    "twitterCard": "summary_large_image",
+    "twitterSite": "@mysite",
+    "sitemapEnabled": true,
+    "sitemapPath": "/sitemap.xml",
+    "robotsEnabled": true
+  }
+}
+```
+
+### Analytics Plugin Example
+
+```typescript
+{
+  "analytics": {
+    "provider": "plausible",        // 'google-analytics' | 'plausible' | 'umami'
+    "trackingId": "UA-12345678-1",
+    "domain": "example.com",
+    "trackAdmin": false,
+    "excludePaths": ["/admin", "/api"]
+  }
+}
+```
+
+### Newsletter Plugin Example
+
+```typescript
+{
+  "newsletter": {
+    "fromEmail": "newsletter@example.com",
+    "fromName": "My Site",
+    "confirmEmail": true,
+    "doubleOptIn": true,
+    "welcomeEmail": true,
+    "templates": {
+      "confirmation": "email-confirmation",
+      "welcome": "email-welcome"
+    }
+  }
+}
+```
+
+## API Keys
+
+### Generating API Keys
+
+Create API keys for external integrations:
+
+1. Navigate to **Settings** > **API Keys**
+2. Click **+ Generate New Key**
+3. Enter key details:
+   - **Name**: Descriptive name
+   - **Type**: Key type (read, write, admin)
+   - **Expiration**: Optional expiration date
+4. Click **Generate**
+5. Copy the key (shown only once)
+
+### Key Types
+
+| Type | Permissions |
+|------|-------------|
+| **Read** | Read collections, users, settings |
+| **Write** | Read and modify collections, users |
+| **Admin** | Full access including settings |
+
+### Managing Keys
+
+- **View Details**: See key metadata
+- **Revoke**: Disable a key
+- **Delete**: Permanently remove a key
+- **Rotate**: Generate new key and invalidate old one
+- **View Usage**: See key usage statistics
+
+### Usage Example
+
+```typescript
+// Using API key
+const response = await fetch('https://api.example.com/posts', {
+  headers: {
+    'Authorization': 'Bearer deesse_pk_1234567890abcdef'
+  }
+})
+```
+
+## Webhooks
+
+### Configuring Webhooks
+
+Set up webhooks to receive notifications:
+
+1. Navigate to **Settings** > **Webhooks**
+2. Click **+ Add Webhook**
+3. Configure:
+   - **Name**: Descriptive name
+   - **URL**: Endpoint URL
+   - **Events**: Which events to send
+   - **Secret**: Optional secret for verification
+
+4. Click **Save**
+
+### Available Events
+
+```typescript
+{
+  "events": [
+    "collection.created",           // Item created
+    "collection.updated",           // Item updated
+    "collection.deleted",           // Item deleted
+    "user.created",                 // New user
+    "user.login",                   // User login
+    "system.error",                 // System errors
+    "plugin.installed",             // Plugin installed
+    "plugin.uninstalled"            // Plugin uninstalled
+  ]
+}
+```
+
+### Webhook Payload
+
+```typescript
+{
+  "id": "evt_1234567890",
+  "event": "collection.created",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "data": {
+    "collection": "posts",
+    "item": {
+      "id": "post_123",
+      "title": "Hello World",
+      "status": "published"
+    }
+  },
+  "signature": "sha256=..."
+}
+```
+
+### Verifying Signatures
+
+Verify webhooks are from DeesseJS:
+
+```typescript
+import crypto from 'crypto'
+
+function verifyWebhook(payload: string, signature: string, secret: string) {
+  const hmac = crypto.createHmac('sha256', secret)
+  const digest = hmac.update(payload).digest('hex')
+  const expectedSignature = `sha256=${digest}`
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  )
+}
+```
+
+## Logs
+
+### Viewing Logs
+
+Navigate to **Settings** > **Logs** to view system logs:
+
+### Log Levels
+
+- **Debug**: Detailed diagnostic information
+- **Info**: General informational messages
+- **Warn**: Warning messages
+- **Error**: Error messages
+
+### Filtering Logs
+
+Filter logs by:
+- **Level**: Select log level to show
+- **Source**: Plugin or system component
+- **Date Range**: Specific time period
+- **Search**: Text search in log messages
+
+### Log Retention
+
+Configure log retention:
+
+```typescript
+{
+  "logs": {
+    "retention": 30,                // Days to keep logs
+    "maxSize": "1G",                // Maximum log file size
+    "compression": true,            // Compress old logs
+    "backup": true                  // Backup logs before deletion
+  }
+}
+```
+
+## Import & Export
+
+### Export Settings
+
+Export all settings to a file:
+
+1. Navigate to **Settings** > **General**
+2. Click **Export Settings**
+3. Download JSON file with all settings
+
+### Import Settings
+
+Import settings from a file:
+
+1. Navigate to **Settings** > **General**
+2. Click **Import Settings**
+3. Upload JSON file
+4. Review changes
+5. Click **Confirm Import**
+
+### Settings JSON Structure
+
+```typescript
+{
+  "general": { /* ... */ },
+  "appearance": { /* ... */ },
+  "extensions": {
+    "cache": { /* ... */ },
+    "logger": { /* ... */ }
+  },
+  "plugins": {
+    "seo": { /* ... */ },
+    "analytics": { /* ... */ }
+  },
+  "apiKeys": [ /* ... */ ],
+  "webhooks": [ /* ... */ ]
+}
+```
+
+## Resetting Settings
+
+### Factory Reset
+
+Reset all settings to defaults:
+
+1. Navigate to **Settings** > **General**
+2. Scroll to bottom
+3. Click **Reset to Defaults**
+4. Confirm reset
+
+⚠️ **Warning**: This cannot be undone!
+
+### Partial Reset
+
+Reset specific sections:
+
+```typescript
+// Reset only appearance settings
+await resetSettings(['appearance'])
+
+// Reset multiple sections
+await resetSettings(['appearance', 'plugins'])
+```
+
+## Best Practices
+
+1. **Backup Before Changes**: Export settings before making major changes
+2. **Version Control**: Commit settings files to version control
+3. **Environment-Specific**: Use different settings for dev/staging/prod
+4. **Document Changes**: Keep notes on why settings were changed
+5. **Review Regularly**: Periodically review and update settings
+
+## Next Steps
+
+- Learn about the [Plugin Marketplace](/docs/admin-dashboard/marketplace)
+- Explore [User Management](/docs/admin-dashboard/user-management)
+- Return to [Dashboard Overview](/docs/admin-dashboard/overview)

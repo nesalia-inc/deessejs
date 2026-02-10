@@ -13,6 +13,8 @@
     "admin-dashboard/content-management",
     "admin-dashboard/configuration",
     "admin-dashboard/user-management",
+    "admin-dashboard/marketplace",
+    "admin-dashboard/settings",
     "---Authentication---",
     "auth/overview",
     "auth/user-management",

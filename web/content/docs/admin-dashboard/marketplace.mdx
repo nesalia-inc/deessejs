@@ -1,0 +1,369 @@
+---
+title: Plugin Marketplace
+description: Discover and install plugins from the built-in marketplace
+---
+
+# Plugin Marketplace
+
+The DeesseJS Plugin Marketplace is a built-in feature that allows you to discover, evaluate, and install plugins directly from the admin dashboard without touching the command line.
+
+## Accessing the Marketplace
+
+### Via Dashboard
+
+1. Navigate to `/admin/marketplace` in your browser
+2. Or click **Marketplace** in the sidebar navigation
+
+### Marketplace Home
+
+The marketplace home displays:
+- **Featured Plugins**: Hand-picked plugins by the DeesseJS team
+- **New Arrivals**: Recently published plugins
+- **Most Popular**: Top-rated and most-installed plugins
+- **Categories**: Browse by functionality
+
+## Browsing Plugins
+
+### Categories
+
+Plugins are organized into categories:
+
+#### Content
+- Rich text editors (TipTap, CKEditor, etc.)
+- Markdown support
+- Content versioning
+- Content scheduling
+- Multi-language support
+
+#### SEO
+- Meta tag management
+- Sitemap generation
+- robots.txt management
+- Canonical URLs
+- Schema.org integration
+
+#### Integrations
+- Analytics (Google Analytics, Plausible, etc.)
+- Email (Resend, SendGrid, etc.)
+- SMS (Twilio, Vonage, etc.)
+- Search (Algolia, Meilisearch, etc.)
+- Storage (AWS S3, Cloudflare R2, etc.)
+
+#### E-commerce
+- Payment gateways
+- Product catalogs
+- Shopping cart
+- Order management
+- Inventory tracking
+
+#### Developer Tools
+- API documentation
+- Webhook testing
+- Database browser
+- Log viewer
+- Performance monitoring
+
+#### Security
+- 2FA providers
+- Rate limiting
+- Audit logging
+- IP whitelisting
+- Security headers
+
+### Search and Filter
+
+Use the search bar to find plugins by:
+- **Name**: Plugin name
+- **Keywords**: Functionality (e.g., "seo", "analytics")
+- **Author**: Plugin developer
+- **Tags**: Pre-defined tags
+
+Filter results by:
+- **Category**: Specific category
+- **Rating**: Minimum rating
+- **Price**: Free, paid, or freemium
+- **Compatibility**: Your DeesseJS version
+- **Updated**: Recently updated
+
+## Plugin Details
+
+Clicking on a plugin shows detailed information:
+
+### Overview Tab
+
+```typescript
+{
+  "name": "SEO Pro",
+  "version": "2.1.0",
+  "description": "Advanced SEO tools for DeesseJS",
+  "author": "DeesseJS Team",
+  "icon": "/plugins/seo/icon.png",
+  "screenshots": [
+    "/plugins/seo/screenshot1.png",
+    "/plugins/seo/screenshot2.png"
+  ],
+  "rating": 4.8,
+  "reviews": 234,
+  "installs": 12500,
+  "category": "SEO",
+  "tags": ["seo", "metadata", "sitemap", "schema"],
+  "price": {
+    "type": "paid",
+    "amount": 29,
+    "currency": "USD",
+    "period": "month"
+  },
+  "compatibility": ">=1.0.0",
+  "lastUpdated": "2025-01-15"
+}
+```
+
+### Features Tab
+
+Lists all plugin features with descriptions:
+- Feature name
+- Description
+- Status (available in free/paid version)
+
+### Reviews Tab
+
+Community reviews with:
+- Star rating
+- Review title and text
+- User info (anonymized)
+- Date of review
+- Helpful votes
+
+### Changelog Tab
+
+Version history with:
+- Version number
+- Release date
+- Type (major/minor/patch)
+- Release notes
+- Breaking changes
+
+## Installing Plugins
+
+### Free Plugins
+
+1. Navigate to the plugin page
+2. Click **Install Plugin**
+3. Review required permissions
+4. Click **Confirm Installation**
+5. Plugin installs automatically
+6. Configure plugin settings if needed
+
+### Paid Plugins
+
+1. Navigate to the plugin page
+2. Click **Purchase & Install**
+3. Choose your plan (monthly/yearly)
+4. Enter payment details
+5. Complete purchase
+6. Plugin installs automatically
+
+### Installation Process
+
+Behind the scenes, the marketplace:
+
+```typescript
+// Installation happens server-side
+async function installPlugin(pluginId: string) {
+  const plugin = await fetchPluginFromRegistry(pluginId)
+
+  // Add to package.json
+  await addDependency(plugin.packageName, plugin.version)
+
+  // Install npm package
+  await installNpmPackage(plugin.packageName)
+
+  // Register in config
+  await registerPlugin(plugin.name, plugin.defaultConfig)
+
+  // Rebuild if needed
+  await rebuildApplication()
+
+  return { success: true }
+}
+```
+
+## Required Permissions
+
+Before installation, plugins may request permissions:
+
+```typescript
+{
+  "permissions": [
+    "collections:read",          // Read collection data
+    "collections:write",         // Modify collection data
+    "settings:read",             // Read app settings
+    "settings:write",            // Modify app settings
+    "extensions:cache",          // Access cache extension
+    "extensions:logger",         // Access logger extension
+    "network:external",          // Make external API calls
+    "files:write"                // Write to filesystem
+  ]
+}
+```
+
+Review these carefully before installing.
+
+## Managing Installed Plugins
+
+Navigate to **Settings** > **Plugins** to manage installed plugins.
+
+### Plugin Actions
+
+**Enable/Disable**
+- Toggle plugin on or off
+- Disabled plugins don't load but remain installed
+
+**Configure**
+- Access plugin configuration UI
+- Modify plugin settings
+- Save changes
+
+**View Logs**
+- See plugin activity logs
+- Debug issues
+- Monitor performance
+
+**Reinstall**
+- Reinstall to latest version
+- Fix corrupted installations
+- Keep plugins up to date
+
+**Uninstall**
+- Remove plugin completely
+- Plugin reverses its changes
+- Database cleanup if needed
+
+### Plugin Status
+
+Plugins can have different statuses:
+
+| Status | Description |
+|--------|-------------|
+| **Active** | Plugin is installed and enabled |
+| **Disabled** | Plugin is installed but disabled |
+| **Error** | Plugin has errors and isn't loading |
+| **Update Available** | New version available |
+| **Incompatible** | Not compatible with current version |
+
+## Plugin Dependencies
+
+Plugins can depend on other plugins or extensions:
+
+```typescript
+{
+  "dependencies": {
+    "plugins": ["@deessejs/plugin-media"],
+    "extensions": {
+      "cache": true,
+      "logger": false
+    }
+  }
+}
+```
+
+When installing a plugin:
+- Required plugins are automatically installed
+- Extension availability is checked
+- Installation fails if requirements aren't met
+
+## Updates
+
+### Automatic Updates
+
+By default, plugins are checked for updates daily. Updates are:
+- Downloaded automatically
+- Installed on confirmation
+- Can be configured to auto-install
+
+### Manual Updates
+
+Navigate to **Settings** > **Plugins** and click **Update** for any plugin with available updates.
+
+### Update Notifications
+
+The dashboard shows notification badges when updates are available:
+- Sidebar **Settings** icon shows count
+- Plugin list shows "Update Available" badge
+- Changelog displayed before updating
+
+## Security
+
+### Plugin Verification
+
+Official plugins are verified:
+- **Verified Badge**: Checkmark icon on plugin cards
+- **Publisher Info**: Publisher name and website
+- **Source Code**: Link to GitHub repository
+- **Security Audit**: Reviewed by DeesseJS team
+
+### Security Best Practices
+
+1. **Check Permissions**: Review requested permissions before installing
+2. **Verified Plugins**: Prefer verified plugins
+3. **Reviews**: Read reviews from other users
+4. **Updates**: Keep plugins updated
+5. **Remove Unused**: Uninstall plugins you don't use
+
+## Plugin Analytics
+
+### Installation Statistics
+
+See how many times a plugin has been installed:
+- Total installations
+- Active installations
+- Trend over time
+
+### Rating Breakdown
+
+View detailed rating breakdown:
+- 5 stars: X%
+- 4 stars: X%
+- 3 stars: X%
+- 2 stars: X%
+- 1 star: X%
+
+## Submitting Plugins
+
+Plugin developers can submit plugins to the marketplace:
+
+### Submission Process
+
+1. **Prepare Plugin**
+   - Follow plugin creation guidelines
+   - Include comprehensive documentation
+   - Add tests
+
+2. **Create Listing**
+   - Fill in plugin details
+   - Upload screenshots
+   - Set pricing
+
+3. **Review Process**
+   - Automated code review
+   - Manual quality check
+   - Security audit
+
+4. **Publication**
+   - Plugin appears in marketplace
+   - Users can discover and install
+   - Receive reviews and ratings
+
+### Plugin Guidelines
+
+- **Quality**: High code quality and documentation
+- **Security**: No security vulnerabilities
+- **Performance**: Minimal performance impact
+- **Support**: Provide support for users
+- **Updates**: Regular updates and maintenance
+
+## Next Steps
+
+- Learn about [Settings](/docs/admin-dashboard/settings)
+- Explore [Content Management](/docs/admin-dashboard/content-management)
+- Return to [Dashboard Overview](/docs/admin-dashboard/overview)
