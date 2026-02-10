@@ -1,0 +1,609 @@
+---
+title: Extension Providers
+description: Creating and managing extension providers
+---
+
+# Extension Providers
+
+Providers implement extension interfaces. Learn how to create, configure, and distribute providers for DeesseJS extensions.
+
+## Provider Structure
+
+A provider package has this structure:
+
+```
+@deessejs/extensions-cache-redis/
+├── src/
+│   ├── provider.ts      # Main provider implementation
+│   ├── types.ts         # TypeScript types
+│   └── index.ts         # Exports
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+## Creating a Provider
+
+### Step 1: Initialize Package
+
+```bash
+mkdir @deessejs/extensions-cache-redis
+cd @deessejs/extensions-cache-redis
+npm init -y
+
+npm install @deessejs/extensions-cache ioredis
+npm install -D typescript @types/ioredis
+```
+
+### Step 2: Configure TypeScript
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true
+  },
+  "include": ["src"]
+}
+```
+
+### Step 3: Implement Provider
+
+```typescript
+// src/provider.ts
+import { Redis } from 'ioredis'
+import type { CacheExtension } from '@deessejs/extensions-cache'
+
+interface RedisCacheOptions {
+  client?: Redis
+  connection?: {
+    host: string
+    port: number
+    password?: string
+    db?: number
+  }
+  prefix?: string
+  defaultTTL?: number
+}
+
+export class RedisCacheProvider implements CacheExtension {
+  private client: Redis
+  private prefix: string
+  private defaultTTL: number
+
+  constructor(options: RedisCacheOptions = {}) {
+    if (options.client) {
+      this.client = options.client
+    } else if (options.connection) {
+      this.client = new Redis({
+        host: options.connection.host,
+        port: options.connection.port,
+        password: options.connection.password,
+        db: options.connection.db || 0,
+      })
+    } else {
+      throw new Error('Redis client or connection details required')
+    }
+
+    this.prefix = options.prefix || 'deesse:'
+    this.defaultTTL = options.defaultTTL || 3600
+  }
+
+  private getKey(key: string): string {
+    return `${this.prefix}${key}`
+  }
+
+  async get<T>(key: string): Promise<T | null> {
+    const value = await this.client.get(this.getKey(key))
+
+    if (!value) return null
+
+    try {
+      return JSON.parse(value) as T
+    } catch {
+      return value as T
+    }
+  }
+
+  async set<T>(key: string, value: T, ttl?: number): Promise<void> {
+    const serialized = JSON.stringify(value)
+    const redisKey = this.getKey(key)
+    const expiry = ttl ?? this.defaultTTL
+
+    if (expiry > 0) {
+      await this.client.setex(redisKey, expiry, serialized)
+    } else {
+      await this.client.set(redisKey, serialized)
+    }
+  }
+
+  async delete(key: string): Promise<void> {
+    await this.client.del(this.getKey(key))
+  }
+
+  async clear(): Promise<void> {
+    const pattern = `${this.prefix}*`
+    const keys = await this.client.keys(pattern)
+
+    if (keys.length > 0) {
+      await this.client.del(...keys)
+    }
+  }
+
+  async disconnect(): Promise<void> {
+    await this.client.quit()
+  }
+}
+```
+
+### Step 4: Export Provider
+
+```typescript
+// src/index.ts
+export { RedisCacheProvider } from './provider'
+export type { RedisCacheOptions } from './provider'
+```
+
+### Step 5: Configure Package
+
+```json
+// package.json
+{
+  "name": "@deessejs/extensions-cache-redis",
+  "version": "1.0.0",
+  "description": "Redis provider for DeesseJS cache extension",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@deessejs/extensions-cache": "^1.0.0"
+  },
+  "dependencies": {
+    "ioredis": "^5.3.0"
+  },
+  "devDependencies": {
+    "@deessejs/extensions-cache": "workspace:*",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "deessejs",
+    "extension",
+    "cache",
+    "redis"
+  ]
+}
+```
+
+### Step 6: Add Documentation
+
+```markdown
+# @deessejs/extensions-cache-redis
+
+Redis provider for the DeesseJS cache extension.
+
+## Installation
+
+```bash
+npm install @deessejs/extensions-cache-redis
+```
+
+## Usage
+
+```typescript
+import { defineConfig } from '@deessejs/core'
+import { RedisCacheProvider } from '@deessejs/extensions-cache-redis'
+
+export const config = defineConfig({
+  extensions: {
+    cache: {
+      provider: new RedisCacheProvider({
+        connection: {
+          host: 'localhost',
+          port: 6379,
+        },
+        prefix: 'myapp:',
+        defaultTTL: 3600,
+      }),
+    },
+  },
+})
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `client` | `Redis` | - | Existing Redis client |
+| `connection` | `object` | - | Redis connection details |
+| `connection.host` | `string` | - | Redis host |
+| `connection.port` | `number` | `6379` | Redis port |
+| `connection.password` | `string` | - | Redis password |
+| `connection.db` | `number` | `0` | Redis database number |
+| `prefix` | `string` | `'deesse:'` | Key prefix |
+| `defaultTTL` | `number` | `3600` | Default TTL in seconds |
+
+## Using Existing Client
+
+```typescript
+import { Redis } from 'ioredis'
+
+const redis = new Redis({
+  host: 'localhost',
+  port: 6379,
+})
+
+export const config = defineConfig({
+  extensions: {
+    cache: {
+      provider: new RedisCacheProvider({ client: redis }),
+    },
+  },
+})
+```
+
+## Cluster Support
+
+```typescript
+import { Cluster } from 'ioredis'
+
+const cluster = new Cluster([
+  { host: 'redis-01', port: 6379 },
+  { host: 'redis-02', port: 6379 },
+])
+
+export const config = defineConfig({
+  extensions: {
+    cache: {
+      provider: new RedisCacheProvider({ client: cluster }),
+    },
+  },
+})
+```
+```
+
+## Advanced Provider Features
+
+### Connection Pooling
+
+```typescript
+export class RedisCacheProvider implements CacheExtension {
+  private pool: Map<string, Redis>
+
+  constructor(options: RedisCacheOptions = {}) {
+    this.pool = new Map()
+
+    // Create multiple connections for different purposes
+    this.pool.set('default', new Redis(options.connection))
+    this.pool.set('pubsub', new Redis(options.connection))
+  }
+
+  get client() {
+    return this.pool.get('default')!
+  }
+
+  async disconnect(): Promise<void> {
+    await Promise.all(
+      Array.from(this.pool.values()).map((client) => client.quit())
+    )
+  }
+}
+```
+
+### Health Checks
+
+```typescript
+export class RedisCacheProvider implements CacheExtension {
+  async healthCheck(): Promise<{ healthy: boolean; latency?: number }> {
+    const start = Date.now()
+    try {
+      await this.client.ping()
+      return {
+        healthy: true,
+        latency: Date.now() - start,
+      }
+    } catch {
+      return { healthy: false }
+    }
+  }
+}
+```
+
+### Error Handling
+
+```typescript
+export class RedisCacheProvider implements CacheExtension {
+  private retries = 3
+  private backoff = 100
+
+  async get<T>(key: string): Promise<T | null> {
+    for (let attempt = 0; attempt < this.retries; attempt++) {
+      try {
+        const value = await this.client.get(this.getKey(key))
+        return value ? JSON.parse(value) : null
+      } catch (error) {
+        if (attempt === this.retries - 1) {
+          // Log and return null on final attempt
+          console.error('Redis get failed:', error)
+          return null
+        }
+        // Wait before retry
+        await new Promise((resolve) =>
+          setTimeout(resolve, this.backoff * Math.pow(2, attempt))
+        )
+      }
+    }
+    return null
+  }
+}
+```
+
+### Metrics Collection
+
+```typescript
+export class RedisCacheProvider implements CacheExtension {
+  private metrics = {
+    hits: 0,
+    misses: 0,
+    sets: 0,
+    deletes: 0,
+  }
+
+  async get<T>(key: string): Promise<T | null> {
+    const value = await this.client.get(this.getKey(key))
+    if (value) {
+      this.metrics.hits++
+    } else {
+      this.metrics.misses++
+    }
+    return value ? JSON.parse(value) : null
+  }
+
+  async set<T>(key: string, value: T, ttl?: number): Promise<void> {
+    await this.client.setex(this.getKey(key), ttl ?? this.defaultTTL, JSON.stringify(value))
+    this.metrics.sets++
+  }
+
+  getMetrics() {
+    return {
+      ...this.metrics,
+      hitRate: this.metrics.hits / (this.metrics.hits + this.metrics.misses),
+    }
+  }
+}
+```
+
+## Provider Testing
+
+### Unit Tests
+
+```typescript
+// tests/provider.test.ts
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { RedisCacheProvider } from '../src/provider'
+import Redis from 'ioredis'
+
+// Mock Redis
+vi.mock('ioredis')
+
+describe('RedisCacheProvider', () => {
+  let provider: RedisCacheProvider
+  let mockRedis: any
+
+  beforeEach(() => {
+    mockRedis = {
+      get: vi.fn(),
+      setex: vi.fn(),
+      del: vi.fn(),
+      keys: vi.fn(),
+      quit: vi.fn(),
+    }
+    vi.mocked(Redis).mockReturnValue(mockRedis)
+
+    provider = new RedisCacheProvider({
+      connection: { host: 'localhost', port: 6379 },
+      prefix: 'test:',
+    })
+  })
+
+  afterEach(async () => {
+    await provider.disconnect()
+  })
+
+  it('should get value', async () => {
+    mockRedis.get.mockResolvedValue(JSON.stringify({ foo: 'bar' }))
+
+    const value = await provider.get('key')
+
+    expect(mockRedis.get).toHaveBeenCalledWith('test:key')
+    expect(value).toEqual({ foo: 'bar' })
+  })
+
+  it('should return null for missing key', async () => {
+    mockRedis.get.mockResolvedValue(null)
+
+    const value = await provider.get('key')
+
+    expect(value).toBeNull()
+  })
+
+  it('should set value with TTL', async () => {
+    mockRedis.setex.mockResolvedValue('OK')
+
+    await provider.set('key', { foo: 'bar' }, 300)
+
+    expect(mockRedis.setex).toHaveBeenCalledWith(
+      'test:key',
+      300,
+      JSON.stringify({ foo: 'bar' })
+    )
+  })
+
+  it('should delete key', async () => {
+    mockRedis.del.mockResolvedValue(1)
+
+    await provider.delete('key')
+
+    expect(mockRedis.del).toHaveBeenCalledWith('test:key')
+  })
+
+  it('should clear all keys with prefix', async () => {
+    mockRedis.keys.mockResolvedValue(['test:key1', 'test:key2'])
+    mockRedis.del.mockResolvedValue(2)
+
+    await provider.clear()
+
+    expect(mockRedis.keys).toHaveBeenCalledWith('test:*')
+    expect(mockRedis.del).toHaveBeenCalledWith('test:key1', 'test:key2')
+  })
+})
+```
+
+### Integration Tests
+
+```typescript
+// tests/integration.test.ts
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { RedisCacheProvider } from '../src/provider'
+
+describe('RedisCacheProvider Integration', () => {
+  let provider: RedisCacheProvider
+
+  beforeAll(async () => {
+    // Use test Redis instance
+    provider = new RedisCacheProvider({
+      connection: {
+        host: 'localhost',
+        port: 6379,
+        db: 15, // Use test database
+      },
+      prefix: 'test:',
+    })
+  })
+
+  afterAll(async () => {
+    await provider.clear()
+    await provider.disconnect()
+  })
+
+  it('should store and retrieve value', async () => {
+    await provider.set('test-key', { data: 'value' })
+    const result = await provider.get('test-key')
+
+    expect(result).toEqual({ data: 'value' })
+  })
+
+  it('should respect TTL', async () => {
+    await provider.set('ttl-key', { data: 'value' }, 1)
+
+    // Value exists immediately
+    let result = await provider.get('ttl-key')
+    expect(result).toEqual({ data: 'value' })
+
+    // Wait for TTL to expire
+    await new Promise((resolve) => setTimeout(resolve, 1100))
+
+    result = await provider.get('ttl-key')
+    expect(result).toBeNull()
+  })
+})
+```
+
+## Publishing Providers
+
+### Pre-publish Checklist
+
+- [ ] All methods implemented correctly
+- [ ] TypeScript types exported
+- [ ] Documentation complete
+- [ ] Tests passing
+- [ ] Package.json configured correctly
+- [ ] Build script works
+- [ ] Example usage provided
+- [ ] Peer dependencies correct
+
+### Publishing
+
+```bash
+# Build
+npm run build
+
+# Test
+npm test
+
+# Publish
+npm publish
+```
+
+### Semantic Versioning
+
+Follow semantic versioning:
+
+- **Major (1.0.0 → 2.0.0)**: Breaking changes
+- **Minor (1.0.0 → 1.1.0)**: New features, backward compatible
+- **Patch (1.0.0 → 1.0.1)**: Bug fixes
+
+### Changelog
+
+Maintain a CHANGELOG.md:
+
+```markdown
+# Changelog
+
+## [1.1.0] - 2025-01-15
+### Added
+- Support for Redis Cluster
+- Health check method
+
+### Fixed
+- Fixed connection leak on error
+
+## [1.0.0] - 2025-01-01
+### Added
+- Initial release
+```
+
+## Best Practices
+
+### Performance
+
+1. **Connection pooling** - Reuse connections
+2. **Pipeline operations** - Batch commands when possible
+3. **Compression** - Compress large values
+4. **Monitor** - Track latency and error rates
+
+### Reliability
+
+1. **Retry logic** - Handle transient failures
+2. **Timeouts** - Set reasonable timeouts
+3. **Circuit breakers** - Fail fast on repeated failures
+4. **Logging** - Log errors and retries
+
+### Security
+
+1. **Sanitize keys** - Prevent key injection
+2. **Limit data** - Don't cache sensitive data
+3. **Encrypt** - Encrypt sensitive values
+4. **Validate** - Validate inputs
+
+## Next Steps
+
+- Learn about [Creating Extensions](/docs/extensions/creating-extensions)
+- Explore [Available Extensions](/docs/extensions/available-extensions)
+- Return to [Extensions Overview](/docs/extensions/overview)

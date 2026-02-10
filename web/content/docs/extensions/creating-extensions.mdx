@@ -1,0 +1,475 @@
+---
+title: Creating Extensions
+description: How to create new extensions in DeesseJS
+---
+
+# Creating Extensions
+
+This guide explains how to create new extensions for DeesseJS. Extensions define interfaces that multiple providers can implement.
+
+## Extension Anatomy
+
+An extension consists of:
+
+1. **Interface Definition** - TypeScript interface defining the contract
+2. **Default Provider** - Basic implementation included with DeesseJS
+3. **Provider Packages** - Separate npm packages for alternative providers
+
+## Define the Interface
+
+### Step 1: Create the Interface
+
+```typescript
+// extensions/scheduler/src/types.ts
+export interface SchedulerExtension {
+  // Schedule a one-time job
+  schedule(name: string, payload: any, runAt: Date): Promise<string>
+
+  // Schedule recurring job
+  scheduleCron(
+    name: string,
+    payload: any,
+    cronExpression: string
+  ): Promise<string>
+
+  // Cancel a job
+  cancel(jobId: string): Promise<void>
+
+  // Get job status
+  getStatus(jobId: string): Promise<SchedulerJobStatus>
+}
+
+export interface SchedulerJobStatus {
+  id: string
+  name: string
+  state: 'pending' | 'running' | 'completed' | 'failed'
+  runAt?: Date
+  result?: any
+  error?: string
+}
+```
+
+### Step 2: Create the Base Extension
+
+```typescript
+// extensions/scheduler/src/extension.ts
+import { defineExtension } from '@deessejs/core'
+import type { SchedulerExtension } from './types'
+
+export const schedulerExtension = defineExtension<SchedulerExtension>({
+  name: 'scheduler',
+  version: '1.0.0',
+
+  // Required methods that providers must implement
+  required: ['schedule', 'scheduleCron', 'cancel', 'getStatus'],
+
+  // Optional methods with defaults
+  optional: {
+    list: async () => [],
+    pause: async (jobId: string) => {
+      throw new Error('Pause not implemented')
+    },
+    resume: async (jobId: string) => {
+      throw new Error('Resume not implemented')
+    },
+  },
+
+  // Validation function
+  validate(provider: SchedulerExtension) {
+    if (typeof provider.schedule !== 'function') {
+      throw new Error('Provider must implement schedule method')
+    }
+    if (typeof provider.scheduleCron !== 'function') {
+      throw new Error('Provider must implement scheduleCron method')
+    }
+    // ... more validation
+  },
+})
+```
+
+### Step 3: Create Default Provider
+
+```typescript
+// extensions/scheduler/src/providers/memory.ts
+import type { SchedulerExtension, SchedulerJobStatus } from '../types'
+
+interface ScheduledJob {
+  id: string
+  name: string
+  payload: any
+  runAt: Date
+  cron?: string
+  state: 'pending' | 'running' | 'completed' | 'failed'
+  timeout?: NodeJS.Timeout
+}
+
+export class MemorySchedulerProvider implements SchedulerExtension {
+  private jobs = new Map<string, ScheduledJob>()
+  private jobIdCounter = 0
+
+  constructor(private options: { concurrency?: number } = {}) {}
+
+  async schedule(name: string, payload: any, runAt: Date): Promise<string> {
+    const id = `job_${++this.jobIdCounter}`
+    const delay = runAt.getTime() - Date.now()
+
+    const job: ScheduledJob = {
+      id,
+      name,
+      payload,
+      runAt,
+      state: 'pending',
+    }
+
+    this.jobs.set(id, job)
+
+    job.timeout = setTimeout(() => {
+      this.executeJob(id)
+    }, delay)
+
+    return id
+  }
+
+  async scheduleCron(
+    name: string,
+    payload: any,
+    cronExpression: string
+  ): Promise<string> {
+    // Use a cron library like 'cron' or 'node-cron'
+    const { CronJob } = require('cron')
+    const id = `cron_${++this.jobIdCounter}`
+
+    const job = new CronJob(
+      cronExpression,
+      () => this.executeJob(id),
+      null,
+      true
+    )
+
+    this.jobs.set(id, {
+      id,
+      name,
+      payload,
+      cron: cronExpression,
+      state: 'pending',
+    })
+
+    return id
+  }
+
+  async cancel(jobId: string): Promise<void> {
+    const job = this.jobs.get(jobId)
+    if (!job) throw new Error(`Job ${jobId} not found`)
+
+    if (job.timeout) {
+      clearTimeout(job.timeout)
+    }
+
+    this.jobs.delete(jobId)
+  }
+
+  async getStatus(jobId: string): Promise<SchedulerJobStatus> {
+    const job = this.jobs.get(jobId)
+    if (!job) throw new Error(`Job ${jobId} not found`)
+
+    return {
+      id: job.id,
+      name: job.name,
+      state: job.state,
+      runAt: job.runAt,
+    }
+  }
+
+  private async executeJob(jobId: string) {
+    const job = this.jobs.get(jobId)
+    if (!job) return
+
+    job.state = 'running'
+
+    try {
+      // Execute the job handler
+      const handler = this.handlers.get(job.name)
+      if (handler) {
+        const result = await handler(job.payload)
+        job.state = 'completed'
+      } else {
+        throw new Error(`No handler for job: ${job.name}`)
+      }
+    } catch (error) {
+      job.state = 'failed'
+      console.error(`Job ${jobId} failed:`, error)
+    }
+  }
+
+  private handlers = new Map<string, (payload: any) => any>()
+
+  // Register job handlers
+  handler(name: string, fn: (payload: any) => any) {
+    this.handlers.set(name, fn)
+  }
+}
+```
+
+## Register the Extension
+
+### In Core Package
+
+```typescript
+// packages/core/src/extensions/index.ts
+export { schedulerExtension } from './scheduler'
+export type { SchedulerExtension } from './scheduler/types'
+
+// Auto-register in config
+export function registerExtensions(config: DeesseConfig) {
+  return {
+    ...config,
+    extensions: {
+      ...config.extensions,
+      scheduler: config.extensions?.scheduler || {
+        provider: new MemorySchedulerProvider(),
+      },
+    },
+  }
+}
+```
+
+## Creating Alternative Providers
+
+### Redis-based Provider
+
+```typescript
+// packages/extensions-scheduler-bullmq/src/provider.ts
+import { Queue, Worker } from 'bullmq'
+import type { SchedulerExtension } from '@deessejs/extensions'
+
+export class BullMQSchedulerProvider implements SchedulerExtension {
+  private queue: Queue
+  private worker: Worker
+
+  constructor(private redis: Redis) {
+    this.queue = new Queue('scheduler', { connection: redis })
+  }
+
+  async schedule(name: string, payload: any, runAt: Date): Promise<string> {
+    const delay = runAt.getTime() - Date.now()
+    const job = await this.queue.add(name, payload, {
+      delay,
+    })
+    return job.id!
+  }
+
+  async scheduleCron(
+    name: string,
+    payload: any,
+    cronExpression: string
+  ): Promise<string> {
+    const job = await this.queue.add(name, payload, {
+      repeat: {
+        pattern: cronExpression,
+      },
+    })
+    return job.id!
+  }
+
+  async cancel(jobId: string): Promise<void> {
+    const job = await this.queue.getJob(jobId)
+    if (job) {
+      await job.remove()
+    }
+  }
+
+  async getStatus(jobId: string): Promise<SchedulerJobStatus> {
+    const job = await this.queue.getJob(jobId)
+    if (!job) {
+      throw new Error(`Job ${jobId} not found`)
+    }
+
+    const state = await job.getState()
+
+    return {
+      id: job.id!,
+      name: job.name,
+      state: state === 'completed' ? 'completed' : 'pending',
+      runAt: new Date(job.opts.delay!),
+    }
+  }
+}
+```
+
+### Publish as Separate Package
+
+```typescript
+// packages/extensions-scheduler-bullmq/package.json
+{
+  "name": "@deessejs/extensions-scheduler-bullmq",
+  "version": "1.0.0",
+  "description": "BullMQ provider for DeesseJS scheduler extension",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "peerDependencies": {
+    "@deessejs/core": "^1.0.0",
+    "bullmq": "^4.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  }
+}
+```
+
+```typescript
+// packages/extensions-scheduler-bullmq/src/index.ts
+export { BullMQSchedulerProvider } from './provider'
+```
+
+## Using Extensions in Plugins
+
+### Declare Extension Dependencies
+
+```typescript
+// my-plugin/index.ts
+import { definePlugin } from '@deessejs/core'
+
+export const myPlugin = definePlugin<{
+  schedulerInterval?: number
+}>({
+  name: 'scheduled-posts',
+  extensions: {
+    scheduler: true, // Required
+    cache: false,    // Optional
+  },
+
+  activate(options, { extensions }) {
+    const { scheduler, cache } = extensions
+
+    // Register scheduled job handler
+    scheduler?.handler('publish-post', async (payload) => {
+      const post = await db.posts.findUnique({
+        where: { id: payload.postId },
+      })
+
+      if (post) {
+        await db.posts.update({
+          where: { id: post.id },
+          data: { published: true },
+        })
+
+        // Clear cache if available
+        if (cache) {
+          await cache.delete(`post:${post.id}`)
+        }
+      }
+    })
+
+    return {
+      hooks: {
+        afterCreate: async ({ item }) => {
+          // Schedule post publication
+          if (item.publishAt) {
+            await scheduler?.schedule('publish-post', { postId: item.id }, item.publishAt)
+          }
+        },
+      },
+    }
+  },
+})
+```
+
+## Extension Testing
+
+### Mock Provider for Tests
+
+```typescript
+// test/mocks/scheduler.ts
+export class MockSchedulerProvider implements SchedulerExtension {
+  scheduledJobs: Array<{ name: string; payload: any; runAt: Date }> = []
+
+  async schedule(name: string, payload: any, runAt: Date): Promise<string> {
+    const id = `mock_${Date.now()}`
+    this.scheduledJobs.push({ id, name, payload, runAt })
+    return id
+  }
+
+  async scheduleCron(name: string, payload: any, cronExpression: string): Promise<string> {
+    const id = `mock_cron_${Date.now()}`
+    this.scheduledJobs.push({ id, name, payload, cron: cronExpression })
+    return id
+  }
+
+  async cancel(jobId: string): Promise<void> {
+    this.scheduledJobs = this.scheduledJobs.filter(j => j.id !== jobId)
+  }
+
+  async getStatus(jobId: string): Promise<SchedulerJobStatus> {
+    const job = this.scheduledJobs.find(j => j.id === jobId)
+    if (!job) throw new Error(`Job ${jobId} not found`)
+    return {
+      id: jobId,
+      name: job.name,
+      state: 'pending',
+      runAt: job.runAt,
+    }
+  }
+
+  clear() {
+    this.scheduledJobs = []
+  }
+}
+```
+
+### Test with Mock
+
+```typescript
+// my-plugin.test.ts
+import { describe, it, expect, vi } from 'vitest'
+import { MockSchedulerProvider } from './mocks/scheduler'
+import { myPlugin } from './my-plugin'
+
+describe('My Plugin', () => {
+  it('should schedule post publication', async () => {
+    const mockScheduler = new MockSchedulerProvider()
+
+    const extension = myPlugin.activate({}, { extensions: { scheduler: mockScheduler } })
+
+    // Trigger hook
+    await extension.hooks?.afterCreate?.({
+      item: { id: '123', publishAt: new Date('2025-01-01') }
+    })
+
+    // Verify job was scheduled
+    expect(mockScheduler.scheduledJobs).toHaveLength(1)
+    expect(mockScheduler.scheduledJobs[0].name).toBe('publish-post')
+  })
+})
+```
+
+## Extension Best Practices
+
+### Interface Design
+
+1. **Keep interfaces minimal** - Only include essential methods
+2. **Use async/await** - All methods should be async
+3. **Type safety** - Provide full TypeScript types
+4. **Version carefully** - Use semantic versioning for breaking changes
+
+### Provider Implementation
+
+1. **Handle errors gracefully** - Never throw, always return or reject
+2. **Log operations** - Use the logger extension if available
+3. **Support configuration** - Allow provider-specific options
+4. **Clean up resources** - Implement dispose/cleanup methods
+
+### Documentation
+
+1. **Document the interface** - Clear method descriptions
+2. **Provide examples** - Show common usage patterns
+3. **List providers** - Maintain a list of available providers
+4. **Migration guides** - Help users upgrade between versions
+
+## Next Steps
+
+- Explore [Available Extensions](/docs/extensions/available-extensions)
+- Learn about [Extension Providers](/docs/extensions/providers)
+- Return to [Extensions Overview](/docs/extensions/overview)

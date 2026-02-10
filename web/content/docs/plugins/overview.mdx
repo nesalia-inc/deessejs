@@ -91,6 +91,323 @@ export const config = defineConfig({
 })
 ```
 
+## Plugin Dependencies on Extensions
+
+Plugins can declare dependencies on extensions to access common infrastructure features. This allows plugins to use standardized interfaces for caching, logging, queues, and more.
+
+### Declaring Extension Dependencies
+
+```typescript
+export const cachePlugin = definePlugin({
+  name: 'cache-plugin',
+  extensions: {
+    // Require cache extension
+    cache: true,
+
+    // Optional logger extension
+    logger: false,
+  },
+
+  activate(options, { extensions }) {
+    // Extensions are available here
+    const { cache, logger } = extensions
+
+    return {
+      hooks: {
+        afterCreate: async ({ item }) => {
+          // Use cache extension
+          await cache.set(`item:${item.id}`, item, 3600)
+
+          // Use logger extension if available
+          if (logger) {
+            logger.info('Item cached', { id: item.id })
+          }
+        },
+      },
+    }
+  },
+})
+```
+
+### Required vs Optional Extensions
+
+```typescript
+export const advancedPlugin = definePlugin({
+  name: 'advanced-plugin',
+
+  extensions: {
+    // Required extensions - plugin won't load without them
+    cache: true,      // Required
+    logger: true,     // Required
+    queue: true,      // Required
+
+    // Optional extensions - plugin can work without them
+    search: false,    // Optional
+    events: false,    // Optional
+  },
+
+  activate(options, { extensions }) {
+    const { cache, logger, queue } = extensions
+    const { search, events } = extensions
+
+    return {
+      hooks: {
+        afterCreate: async ({ item }) => {
+          // These are guaranteed to be available
+          await cache.set(`item:${item.id}`, item)
+          logger.info('Created', { id: item.id })
+          await queue.add('process', { itemId: item.id })
+
+          // Check availability before using optional extensions
+          if (search) {
+            await search.index('items').addDocuments([item])
+          }
+
+          if (events) {
+            await events.publish('item.created', item)
+          }
+        },
+      },
+    }
+  },
+})
+```
+
+### Checking Extension Availability
+
+```typescript
+export const flexiblePlugin = definePlugin({
+  name: 'flexible-plugin',
+  extensions: {
+    cache: false,  // Optional
+    logger: false, // Optional
+  },
+
+  activate(options, { extensions }) {
+    return {
+      hooks: {
+        afterCreate: async ({ item }) => {
+          // Gracefully handle missing extensions
+          if (extensions.cache) {
+            await extensions.cache.set(`item:${item.id}`, item, 3600)
+          } else {
+            console.warn('Cache not available, skipping')
+          }
+
+          if (extensions.logger) {
+            extensions.logger.info('Item created', { id: item.id })
+          }
+        },
+      },
+    }
+  },
+})
+```
+
+### Common Extension Usage Patterns
+
+#### Cache Extension
+
+```typescript
+export const seoPlugin = definePlugin({
+  name: 'seo-plugin',
+  extensions: {
+    cache: true,
+  },
+
+  activate(options, { extensions }) {
+    const { cache } = extensions
+
+    return {
+      api: {
+        routes: [
+          {
+            method: 'GET',
+            path: '/api/seo/score',
+            handler: async (req) => {
+              const url = new URL(req.url).searchParams.get('url')
+
+              // Try cache first
+              const cached = await cache.get(`seo:${url}`)
+              if (cached) {
+                return Response.json(cached)
+              }
+
+              // Calculate score
+              const score = await calculateSEOScore(url)
+
+              // Cache result
+              await cache.set(`seo:${url}`, score, 3600)
+
+              return Response.json(score)
+            },
+          },
+        ],
+      },
+    }
+  },
+})
+```
+
+#### Queue Extension
+
+```typescript
+export const newsletterPlugin = definePlugin({
+  name: 'newsletter-plugin',
+  extensions: {
+    queue: true,
+  },
+
+  activate(options, { extensions }) {
+    const { queue } = extensions
+
+    // Register queue worker
+    queue.process('send-newsletter', async (job) => {
+      const { email, subject, content } = job.data
+      await sendEmail(email, subject, content)
+    })
+
+    return {
+      hooks: {
+        afterCreate: async ({ collection, item }) => {
+          if (collection === 'posts') {
+            // Add job to queue
+            await queue.add('send-newsletter', {
+              email: 'subscribers@example.com',
+              subject: `New Post: ${item.title}`,
+              content: item.excerpt,
+            })
+          }
+        },
+      },
+    }
+  },
+})
+```
+
+#### Logger Extension
+
+```typescript
+export const auditPlugin = definePlugin({
+  name: 'audit-plugin',
+  extensions: {
+    logger: true,
+  },
+
+  activate(options, { extensions }) {
+    const { logger } = extensions
+
+    return {
+      hooks: {
+        beforeCreate: async ({ collection, data }) => {
+          logger.info('Creating item', { collection, data: sanitize(data) })
+        },
+        afterCreate: async ({ collection, item }) => {
+          logger.info('Item created', { collection, id: item.id })
+        },
+        beforeUpdate: async ({ collection, id, data }) => {
+          logger.info('Updating item', { collection, id, data: sanitize(data) })
+        },
+        afterDelete: async ({ collection, id }) => {
+          logger.info('Item deleted', { collection, id })
+        },
+      },
+    }
+  },
+})
+```
+
+#### Storage Extension
+
+```typescript
+export const mediaPlugin = definePlugin({
+  name: 'media-plugin',
+  extensions: {
+    storage: true,
+  },
+
+  activate(options, { extensions }) {
+    const { storage } = extensions
+
+    return {
+      hooks: {
+        afterCreate: async ({ collection, item }) => {
+          if (collection === 'media' && item.file) {
+            // Upload to storage
+            const url = await storage.upload(`media/${item.id}`, item.file)
+
+            // Update with URL
+            await db.media.update({
+              where: { id: item.id },
+              data: { url },
+            })
+          }
+        },
+      },
+    }
+  },
+})
+```
+
+### Multiple Extension Providers
+
+Plugins can work with any provider implementation:
+
+```typescript
+// This plugin works with any cache provider (Redis, Memory, etc.)
+export const cachingPlugin = definePlugin({
+  name: 'caching-plugin',
+  extensions: {
+    cache: true,
+  },
+
+  activate(options, { extensions }) {
+    // The plugin doesn't care which provider is used
+    // It could be Redis, Memcached, or in-memory
+    const { cache } = extensions
+
+    return {
+      // ... implementation
+    }
+  },
+})
+
+// Configuration with Redis
+export const config = defineConfig({
+  extensions: {
+    cache: {
+      provider: new RedisCacheProvider(redisClient),
+    },
+  },
+  plugins: [cachingPlugin()],
+})
+```
+
+### Extension Version Compatibility
+
+Plugins can specify minimum extension versions:
+
+```typescript
+export const myPlugin = definePlugin({
+  name: 'my-plugin',
+
+  extensions: {
+    cache: {
+      version: '^2.0.0', // Require cache extension v2 or higher
+    },
+  },
+
+  activate(options, { extensions }) {
+    const { cache } = extensions
+
+    // Cache is guaranteed to have v2+ features
+    return {
+      // ... implementation
+    }
+  },
+})
+```
+
 ## Official Plugins
 
 ### Content Plugins
