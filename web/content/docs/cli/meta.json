@@ -1,0 +1,10 @@
+{
+  "title": "CLI",
+  "description": "Command Line Interface documentation",
+  "icon": "Terminal",
+  "pages": [
+    "overview",
+    "commands",
+    "examples"
+  ]
+}

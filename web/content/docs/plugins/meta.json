@@ -1,0 +1,11 @@
+{
+  "title": "Plugins",
+  "description": "Plugin System documentation",
+  "icon": "Puzzle",
+  "pages": [
+    "overview",
+    "creating-plugins",
+    "examples",
+    "api-reference"
+  ]
+}

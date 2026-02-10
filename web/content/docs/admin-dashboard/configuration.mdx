@@ -1,0 +1,509 @@
+---
+title: Dashboard Configuration
+description: Configure and customize the Admin Dashboard
+icon: Settings
+---
+
+# Dashboard Configuration
+
+Customize the Admin Dashboard to match your brand and workflow through the `deesse.config.ts` configuration file.
+
+## Basic Configuration
+
+### Dashboard Setup
+
+```typescript
+// deesse.config.ts
+import { defineConfig } from '@deessejs/core'
+
+export const config = defineConfig({
+  admin: {
+    // Dashboard configuration
+    branding: {
+      title: 'My App Admin',
+      logo: '/logo.png',
+      favicon: '/favicon.ico',
+    },
+    // ... more options
+  },
+})
+```
+
+## Branding & Appearance
+
+### Custom Branding
+
+```typescript
+admin: {
+  branding: {
+    title: 'My Application',           // Dashboard title
+    logo: '/images/logo.svg',           // Logo image path
+    logoWidth: 40,                      // Logo width in pixels
+    favicon: '/favicon.ico',            // Favicon path
+    theme: 'system',                    // 'light' | 'dark' | 'system'
+  },
+}
+```
+
+### Color Customization
+
+```typescript
+admin: {
+  branding: {
+    colors: {
+      primary: '#3b82f6',               // Primary brand color
+      secondary: '#64748b',             // Secondary color
+      accent: '#8b5cf6',                // Accent color
+      background: '#ffffff',            // Background color
+      surface: '#f8fafc',               // Surface color
+    },
+  },
+}
+```
+
+### Custom CSS
+
+```typescript
+admin: {
+  customCss: './styles/admin.css',      // Path to custom CSS file
+}
+```
+
+## Navigation Configuration
+
+### Custom Sidebar Items
+
+```typescript
+admin: {
+  navigation: [
+    {
+      type: 'group',
+      title: 'Content',
+      items: ['posts', 'pages', 'media'],
+    },
+    {
+      type: 'link',
+      title: 'Analytics',
+      href: '/admin/analytics',
+      icon: 'BarChart',
+    },
+    {
+      type: 'separator',
+    },
+    {
+      type: 'group',
+      title: 'Settings',
+      items: ['users', 'settings'],
+    },
+  ],
+}
+```
+
+### Hide Collections from Sidebar
+
+```typescript
+admin: {
+  navigation: {
+    exclude: ['internal', 'logs'],      // Collections to hide
+  },
+}
+```
+
+## Custom Pages
+
+### Adding Custom Pages
+
+```typescript
+admin: {
+  customPages: [
+    {
+      id: 'analytics',
+      title: 'Analytics',
+      path: '/analytics',
+      component: './admin/pages/analytics.tsx',
+      icon: 'BarChart',
+      permissions: ['analytics:view'],   // Required permissions
+    },
+  ],
+}
+```
+
+### Custom Page Example
+
+```typescript
+// admin/pages/analytics.tsx
+export default function AnalyticsPage() {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Analytics</h1>
+      {/* Your analytics dashboard */}
+    </div>
+  )
+}
+```
+
+## List View Configuration
+
+### Default List View Settings
+
+```typescript
+admin: {
+  listView: {
+    defaultPageSize: 20,                // Items per page
+    pageSizeOptions: [10, 20, 50, 100],
+    sortable: true,                      // Enable sorting
+    filterable: true,                    // Enable filtering
+    columns: 'auto',                     // 'auto' | custom columns
+  },
+}
+```
+
+### Custom Columns per Collection
+
+```typescript
+collections: [
+  {
+    name: 'posts',
+    admin: {
+      columns: [
+        { field: 'title', label: 'Title', sortable: true },
+        { field: 'status', label: 'Status', width: 120 },
+        { field: 'createdAt', label: 'Created', format: 'date' },
+        { field: 'author', label: 'Author' },
+      ],
+      defaultSort: { field: 'createdAt', direction: 'desc' },
+    },
+  },
+]
+```
+
+## Field Configuration
+
+### Admin Field Options
+
+```typescript
+collections: [
+  {
+    name: 'posts',
+    fields: [
+      {
+        name: 'title',
+        type: 'string',
+        admin: {
+          label: 'Post Title',           // Custom label
+          placeholder: 'Enter title...',
+          description: 'The main title',
+          width: 'full',                 // 'half' | 'full' | number
+          position: 1,                   // Field order
+          readOnly: false,               // Make read-only
+          hidden: false,                 // Hide from admin
+          conditional: {                 // Conditional visibility
+            field: 'type',
+            value: 'article',
+          },
+        },
+      },
+    ],
+  },
+]
+```
+
+### Rich Text Editor Options
+
+```typescript
+fields: [
+  {
+    name: 'content',
+    type: 'richtext',
+    admin: {
+      editor: 'tipTap',                  // 'tipTap' | 'ckeditor' | custom
+      toolbar: ['bold', 'italic', 'link', 'image', 'code'],
+      plugins: ['alignment', 'table'],
+    },
+  },
+]
+```
+
+## Form Configuration
+
+### Form Layout
+
+```typescript
+collections: [
+  {
+    name: 'posts',
+    admin: {
+      form: {
+        layout: [
+          { fields: ['title', 'slug'], columns: 2 },
+          { fields: ['content'], full: true },
+          {
+            label: 'Metadata',
+            fields: ['status', 'publishedAt'],
+            collapsible: true,
+            collapsed: true,
+          },
+        ],
+      },
+    },
+  },
+]
+```
+
+### Field Groups
+
+```typescript
+admin: {
+  form: {
+    groups: [
+      {
+        id: 'content',
+        label: 'Content',
+        fields: ['title', 'body'],
+        icon: 'FileText',
+      },
+      {
+        id: 'seo',
+        label: 'SEO',
+        fields: ['metaTitle', 'metaDescription'],
+        icon: 'Search',
+      },
+    ],
+  },
+}
+```
+
+## Dashboard Widgets
+
+### Custom Widgets
+
+```typescript
+admin: {
+  dashboard: {
+    widgets: [
+      {
+        id: 'stats',
+        component: './admin/widgets/stats.tsx',
+        position: 'top',
+        size: 'large',
+      },
+      {
+        id: 'recent-activity',
+        component: './admin/widgets/activity.tsx',
+        position: 'right',
+        size: 'medium',
+      },
+    ],
+  },
+}
+```
+
+### Widget Example
+
+```typescript
+// admin/widgets/stats.tsx
+export default function StatsWidget() {
+  const stats = useCollectionStats()
+
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      <StatCard label="Total Posts" value={stats.posts} />
+      <StatCard label="Published" value={stats.published} />
+      <StatCard label="Drafts" value={stats.drafts} />
+    </div>
+  )
+}
+```
+
+## Permissions & Access
+
+### Role-Based Access
+
+```typescript
+admin: {
+  permissions: {
+    admin: ['*'],                        // Full access
+    editor: [
+      'posts:read',
+      'posts:write',
+      'media:upload',
+    ],
+    author: [
+      'posts:create',
+      'posts:update:own',
+    ],
+  },
+}
+```
+
+### Custom Permissions
+
+```typescript
+admin: {
+  permissions: {
+    custom: [
+      {
+        name: 'content-manager',
+        permissions: [
+          'posts:*',
+          'pages:read',
+          'media:upload',
+        ],
+      },
+    ],
+  },
+}
+```
+
+## Internationalization
+
+### Multi-Language Dashboard
+
+```typescript
+admin: {
+  i18n: {
+    defaultLocale: 'en',
+    locales: [
+      { code: 'en', label: 'English' },
+      { code: 'fr', label: 'Français' },
+      { code: 'es', label: 'Español' },
+    ],
+    fallback: 'en',
+  },
+}
+```
+
+### Custom Translations
+
+```typescript
+admin: {
+  i18n: {
+    translations: {
+      fr: {
+        'nav.posts': 'Articles',
+        'nav.pages': 'Pages',
+        'actions.save': 'Enregistrer',
+        'actions.publish': 'Publier',
+      },
+    },
+  },
+}
+```
+
+## Advanced Configuration
+
+### Custom Middleware
+
+```typescript
+admin: {
+  middleware: {
+    before: ['./admin/middleware/auth.ts'],
+    after: ['./admin/middleware/logging.ts'],
+  },
+}
+```
+
+### API Configuration
+
+```typescript
+admin: {
+  api: {
+    baseUrl: '/api/admin',
+    timeout: 30000,
+    retryAttempts: 3,
+  },
+}
+```
+
+### Cache Configuration
+
+```typescript
+admin: {
+  cache: {
+    enabled: true,
+    ttl: 300,                           // Time to live in seconds
+    strategy: 'swr',                    // 'swr' | 'stale-while-revalidate'
+  },
+}
+```
+
+## Environment Variables
+
+```bash
+# .env.local
+ADMIN_ENABLED=true
+ADMIN_PATH=/admin
+ADMIN_DEFAULT_ROLE=admin
+ADMIN_SESSION_SECRET=your-secret-key
+```
+
+### Using Environment Variables in Config
+
+```typescript
+admin: {
+  enabled: process.env.ADMIN_ENABLED === 'true',
+  path: process.env.ADMIN_PATH || '/admin',
+  session: {
+    secret: process.env.ADMIN_SESSION_SECRET,
+  },
+}
+```
+
+## Complete Example
+
+```typescript
+// deesse.config.ts
+import { defineConfig } from '@deessejs/core'
+
+export const config = defineConfig({
+  admin: {
+    branding: {
+      title: 'My Application',
+      logo: '/logo.svg',
+      theme: 'system',
+      colors: {
+        primary: '#3b82f6',
+      },
+    },
+
+    navigation: [
+      { type: 'group', title: 'Content', items: ['posts', 'pages'] },
+      { type: 'link', title: 'Analytics', href: '/admin/analytics', icon: 'BarChart' },
+    ],
+
+    customPages: [
+      {
+        id: 'analytics',
+        title: 'Analytics',
+        path: '/analytics',
+        component: './admin/pages/analytics.tsx',
+        icon: 'BarChart',
+      },
+    ],
+
+    listView: {
+      defaultPageSize: 25,
+      pageSizeOptions: [10, 25, 50, 100],
+    },
+
+    permissions: {
+      admin: ['*'],
+      editor: ['content:read', 'content:write'],
+    },
+
+    i18n: {
+      defaultLocale: 'en',
+      locales: [
+        { code: 'en', label: 'English' },
+        { code: 'fr', label: 'Français' },
+      ],
+    },
+  },
+})
+```
+
+## Next Steps
+
+- Learn about [Content Management](/docs/admin-dashboard/content-management)
+- Explore [User Management](/docs/admin-dashboard/user-management)
+- Discover [Plugin Development](/docs/plugins/creating-plugins)

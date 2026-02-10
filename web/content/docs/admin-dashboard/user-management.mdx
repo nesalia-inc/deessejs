@@ -1,0 +1,364 @@
+---
+title: User Management
+description: Manage users, roles, and permissions in the Admin Dashboard
+icon: Users
+---
+
+# User Management
+
+The Admin Dashboard includes comprehensive user management capabilities, allowing you to control who can access your admin panel and what actions they can perform.
+
+## Default Admin User
+
+When you first set up DeesseJS, a default admin account is created automatically:
+
+```bash
+Email: admin@deessejs.local
+Password: admin123
+```
+
+**⚠️ Important:** Change the default password immediately after your first login!
+
+## User Roles
+
+DeesseJS comes with four built-in roles:
+
+### Admin
+**Full access** to all features and settings
+- Create, edit, and delete all content
+- Manage users and roles
+- Configure system settings
+- Install and manage plugins
+- View system logs
+
+### Editor
+**Content management** access
+- Create, edit, and publish all content
+- Upload and manage media
+- No access to system settings
+- Cannot manage users
+
+### Author
+**Limited content** access
+- Create and edit own content only
+- Cannot delete content
+- Cannot publish (requires editor approval)
+- Read-only access to other content
+
+### Viewer
+**Read-only** access
+- View all content
+- No editing capabilities
+- Useful for stakeholders who need visibility
+
+## Managing Users
+
+### Creating Users
+
+**Via Dashboard:**
+1. Navigate to **Users** section
+2. Click **+ New User**
+3. Fill in user details:
+   - Email (required, unique)
+   - Name
+   - Role
+   - Password (or send invitation email)
+4. Click **Create**
+
+**Via API:**
+```typescript
+import { db } from '@deessejs/db'
+
+await db.users.create({
+  data: {
+    email: 'user@example.com',
+    name: 'John Doe',
+    role: 'editor',
+    password: 'secure-password',
+  },
+})
+```
+
+### Editing Users
+
+1. Go to **Users** section
+2. Click on the user you want to edit
+3. Update user information:
+   - Change role
+   - Reset password
+   - Update profile
+4. Save changes
+
+### Deleting Users
+
+**Soft Delete:**
+1. Select user from the list
+2. Click **Delete**
+3. User is moved to trash and can be restored
+
+**Permanent Delete:**
+1. Go to **Trash**
+2. Select user
+3. Click **Delete Permanently**
+
+> **Warning:** Permanent deletion cannot be undone. Consider soft deleting instead.
+
+### User Status
+
+Users can have different statuses:
+- **Active**: User can log in and access the admin panel
+- **Inactive**: User cannot log in (account disabled)
+- **Pending**: User has been invited but hasn't accepted yet
+- **Suspended**: User temporarily suspended due to policy violations
+
+## Custom Roles
+
+Create roles with specific permission sets:
+
+### Creating a Custom Role
+
+```typescript
+// deesse.config.ts
+export const config = defineConfig({
+  auth: {
+    roles: [
+      {
+        name: 'content-manager',
+        label: 'Content Manager',
+        description: 'Can manage posts and pages',
+        permissions: [
+          'posts:read',
+          'posts:write',
+          'posts:delete',
+          'pages:read',
+          'pages:write',
+          'media:upload',
+        ],
+      },
+      {
+        name: 'seo-specialist',
+        label: 'SEO Specialist',
+        description: 'Can edit SEO fields',
+        permissions: [
+          'posts:read',
+          'posts:update:seo',
+          'pages:read',
+          'pages:update:seo',
+        ],
+      },
+    ],
+  },
+})
+```
+
+### Permission Format
+
+Permissions follow the pattern: `resource:action:scope`
+
+**Resources:** `posts`, `pages`, `users`, `settings`, `media`, etc.
+**Actions:** `read`, `write`, `create`, `update`, `delete`
+**Scopes:** (optional) `own`, `seo`, `published`
+
+Examples:
+- `posts:read` - Can read all posts
+- `posts:write` - Can create and edit posts
+- `posts:delete` - Can delete posts
+- `posts:update:own` - Can update own posts only
+- `posts:update:seo` - Can update SEO fields only
+
+### Using Custom Roles in Dashboard
+
+1. Create the role in `deesse.config.ts`
+2. Restart the development server
+3. The role appears in the role dropdown when creating/editing users
+
+## Authentication
+
+### Password Requirements
+
+Configure password policies:
+
+```typescript
+auth: {
+  passwordPolicy: {
+    minLength: 8,
+    requireUppercase: true,
+    requireLowercase: true,
+    requireNumbers: true,
+    requireSpecialChars: true,
+    preventCommonPasswords: true,
+    preventPersonalInfo: true,
+  },
+}
+```
+
+### Session Management
+
+```typescript
+auth: {
+  session: {
+    maxAge: 60 * 60 * 24 * 7,           // 7 days
+    updateAge: 60 * 60 * 24,            // 24 hours
+    cookieName: 'deesse-session',
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  },
+}
+```
+
+### Two-Factor Authentication (2FA)
+
+Enable 2FA for enhanced security:
+
+```typescript
+auth: {
+  twoFactor: {
+    enabled: true,
+    issuer: 'MyApp',
+    secretLength: 32,
+    digits: 6,
+    period: 30,
+  },
+}
+```
+
+Users can enable 2FA in their profile settings.
+
+## Team Management
+
+### User Groups
+
+Organize users into groups for easier management:
+
+```typescript
+auth: {
+  groups: [
+    {
+      name: 'editorial-team',
+      label: 'Editorial Team',
+      members: ['user1@example.com', 'user2@example.com'],
+      permissions: ['content:read', 'content:write'],
+    },
+    {
+      name: 'marketing-team',
+      label: 'Marketing Team',
+      members: ['user3@example.com', 'user4@example.com'],
+      permissions: ['content:read', 'analytics:view'],
+    },
+  ],
+}
+```
+
+### Content Ownership
+
+Assign content ownership to track who created what:
+
+```typescript
+collections: [
+  {
+    name: 'posts',
+    fields: [
+      // ... other fields
+      {
+        name: 'author',
+        type: 'reference',
+        relation: 'users',
+        admin: {
+          defaultValue: ({ user }) => user.id,
+        },
+      },
+    ],
+  },
+]
+```
+
+## Activity & Audit Logs
+
+Track all user actions in the admin dashboard:
+
+### Viewing Logs
+
+1. Navigate to **Settings** > **Activity Logs**
+2. Filter by:
+   - User
+   - Action type
+   - Resource
+   - Date range
+3. View detailed information about each action
+
+### Log Retention
+
+```typescript
+auth: {
+  auditLogging: {
+    enabled: true,
+    retention: 90,                      // Days to keep logs
+    logLevel: 'info',                   // 'debug' | 'info' | 'warn' | 'error'
+    includeRequestBody: false,          // Log request bodies (security consideration)
+  },
+}
+```
+
+### Logged Actions
+
+All administrative actions are logged:
+- User login/logout
+- Content creation, updates, deletion
+- Settings changes
+- Role assignments
+- Plugin installations
+
+## User Profile
+
+Each user can manage their own profile:
+
+### Profile Settings
+
+- **Display Name**: Name shown in the UI
+- **Email**: Email address for login
+- **Password**: Change password
+- **Avatar**: Upload profile picture
+- **Timezone**: Set timezone for date display
+- **Language**: Choose interface language
+- **Two-Factor Auth**: Enable/disable 2FA
+
+### API Keys
+
+Users can generate API keys for programmatic access:
+1. Go to **Profile** > **API Keys**
+2. Click **+ Generate API Key**
+3. Give the key a name
+4. Copy the key (shown only once)
+5. Use in API requests: `Authorization: Bearer <key>`
+
+## Security Best Practices
+
+### Password Security
+- Enforce strong password requirements
+- Require password changes periodically
+- Never store passwords in plain text
+- Use HTTPS for all admin requests
+
+### Access Control
+- Apply the principle of least privilege
+- Regularly review user permissions
+- Remove access for former employees immediately
+- Use 2FA for admin accounts
+
+### Session Management
+- Set appropriate session timeouts
+- Implement concurrent session limits
+- Log all authentication attempts
+- Monitor for suspicious activity
+
+### Audit & Compliance
+- Keep detailed audit logs
+- Regularly review user activity
+- Implement compliance controls (GDPR, SOC2)
+- Provide data export/deletion capabilities
+
+## Next Steps
+
+- Learn about [Dashboard Configuration](/docs/admin-dashboard/configuration)
+- Explore [Content Management](/docs/admin-dashboard/content-management)
+- Discover [Plugin Integration](/docs/plugins)

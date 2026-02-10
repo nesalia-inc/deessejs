@@ -1,0 +1,564 @@
+---
+title: Plugin API Reference
+description: Complete API reference for DeesseJS plugins
+icon: Book
+---
+
+# Plugin API Reference
+
+Complete reference for the DeesseJS Plugin System API.
+
+## definePlugin
+
+The main function for defining a plugin.
+
+```typescript
+import { definePlugin } from '@deessejs/core'
+
+const plugin = definePlugin<PluginOptions>(config)
+```
+
+### Configuration
+
+```typescript
+interface PluginConfig<Options = any> {
+  name: string                    // Unique plugin identifier
+  version: string                 // Semantic version
+  description?: string            // Plugin description
+  author?: string                 // Plugin author
+  license?: string                // Plugin license
+
+  activate: (options: Options) => PluginExtension | void
+  deactivate?: () => void | Promise<void>
+}
+```
+
+### Plugin Extension
+
+```typescript
+interface PluginExtension {
+  collections?: CollectionExtension
+  admin?: AdminExtension
+  api?: ApiExtension
+  hooks?: HooksExtension
+  fields?: FieldExtension[]
+  context?: Record<string, any>
+}
+```
+
+## Collection Extension
+
+Extend or create collections.
+
+### Extend Collections
+
+```typescript
+collections: {
+  extend: {
+    [collectionName: string]: {
+      fields?: Field[]
+      hooks?: CollectionHooks
+      admin?: CollectionAdminConfig
+    }
+  }
+}
+```
+
+### Create Collections
+
+```typescript
+collections: {
+  create: CollectionDefinition[]
+}
+```
+
+### Example
+
+```typescript
+export const plugin = definePlugin({
+  name: 'my-plugin',
+  activate() {
+    return {
+      collections: {
+        extend: {
+          posts: {
+            fields: [
+              { name: 'customField', type: 'string' }
+            ],
+            hooks: {
+              beforeCreate: async ({ data }) => {
+                console.log('Creating post:', data)
+              }
+            }
+          }
+        },
+        create: [
+          {
+            name: 'comments',
+            fields: [
+              { name: 'content', type: 'text' },
+              { name: 'post', type: 'reference', relation: 'posts' }
+            ]
+          }
+        ]
+      }
+    }
+  }
+})
+```
+
+## Admin Extension
+
+Extend the admin dashboard.
+
+```typescript
+interface AdminExtension {
+  navigation?: NavigationItem[]
+  pages?: AdminPage[]
+  widgets?: AdminWidget[]
+  settings?: AdminSetting[]
+  branding?: BrandingConfig
+}
+```
+
+### Navigation Items
+
+```typescript
+type NavigationItem =
+  | NavigationLink
+  | NavigationGroup
+  | NavigationSeparator
+
+interface NavigationLink {
+  type: 'link'
+  title: string
+  href: string
+  icon?: string
+  permissions?: string[]
+}
+
+interface NavigationGroup {
+  type: 'group'
+  title: string
+  items: string[]  // Collection names or custom paths
+  icon?: string
+}
+
+interface NavigationSeparator {
+  type: 'separator'
+}
+```
+
+### Admin Pages
+
+```typescript
+interface AdminPage {
+  id: string
+  title: string
+  path: string
+  component: string            // Path to component
+  icon?: string
+  permissions?: string[]
+  layout?: 'default' | 'blank'
+}
+```
+
+### Admin Widgets
+
+```typescript
+interface AdminWidget {
+  id: string
+  component: string            // Path to component
+  position: 'top' | 'left' | 'right' | 'bottom'
+  size: 'small' | 'medium' | 'large'
+}
+```
+
+### Admin Settings
+
+```typescript
+interface AdminSetting {
+  id: string
+  label: string
+  component: string
+  save?: (values: any) => Promise<void>
+  load?: () => Promise<any>
+}
+```
+
+## API Extension
+
+Extend the API with custom routes.
+
+```typescript
+interface ApiExtension {
+  routes: ApiRoute[]
+  middleware?: ApiMiddleware[]
+}
+
+interface ApiRoute {
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+  path: string
+  handler: string              // Path to handler
+  middleware?: string[]
+}
+```
+
+### Route Handler
+
+```typescript
+// api/custom/route.ts
+import { NextRequest, NextResponse } from 'next/server'
+
+export async function GET(request: NextRequest) {
+  const data = await fetchData()
+  return NextResponse.json(data)
+}
+
+export async function POST(request: NextRequest) {
+  const body = await request.json()
+  const result = await processData(body)
+  return NextResponse.json(result)
+}
+```
+
+## Hooks Extension
+
+Hook into DeesseJS lifecycle events.
+
+```typescript
+interface HooksExtension {
+  serverInit?: (context: ServerContext) => void | Promise<void>
+  request?: (context: RequestContext) => void | Promise<void>
+
+  beforeCreate?: (context: ItemContext) => void | Promise<any>
+  afterCreate?: (context: ItemContext) => void | Promise<void>
+  beforeUpdate?: (context: ItemContext) => void | Promise<any>
+  afterUpdate?: (context: ItemContext) => void | Promise<void>
+  beforeDelete?: (context: ItemContext) => void | Promise<void>
+  afterDelete?: (context: ItemContext) => void | Promise<void>
+}
+```
+
+### Hook Contexts
+
+#### ServerContext
+
+```typescript
+interface ServerContext {
+  app: any
+  config: DeesseConfig
+  env: Record<string, string>
+}
+```
+
+#### RequestContext
+
+```typescript
+interface RequestContext {
+  req: NextRequest
+  res: NextResponse
+  user?: User
+}
+```
+
+#### ItemContext
+
+```typescript
+interface ItemContext {
+  collection: string
+  id?: string
+  data?: any
+  item?: any
+  user?: User
+}
+```
+
+### Hook Examples
+
+```typescript
+hooks: {
+  beforeCreate: async ({ collection, data }) => {
+    // Modify data before creation
+    data.createdAt = new Date()
+    data.createdBy = user.id
+    return data
+  },
+
+  afterCreate: async ({ collection, item }) => {
+    // Perform side effects
+    await sendNotification(collection, item)
+  },
+
+  beforeUpdate: async ({ collection, id, data }) => {
+    // Validate or modify update
+    data.updatedAt = new Date()
+    return data
+  },
+
+  afterUpdate: async ({ collection, item }) => {
+    // Clear cache, send webhooks, etc.
+    await clearCache(collection, item.id)
+  }
+}
+```
+
+## Field Extension
+
+Create custom field types.
+
+```typescript
+interface FieldExtension {
+  name: string
+  component: string              // Path to component
+  validate?: (value: any) => boolean | string
+  sanitize?: (value: any) => any
+  defaultValue?: any
+}
+```
+
+### Field Component
+
+```typescript
+// fields/custom-field.tsx
+'use client'
+
+import { ChangeEvent } from 'react'
+
+interface CustomFieldProps {
+  value: any
+  onChange: (value: any) => void
+  field: FieldConfig
+  error?: string
+}
+
+export function CustomField({
+  value,
+  onChange,
+  field,
+  error
+}: CustomFieldProps) {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value)
+  }
+
+  return (
+    <div>
+      <label>{field.label}</label>
+      <input
+        type="text"
+        value={value || ''}
+        onChange={handleChange}
+      />
+      {error && <span className="error">{error}</span>}
+    </div>
+  )
+}
+```
+
+### Register Custom Field
+
+```typescript
+export const plugin = definePlugin({
+  name: 'custom-fields',
+  activate() {
+    return {
+      fields: [
+        {
+          name: 'custom-field',
+          component: './fields/custom-field',
+          validate: (value) => {
+            if (!value) return 'This field is required'
+            return true
+          },
+          defaultValue: '',
+        },
+      ],
+    }
+  },
+})
+```
+
+## Plugin Context
+
+Provide context and utilities to other parts of the application.
+
+```typescript
+context: {
+  [key: string]: any
+}
+```
+
+### Example
+
+```typescript
+export const plugin = definePlugin({
+  name: 'api-client',
+  activate({ apiKey }) {
+    const client = new ApiClient(apiKey)
+
+    return {
+      context: {
+        api: client,
+        // Accessible via: usePluginContext('api')
+      },
+    }
+  },
+})
+```
+
+## Plugin Options
+
+Define configuration options for your plugin.
+
+```typescript
+interface PluginOptions {
+  [key: string]: any
+}
+
+export const plugin = definePlugin<PluginOptions>({
+  name: 'configurable-plugin',
+  activate(options) {
+    // options is typed as PluginOptions
+    console.log('API Key:', options.apiKey)
+    console.log('Enabled:', options.enabled)
+  },
+})
+```
+
+### Using Options
+
+```typescript
+// deesse.config.ts
+export const config = defineConfig({
+  plugins: [
+    configurablePlugin({
+      apiKey: process.env.API_KEY,
+      enabled: true,
+      timeout: 5000,
+    }),
+  ],
+})
+```
+
+## Utility Functions
+
+### Plugin Logger
+
+```typescript
+import { createLogger } from '@deessejs/core'
+
+const logger = createLogger('my-plugin')
+
+logger.info('Plugin activated')
+logger.warn('Warning message')
+logger.error('Error occurred', error)
+```
+
+### Plugin Storage
+
+```typescript
+import { createPluginStorage } from '@deessejs/core'
+
+const storage = createPluginStorage('my-plugin')
+
+await storage.set('key', 'value')
+const value = await storage.get('key')
+await storage.delete('key')
+```
+
+### Plugin Events
+
+```typescript
+import { createEventEmitter } from '@deessejs/core'
+
+const emitter = createEventEmitter('my-plugin')
+
+emitter.on('event-name', (data) => {
+  console.log('Event received:', data)
+})
+
+emitter.emit('event-name', { some: 'data' })
+```
+
+## TypeScript Support
+
+### Type Definitions
+
+```typescript
+// types.ts
+export interface PluginOptions {
+  apiKey: string
+  enabled?: boolean
+  timeout?: number
+}
+
+export interface PluginContext {
+  client: ApiClient
+  logger: Logger
+}
+
+export const plugin = definePlugin<PluginOptions, PluginContext>({
+  name: 'typed-plugin',
+  activate(options: PluginOptions): PluginExtension<PluginContext> {
+    // Full type safety
+  },
+})
+```
+
+### Type Exports
+
+```typescript
+// Export types for plugin users
+export type { PluginOptions, PluginConfig }
+export type { CustomFieldProps }
+```
+
+## Best Practices
+
+### Performance
+
+```typescript
+// Lazy load heavy components
+component: () => import('./HeavyComponent')
+
+// Cache expensive operations
+const cached = useMemo(() => expensiveOperation(), [deps])
+```
+
+### Error Handling
+
+```typescript
+try {
+  await riskyOperation()
+} catch (error) {
+  logger.error('Operation failed', error)
+  // Provide fallback or graceful degradation
+}
+```
+
+### Cleanup
+
+```typescript
+export const plugin = definePlugin({
+  name: 'my-plugin',
+  activate() {
+    const interval = setInterval(doSomething, 1000)
+
+    return {
+      // Cleanup on deactivate
+      dispose: () => clearInterval(interval)
+    }
+  },
+
+  deactivate() {
+    // Cleanup logic
+  },
+})
+```
+
+## Next Steps
+
+- Learn how to [Create Plugins](/docs/plugins/creating-plugins)
+- View [Plugin Examples](/docs/plugins/examples)
+- Return to [Plugins Overview](/docs/plugins/overview)
