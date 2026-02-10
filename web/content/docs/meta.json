@@ -9,10 +9,18 @@
     "what-is-deessejs",
     "comparison",
     "---Admin dashboard---",
-    "admin-dashboard",
+    "admin-dashboard/overview",
+    "admin-dashboard/content-management",
+    "admin-dashboard/dashboard-configuration",
+    "admin-dashboard/user-management",
     "---CLI---",
-    "cli",
+    "cli/commands",
+    "cli/examples",
+    "cli/overview",
     "---Plugins---",
-    "plugins"
+    "plugins/overview",
+    "plugins/creating-plugins",
+    "plugins/api-reference",
+    "plugins/examples"
   ]
 }
