@@ -1,49 +1,236 @@
 ---
 title: Getting Started
 description: Get started with DeesseJS - A modern CMS framework for Next.js
-icon: Rocket
 ---
 
 # Getting Started
 
 Welcome to DeesseJS! This guide will help you get started with building modern CMS applications using DeesseJS and Next.js.
 
-## What You'll Learn
+## What's Included
 
-DeesseJS is a headless CMS framework built specifically for Next.js that provides collection-based content management, visual page editing, and auto-generated APIs - all with full TypeScript support.
+When you create a new DeesseJS application, **everything is set up and ready to use**:
 
-### Explore the Documentation
+- ✅ **shadcn/ui Components** - Beautiful UI components pre-installed
+- ✅ **Authentication System** - Login/signup pages working out of the box
+- ✅ **Admin Dashboard** - Fully functional admin interface
+- ✅ **Protected Routes** - Auth-protected pages configured
+- ✅ **State Management** - TanStack Query, Zustand, and nuqs included
+- ✅ **Styling** - Tailwind CSS with custom theme
+- ✅ **TypeScript** - Full type safety
 
-- **[What is DeesseJS?](/docs/what-is-deessejs)** - Learn about the framework and its features
-- **[Comparison](/docs/comparison)** - See how DeesseJS compares to other CMS solutions
+**No manual configuration needed** - everything just works!
 
 ## Quick Start
 
-Get up and running with DeesseJS in just a few minutes:
-
-### 1. Create a New Project
+### Create a New Project
 
 ```bash
 npx create-deessejs-app my-app
 cd my-app
 ```
 
-### 2. Start the Development Server
+During setup, you'll be prompted to:
+1. **Enter your database connection string**
+2. **Create your first admin user** (email and password)
+
+That's it! Your application is ready.
+
+### Start Development
 
 ```bash
 npm run dev
 ```
 
-### 3. Open Your Browser
+### Access Your Application
 
-Navigate to [http://localhost:3000](http://localhost:3000) to see your application.
+- **Home Page**: http://localhost:3000 (protected by auth)
+- **Login**: http://localhost:3000/login
+- **Sign Up**: http://localhost:3000/signup
+- **Admin Dashboard**: http://localhost:3000/admin
+
+## What You Get Out of the Box
+
+### Pre-Built Pages
+
+Your new application includes these pages:
+
+**Authentication Pages:**
+- `/login` - Login form with email/password
+- `/signup` - Registration form
+- `/forgot-password` - Password reset
+
+**Protected Pages:**
+- `/` - Home page (requires login)
+- `/dashboard` - User dashboard
+- `/admin/[...slug]` - Admin dashboard
+
+### UI Components
+
+shadcn/ui components are pre-installed and ready to use:
+
+```typescript
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Table } from '@/components/ui/table'
+
+// All components are already available!
+```
+
+Available components:
+- Accordion, Alert, Avatar, Badge
+- Button, Calendar, Card, Checkbox
+- Dialog, Dropdown Menu, Form
+- Input, Label, Select, Table
+- Tabs, Toast, Tooltip, and more...
+
+### Authentication Ready
+
+Auth is configured and working:
+
+```typescript
+// Server components are protected by default
+import { getServerSession } from '@deessejs/auth'
+
+export default async function HomePage() {
+  const session = await getServerSession()
+
+  if (!session) {
+    redirect('/login')
+  }
+
+  return (
+    <div>
+      <h1>Welcome, {session.user.name}!</h1>
+    </div>
+  )
+}
+```
+
+### Admin Dashboard
+
+The admin dashboard is fully functional:
+
+- **Content Management**: Manage collections, media, users
+- **Marketplace**: Browse and install plugins
+- **Settings**: Configure all aspects of your app
+- **Logs**: View system logs and errors
+
+Access it at `/admin` with your admin credentials.
+
+### State Management
+
+Three powerful state management solutions included:
+
+```typescript
+// TanStack Query - Server state
+import { useQuery } from '@deessejs/query'
+const { data } = useQuery({ queryKey: ['posts'], queryFn: fetchPosts })
+
+// Zustand - Client state
+import { useAuthStore } from '@/store/auth'
+const user = useAuthStore((state) => state.user)
+
+// nuqs - URL state
+import { useQueryState } from 'nuqs'
+const [search, setSearch] = useQueryState('search')
+```
+
+## Project Structure
+
+```
+my-app/
+├── app/
+│   ├── (auth)/              # Auth routes
+│   │   ├── login/
+│   │   └── signup/
+│   ├── admin/               # Admin dashboard
+│   │   └── [...slug]/
+│   ├── dashboard/           # User dashboard
+│   ├── api/                 # API routes
+│   ├── layout.tsx           # Root layout
+│   └── page.tsx             # Home page
+├── components/
+│   ├── ui/                  # shadcn/ui components
+│   └── /*                  # Other components
+├── lib/
+│   ├── db.ts                # Database client
+│   ├── auth.ts              # Auth configuration
+│   └── utils.ts             # Utilities
+├── store/
+│   ├── auth.ts              # Zustand stores
+│   └── /*                  # Other stores
+└── deesse.config.ts         # DeesseJS configuration
+```
+
+## CLI Features
+
+The CLI provides many commands to enhance your project:
+
+### Generate Collections
+
+```bash
+# Create a new collection
+npx deessejs g collection products
+
+# With fields
+npx deessejs g collection posts \
+  --fields title:string,content:richtext,published:boolean
+```
+
+### Generate Pages
+
+```bash
+# Generate a new page
+npx deessejs g page about
+
+# Generate admin page
+npx deessejs g admin analytics
+```
+
+### Generate Components
+
+```bash
+# Generate a component with shadcn/ui
+npx deessejs g component ProductCard
+
+# Generate form component
+npx deessejs g form ContactForm
+```
+
+### Database Commands
+
+```bash
+# Push schema to database
+npx deessejs db:push
+
+# Open Prisma Studio
+npx deessejs db:studio
+
+# Reset database
+npx deessejs db:reset
+```
+
+### Plugin Management
+
+```bash
+# Add a plugin
+npx deessejs plugin add @deessejs/plugin-seo
+
+# List plugins
+npx deessejs plugin:list
+
+# Remove plugin
+npx deessejs plugin remove @deessejs/plugin-seo
+```
 
 ## Next Steps
 
 - Learn [What is DeesseJS?](/docs/what-is-deessejs) to understand the framework
 - See how DeesseJS [compares to other CMS solutions](/docs/comparison)
-- Explore the [core concepts](/docs/overview) to understand the architecture
-- Follow the [quick start guide](/docs/quick-start) to build your first project
+- Explore the [Admin Dashboard](/docs/admin-dashboard/overview)
+- Check out the [CLI commands](/docs/cli/commands) for more options
 
 ## Prerequisites
 
@@ -52,6 +239,7 @@ Before you begin, make sure you have:
 - **Node.js** 18+ installed
 - Basic knowledge of **Next.js** and **React**
 - Familiarity with **TypeScript**
+- A database (PostgreSQL, MySQL, MongoDB, or SQLite for dev)
 
 ## Need Help?
 
