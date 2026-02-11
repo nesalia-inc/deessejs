@@ -1,0 +1,574 @@
+---
+title: SEO Plugin
+description: Advanced SEO for technical articles and tutorials
+---
+
+# SEO Plugin
+
+The SEO Plugin provides advanced SEO capabilities specifically designed for technical articles and tutorials, with features like schema markup, syntax highlighting optimization, code block indexing, and technical content best practices.
+
+## Installation
+
+```bash
+npm install @deessejs/plugin-seo
+```
+
+## Configuration
+
+```typescript
+// deesse.config.ts
+import { defineConfig } from '@deessejs/core'
+import { seoPlugin } from '@deessejs/plugin-seo'
+
+export const config = defineConfig({
+  plugins: [
+    seoPlugin({
+      // Technical content features
+      technicalContent: {
+        enableSchemaMarkup: true,        // Article, TechArticle, HowTo schemas
+        enableCodeBlockIndexing: true,   // Make code blocks searchable
+        enableSyntaxHighlighting: true,  // Schema for code language
+        enableTableOfContents: true,     // Auto-generate TOC for SEO
+        enableBreadcrumbs: true,         // Breadcrumb navigation
+      },
+
+      // Article metadata
+      metadata: {
+        defaultTitleTemplate: '%s | My Blog',
+        defaultDescription: 'Technical articles and tutorials',
+        defaultOgImage: '/images/og-default.jpg',
+        siteName: 'My Tech Blog',
+        twitterCard: 'summary_large_image',
+        twitterSite: '@yourhandle',
+      },
+
+      // Sitemap configuration
+      sitemap: {
+        enabled: true,
+        path: '/sitemap.xml',
+        hostname: 'https://yourdomain.com',
+        exclude: ['/admin', '/api'],
+      },
+
+      // RSS feed
+      rss: {
+        enabled: true,
+        path: '/rss',
+        title: 'My Tech Blog',
+        description: 'Latest technical articles',
+      },
+
+      // Performance
+      performance: {
+        imageOptimization: true,
+        lazyLoadImages: true,
+        prefetchLinks: true,
+      },
+
+      // Analytics integration
+      analytics: {
+        googleAnalyticsId: process.env.GA_MEASUREMENT_ID,
+        googleSearchConsole: process.env.GSC_VERIFICATION,
+      },
+    }),
+  ],
+})
+```
+
+## Collections Extension
+
+Extends content collections with SEO fields:
+
+```typescript
+// For blog posts, articles, tutorials
+{
+  name: 'posts',
+  fields: [
+    // ... existing fields
+
+    // SEO fields added by plugin
+    {
+      name: 'seo',
+      type: 'group',
+      fields: [
+        {
+          name: 'title',
+          type: 'string',
+          admin: {
+            description: 'Override default title (max 60 chars)',
+          },
+        },
+        {
+          name: 'description',
+          type: 'text',
+          admin: {
+            description: 'Meta description (max 160 chars)',
+          },
+        },
+        {
+          name: 'keywords',
+          type: 'text',
+          admin: {
+            description: 'Comma-separated keywords',
+          },
+        },
+        {
+          name: 'ogImage',
+          type: 'media',
+          admin: {
+            description: 'Open Graph image (1200x630 recommended)',
+          },
+        },
+        {
+          name: 'twitterImage',
+          type: 'media',
+          admin: {
+            description: 'Twitter card image (1200x600 recommended)',
+          },
+        },
+        {
+          name: 'noIndex',
+          type: 'boolean',
+          defaultValue: false,
+          admin: {
+            description: 'Prevent search engines from indexing',
+          },
+        },
+        {
+          name: 'noFollow',
+          type: 'boolean',
+          defaultValue: false,
+          admin: {
+            description: 'Tell search engines not to follow links',
+          },
+        },
+        {
+          name: 'canonical',
+          type: 'string',
+          admin: {
+            description: 'Canonical URL (if different from page URL)',
+          },
+        },
+      ],
+    },
+
+    // Technical content specific fields
+    {
+      name: 'technical',
+      type: 'group',
+      fields: [
+        {
+          name: 'difficulty',
+          type: 'enum',
+          enum: ['beginner', 'intermediate', 'advanced'],
+          defaultValue: 'intermediate',
+        },
+        {
+          name: 'readingTime',
+          type: 'number',
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'prerequisites',
+          type: 'array',
+          admin: {
+            description: 'Required knowledge for this tutorial',
+          },
+        },
+        {
+          name: 'techStack',
+          type: 'array',
+          admin: {
+            description: 'Technologies covered',
+          },
+        },
+        {
+          name: 'codeLanguage',
+          type: 'string',
+          admin: {
+            description: 'Primary programming language',
+          },
+        },
+      ],
+    },
+  ],
+}
+```
+
+## Schema Markup
+
+### Article Schema
+
+```typescript
+// Automatically generates Article schema
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Understanding React Hooks",
+  "description": "A comprehensive guide to React Hooks",
+  "image": "https://example.com/image.jpg",
+  "datePublished": "2025-01-15",
+  "dateModified": "2025-01-15",
+  "author": {
+    "@type": "Person",
+    "name": "John Doe",
+    "url": "https://example.com/authors/john-doe"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "My Tech Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://example.com/logo.png"
+    }
+  }
+}
+```
+
+### TechArticle Schema (Advanced)
+
+```typescript
+// For technical tutorials
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Building APIs with Next.js",
+  "description": "Step-by-step guide to building REST APIs",
+  "proficiencyLevel": "Advanced",
+  "dependencies": "Node.js, Next.js, TypeScript",
+  "accessibilityFeature": ["structuredNavigation", "tableOfContents"],
+  "accessibilityAPI": "ARIA",
+}
+```
+
+### HowTo Schema (Tutorials)
+
+```typescript
+// For tutorial articles with steps
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Set Up Authentication in Next.js",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "name": "Install dependencies",
+      "text": "npm install next-auth",
+      "image": "https://example.com/step1.jpg"
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Configure NextAuth",
+      "text": "Create auth options",
+      "image": "https://example.com/step2.jpg"
+    }
+  ]
+}
+```
+
+### CodeSnippet Schema
+
+```typescript
+// Indexes code blocks for search
+{
+  "@context": "https://schema.org",
+  "@type": "CodeSnippet",
+  "name": "React useState Hook Example",
+  "description": "Example of using useState in React",
+  "programmingLanguage": "TypeScript",
+  "code": "const [count, setCount] = useState(0)"
+}
+```
+
+## API Routes
+
+```bash
+# Generate sitemap
+GET /sitemap.xml
+
+# Generate RSS feed
+GET /rss
+
+# SEO score for content
+POST /api/seo/score
+{
+  "url": "/blog/react-hooks",
+  "content": "..."
+}
+
+# Get SEO suggestions
+POST /api/seo/suggestions
+{
+  "title": "Understanding React Hooks",
+  "description": "...",
+  "content": "..."
+}
+
+# Lighthouse analysis
+GET /api/seo/lighthouse?url=/blog/post
+
+# Broken links check
+GET /api/seo/check-links
+
+# Meta tags preview
+POST /api/seo/preview
+{
+  "title": "...",
+  "description": "...",
+  "image": "..."
+}
+```
+
+## Admin Pages
+
+### SEO Dashboard
+- Overall SEO score
+- Content optimization status
+- Missing meta tags
+- Broken links report
+- Performance metrics
+
+### Page Editor Integration
+- Real-time SEO score
+- Google search preview
+- Social media preview
+- Character count indicators
+- Keyword density analysis
+
+### Technical Content Fields
+- Difficulty level selector
+- Tech stack picker
+- Prerequisites manager
+- Code language selector
+
+## Frontend Components
+
+### SeoHead Component
+
+```typescript
+import { SeoHead } from '@deessejs/plugin-seo/components'
+
+export default function BlogPost({ post }) {
+  return (
+    <>
+      <SeoHead
+        title={post.seo?.title || post.title}
+        description={post.seo?.description || post.excerpt}
+        ogImage={post.seo?.ogImage || post.featuredImage}
+        noIndex={post.seo?.noIndex}
+        canonical={post.seo?.canonical}
+        schema={{
+          type: 'TechArticle',
+          proficiencyLevel: post.technical.difficulty,
+          dependencies: post.technical.prerequisites?.join(', '),
+        }}
+      />
+      <article>{/* ... */}</article>
+    </>
+  )
+}
+```
+
+### TableOfContents Component
+
+```typescript
+import { TableOfContents } from '@deessejs/plugin-seo/components'
+
+export default function PostLayout({ content }) {
+  return (
+    <div className="flex gap-8">
+      <div className="flex-1">
+        <article>{content}</article>
+      </div>
+      <aside>
+        <TableOfContents
+          content={content}
+          minLevel={2}
+          maxLevel={3}
+          className="sticky top-4"
+        />
+      </aside>
+    </div>
+  )
+}
+```
+
+### Breadcrumbs Component
+
+```typescript
+import { Breadcrumbs } from '@deessejs/plugin-seo/components'
+
+export default function Layout() {
+  const items = [
+    { label: 'Home', href: '/' },
+    { label: 'Blog', href: '/blog' },
+    { label: 'React', href: '/blog?category=react' },
+    { label: 'React Hooks' },
+  ]
+
+  return <Breadcrumbs items={items} />
+}
+```
+
+### ArticleJsonLd Component
+
+```typescript
+import { ArticleJsonLd } from '@deessejs/plugin-seo/components'
+
+export default function PostPage({ post }) {
+  return (
+    <>
+      <ArticleJsonLd
+        title={post.title}
+        description={post.excerpt}
+        datePublished={post.publishedAt}
+        dateModified={post.updatedAt}
+        author={{
+          name: post.author.name,
+          url: `/authors/${post.author.slug}`,
+        }}
+        image={post.featuredImage}
+      />
+      <article>{/* ... */}</article>
+    </>
+  )
+}
+```
+
+## Server Functions
+
+### generateMetadata
+
+```typescript
+import { generateMetadata } from '@deessejs/plugin-seo/server'
+
+export async function PostMetadata({ params }) {
+  const post = await getPost(params.slug)
+
+  return generateMetadata({
+    title: post.seo?.title || post.title,
+    description: post.seo?.description || post.excerpt,
+    ogImage: post.seo?.ogImage || post.featuredImage,
+    twitterCard: 'summary_large_image',
+    noIndex: post.seo?.noIndex,
+    canonical: post.seo?.canonical,
+    article: {
+      publishedTime: post.publishedAt,
+      modifiedTime: post.updatedAt,
+      authors: [post.author.name],
+      tags: post.tags.map(t => t.name),
+    },
+    // Technical article schema
+    techArticle: {
+      proficiencyLevel: post.technical.difficulty,
+      dependencies: post.technical.prerequisites,
+    },
+  })
+}
+```
+
+### getSeoScore
+
+```typescript
+import { getSeoScore } from '@deessejs/plugin-seo/server'
+
+export default async function SeoAnalysis({ params }) {
+  const post = await getPost(params.slug)
+  const score = await getSeoScore(post)
+
+  return (
+    <div>
+      <h3>SEO Score: {score.overall}/100</h3>
+      <ul>
+        {score.issues.map(issue => (
+          <li key={issue.id}>{issue.message}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+```
+
+## Code Block Optimization
+
+Automatically optimizes code blocks for SEO:
+
+```typescript
+// Automatically wraps code blocks with schema
+<CodeBlock
+  language="typescript"
+  code="const [count, setCount] = useState(0)"
+  // Generates:
+  // <script type="application/ld+json">
+  // {
+  //   "@type": "CodeSnippet",
+  //   "programmingLanguage": "TypeScript",
+  //   "code": "..."
+  // }
+  // </script>
+/>
+```
+
+## Performance Optimization
+
+```typescript
+seoPlugin({
+  performance: {
+    // Image optimization
+    imageOptimization: {
+      formats: ['webp', 'avif'],
+      quality: 85,
+      sizes: [640, 1200, 1920],
+    },
+
+    // Lazy loading
+    lazyLoad: {
+      images: true,
+      iframes: true,
+      videos: true,
+    },
+
+    // Prefetching
+    prefetch: {
+      enabled: true,
+      threshold: 0.1, // 10% viewport
+      delay: 100,
+    },
+
+    // Critical CSS
+    criticalCss: true,
+  },
+})
+```
+
+## Validation Tools
+
+### SEO Score Calculator
+
+```typescript
+import { calculateSeoScore } from '@deessejs/plugin-seo/server'
+
+const score = await calculateSeoScore({
+  title: 'Understanding React Hooks',
+  description: 'A comprehensive guide to React Hooks',
+  content: '...',
+  url: '/blog/react-hooks',
+})
+
+// Returns:
+// {
+//   overall: 85,
+//   title: { score: 90, issues: [] },
+//   description: { score: 100, issues: [] },
+//   content: { score: 75, issues: [...] },
+//   technical: { score: 80, issues: [...] }
+// }
+```
+
+## Next Steps
+
+- Explore the [Blog Plugin](/docs/plugins/official/blog)
+- Learn about [Analytics Plugin](/docs/plugins/official/analytics)
+- Return to [Plugins Overview](/docs/plugins/overview)

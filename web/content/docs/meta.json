@@ -48,6 +48,13 @@
     "plugins/overview",
     "plugins/creating-plugins",
     "plugins/examples",
-    "plugins/api-reference"
+    "plugins/api-reference",
+    "---Official Plugins---",
+    "plugins/official/blog",
+    "plugins/official/changelog",
+    "plugins/official/seo",
+    "plugins/official/students",
+    "plugins/official/affiliates",
+    "plugins/official/analytics"
   ]
 }
