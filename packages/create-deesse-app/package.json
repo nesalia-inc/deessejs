@@ -1,0 +1,42 @@
+{
+  "name": "create-deesse-app",
+  "version": "0.0.1",
+  "description": "Create a new DeesseJS project",
+  "type": "module",
+  "bin": {
+    "create-deesse-app": "./bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "test": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "create-app",
+    "cli",
+    "deessejs",
+    "nextjs"
+  ],
+  "author": "DeesseJS",
+  "license": "MIT",
+  "dependencies": {
+    "@clack/prompts": "^0.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.6",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
