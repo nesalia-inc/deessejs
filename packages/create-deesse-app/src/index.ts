@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import * as p from '@clack/prompts';
-import { setTimeout } from 'node:timers/promises';
+import path from 'node:path';
+import { copyTemplate } from './copy.js';
 
 const getVersion = () => '0.0.1';
 
@@ -43,7 +44,7 @@ async function main() {
     process.exit(0);
   }
 
-  // Show summary (dummy)
+  // Show summary
   p.note(
     `Project: ${projectName}
 Template: ${template}
@@ -51,19 +52,31 @@ Location: ./${projectName}`,
     'Configuration'
   );
 
-  // Simulate work
+  // Copy template
   const s = p.spinner();
   s.start('Creating project...');
-  await setTimeout(1000);
 
-  s.stop('Project created (dummy version)');
+  try {
+    const targetDir = path.join(process.cwd(), projectName);
+    const createdFiles = await copyTemplate(template as 'minimal' | 'default', projectName, targetDir);
 
-  // Next steps
-  const nextSteps = [`cd ${projectName}`, 'pnpm install', 'pnpm dev'];
+    s.stop(`Project created with ${createdFiles.length} files`);
 
-  p.note(nextSteps.join('\n'), 'Next steps');
+    // Next steps
+    const nextSteps = [
+      `cd ${projectName}`,
+      'pnpm install',
+      'pnpm dev',
+    ];
 
-  p.outro('Happy coding!');
+    p.note(nextSteps.join('\n'), 'Next steps');
+
+    p.outro('Happy coding!');
+  } catch (error) {
+    s.stop('Failed to create project');
+    p.cancel(error instanceof Error ? error.message : 'Unknown error');
+    process.exit(1);
+  }
 }
 
 main().catch((error) => {

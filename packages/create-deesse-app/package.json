@@ -29,7 +29,8 @@
   "author": "DeesseJS",
   "license": "MIT",
   "dependencies": {
-    "@clack/prompts": "^0.8.2"
+    "@clack/prompts": "^0.8.2",
+    "copy-template-dir": "^1.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.6",
