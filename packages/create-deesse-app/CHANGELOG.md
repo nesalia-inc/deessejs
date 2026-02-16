@@ -1,5 +1,12 @@
 # @deessejs/create-app
 
+## 0.1.0
+
+### Minor Changes
+
+- 4206384: Add template copy functionality with default template including Next.js 16, React 19, and shadcn/ui configuration.
+- 0ae9a72: Add template copy functionality with default template including Next.js 16, React 19, and shadcn/ui configuration.
+
 ## 0.0.1
 
 ### Initial Release
