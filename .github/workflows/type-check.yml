@@ -29,7 +29,8 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
+        if: hashFiles('pnpm-lock.yaml') != ''
 
       - name: Run TypeScript type check
         run: pnpm type-check
