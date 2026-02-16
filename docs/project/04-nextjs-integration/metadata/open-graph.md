@@ -7,12 +7,14 @@ Auto-generated Open Graph and Twitter images for DeesseJS collections using Imag
 ## Features
 
 ### Auto-Generated OG Images
+
 - opengraph-image.tsx per route
 - twitter-image.tsx per route
 - Collection-based OG images
 - Dynamic images with data
 
 ### Image Generation
+
 - ImageResponse API
 - Custom fonts
 - Local images
@@ -21,6 +23,7 @@ Auto-generated Open Graph and Twitter images for DeesseJS collections using Imag
 ## Open Graph Images
 
 ### Basic OG Image
+
 ```typescript
 // app/opengraph-image.tsx
 import { ImageResponse } from 'next/og'
@@ -52,6 +55,7 @@ export default function Image() {
 ```
 
 ### Collection OG Image
+
 ```typescript
 // app/posts/opengraph-image.tsx
 import { ImageResponse } from 'next/og'
@@ -84,6 +88,7 @@ export default function Image() {
 ```
 
 ### Dynamic OG Image with Data
+
 ```typescript
 // app/posts/[slug]/opengraph-image.tsx
 import { ImageResponse } from 'next/og'
@@ -142,6 +147,7 @@ export default async function Image({
 ## Twitter Images
 
 ### Twitter Card Image
+
 ```typescript
 // app/twitter-image.tsx
 import { ImageResponse } from 'next/og'
@@ -174,6 +180,7 @@ export default function Image() {
 ```
 
 ### Collection Twitter Image
+
 ```typescript
 // app/posts/[slug]/twitter-image.tsx
 import { ImageResponse } from 'next/og'
@@ -222,6 +229,7 @@ export default async function Image({
 ## Custom Fonts
 
 ### Load Custom Font
+
 ```typescript
 // app/opengraph-image.tsx
 import { ImageResponse } from 'next/og'
@@ -270,6 +278,7 @@ export default async function Image() {
 ## Local Images
 
 ### Use Local Logo
+
 ```typescript
 // app/opengraph-image.tsx
 import { ImageResponse } from 'next/og'
@@ -304,6 +313,7 @@ export default async function Image() {
 ## Configuration
 
 ### OG Image Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -317,8 +327,8 @@ export const config = defineConfig({
           size: { width: 1200, height: 630 },
           background: 'white',
           font: 'Inter',
-        }
-      }
+        },
+      },
     },
     twitter: {
       enabled: true,
@@ -326,45 +336,49 @@ export const config = defineConfig({
       images: {
         enabled: true,
         generator: 'image-response',
-      }
-    }
-  }
-})
+      },
+    },
+  },
+});
 ```
 
 ### Collection OG Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    seo: {
-      openGraphImage: {
-        enabled: true,
-        template: 'post-title', // Use post title
-        background: 'gradient',
-        gradient: {
-          from: '#667eea',
-          to: '#764ba2',
-          angle: 135,
+  collections: [
+    {
+      name: 'posts',
+      seo: {
+        openGraphImage: {
+          enabled: true,
+          template: 'post-title', // Use post title
+          background: 'gradient',
+          gradient: {
+            from: '#667eea',
+            to: '#764ba2',
+            angle: 135,
+          },
+          includeAuthor: true,
+          includeDate: false,
         },
-        includeAuthor: true,
-        includeDate: false,
+        twitterImage: {
+          enabled: true,
+          template: 'minimal',
+          background: 'black',
+          textColor: 'white',
+        },
       },
-      twitterImage: {
-        enabled: true,
-        template: 'minimal',
-        background: 'black',
-        textColor: 'white',
-      }
-    }
-  }]
-})
+    },
+  ],
+});
 ```
 
 ## Image Templates
 
 ### Title Template
+
 ```typescript
 // Auto-generated from template
 export default async function Image({ params }) {
@@ -384,6 +398,7 @@ export default async function Image({ params }) {
 ```
 
 ### Featured Image Template
+
 ```typescript
 export default async function Image({ params }) {
   const { slug } = await params
@@ -406,6 +421,7 @@ export default async function Image({ params }) {
 ## Multiple Images
 
 ### generateImageMetadata
+
 ```typescript
 // app/opengraph-image.tsx
 import { ImageResponse } from 'next/og'

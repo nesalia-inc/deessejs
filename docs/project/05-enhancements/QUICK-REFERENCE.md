@@ -8,28 +8,28 @@ This is a quick reference guide for implementing Next.js enhancements in DeesseJ
 
 DeesseJS can be enhanced with 9 major Next.js feature sets across 4 implementation phases.
 
-| Phase | Duration | Focus Areas |
-|-------|----------|-------------|
-| **Phase 1** | Week 1-2 | Foundation: Error handling, cookies, auth config |
-| **Phase 2** | Week 3-4 | Core: Auth hooks, Server Actions, navigation |
+| Phase       | Duration | Focus Areas                                         |
+| ----------- | -------- | --------------------------------------------------- |
+| **Phase 1** | Week 1-2 | Foundation: Error handling, cookies, auth config    |
+| **Phase 2** | Week 3-4 | Core: Auth hooks, Server Actions, navigation        |
 | **Phase 3** | Week 5-6 | Advanced: Collection auth, smart caching, URL state |
-| **Phase 4** | Week 7-8 | Optimization: Error recovery, monitoring, polish |
+| **Phase 4** | Week 7-8 | Optimization: Error recovery, monitoring, polish    |
 
 ---
 
 ## 📦 Enhancement Files
 
-| File | Purpose | Priority | Complexity |
-|------|---------|----------|------------|
-| [error-handling-enhancements.md](./error-handling-enhancements.md) | Error classification & logging | 🔴 Critical | Low |
-| [error-rethrow-strategies.md](./error-rethrow-strategies.md) | Framework error handling | 🔴 Critical | Low |
-| [auth-integration-enhancements.md](./auth-integration-enhancements.md) | Auth, authorization, MFA | 🔴 Critical | Medium |
-| [next-response-enhancements.md](./next-response-enhancements.md) | Type-safe cookies & responses | 🟡 High | Low |
-| [redirect-strategies.md](./redirect-strategies.md) | Centralized redirects | 🟡 High | Medium |
-| [server-actions-complete.md](./server-actions-complete.md) | Server Actions & navigation | 🟡 High | Medium |
-| [cache-revalidation-enhancements.md](./cache-revalidation-enhancements.md) | Smart cache revalidation | 🟡 High | High |
-| [advanced-caching.md](./advanced-caching.md) | Progressive caching | 🟢 Medium | High |
-| [imageresponse-enhancements.md](./imageresponse-enhancements.md) | Dynamic image generation | 🟢 Medium | Medium |
+| File                                                                       | Purpose                        | Priority    | Complexity |
+| -------------------------------------------------------------------------- | ------------------------------ | ----------- | ---------- |
+| [error-handling-enhancements.md](./error-handling-enhancements.md)         | Error classification & logging | 🔴 Critical | Low        |
+| [error-rethrow-strategies.md](./error-rethrow-strategies.md)               | Framework error handling       | 🔴 Critical | Low        |
+| [auth-integration-enhancements.md](./auth-integration-enhancements.md)     | Auth, authorization, MFA       | 🔴 Critical | Medium     |
+| [next-response-enhancements.md](./next-response-enhancements.md)           | Type-safe cookies & responses  | 🟡 High     | Low        |
+| [redirect-strategies.md](./redirect-strategies.md)                         | Centralized redirects          | 🟡 High     | Medium     |
+| [server-actions-complete.md](./server-actions-complete.md)                 | Server Actions & navigation    | 🟡 High     | Medium     |
+| [cache-revalidation-enhancements.md](./cache-revalidation-enhancements.md) | Smart cache revalidation       | 🟡 High     | High       |
+| [advanced-caching.md](./advanced-caching.md)                               | Progressive caching            | 🟢 Medium   | High       |
+| [imageresponse-enhancements.md](./imageresponse-enhancements.md)           | Dynamic image generation       | 🟢 Medium   | Medium     |
 
 ---
 
@@ -38,77 +38,88 @@ DeesseJS can be enhanced with 9 major Next.js feature sets across 4 implementati
 ### 1. Error Handling (5 minutes)
 
 **Before:**
+
 ```typescript
-throw new Error('Post not found')
+throw new Error('Post not found');
 ```
 
 **After:**
-```typescript
-import { ErrorFactory } from '@/lib/errors/classification'
 
-throw ErrorFactory.notFound('post', id)
+```typescript
+import { ErrorFactory } from '@/lib/errors/classification';
+
+throw ErrorFactory.notFound('post', id);
 ```
 
 ### 2. Authentication (5 minutes)
 
 **Before:**
+
 ```typescript
-const session = await getSession()
-if (!session) redirect('/login')
+const session = await getSession();
+if (!session) redirect('/login');
 ```
 
 **After:**
-```typescript
-import { requireAuth } from '@/lib/auth/hooks'
 
-const session = await requireAuth()
+```typescript
+import { requireAuth } from '@/lib/auth/hooks';
+
+const session = await requireAuth();
 ```
 
 ### 3. Server Actions (10 minutes)
 
 **Before:**
+
 ```typescript
 export async function createPost(formData: FormData) {
-  return await db.posts.create({ data })
+  return await db.posts.create({ data });
 }
 ```
 
 **After:**
+
 ```typescript
-import { updateTag } from 'next/cache'
-import { withErrorHandling } from '@/lib/actions/server-action-patterns'
+import { updateTag } from 'next/cache';
+import { withErrorHandling } from '@/lib/actions/server-action-patterns';
 
 export async function createPost(formData: FormData) {
-  return withErrorHandling(async () => {
-    const post = await db.posts.create({ data })
-    updateTag('posts')
-    updateTag(`post-${post.id}`)
-    return post
-  }, {
-    revalidateTags: ['posts'],
-    refresh: true,
-  })
+  return withErrorHandling(
+    async () => {
+      const post = await db.posts.create({ data });
+      updateTag('posts');
+      updateTag(`post-${post.id}`);
+      return post;
+    },
+    {
+      revalidateTags: ['posts'],
+      refresh: true,
+    }
+  );
 }
 ```
 
 ### 4. Navigation (5 minutes)
 
 **Before:**
-```typescript
-'use client'
-import { useRouter } from 'next/navigation'
 
-const router = useRouter()
-router.push('/posts')
+```typescript
+'use client';
+import { useRouter } from 'next/navigation';
+
+const router = useRouter();
+router.push('/posts');
 ```
 
 **After:**
-```typescript
-'use client'
-import { useSmartNavigation } from '@/lib/navigation/hooks'
 
-const { navigate } = useSmartNavigation()
-navigate('/posts')
+```typescript
+'use client';
+import { useSmartNavigation } from '@/lib/navigation/hooks';
+
+const { navigate } = useSmartNavigation();
+navigate('/posts');
 ```
 
 ---
@@ -121,39 +132,39 @@ Ensure users immediately see their changes:
 
 ```typescript
 export async function updatePost(id: string, data: any) {
-  const post = await db.posts.update({ where: { id }, data })
+  const post = await db.posts.update({ where: { id }, data });
 
   // User immediately sees their changes
-  updateTag('posts')
-  updateTag(`post-${id}`)
-  refresh()
+  updateTag('posts');
+  updateTag(`post-${id}`);
+  refresh();
 
-  return post
+  return post;
 }
 ```
 
 ### Type-Safe Cookies
 
 ```typescript
-import { setCookie, getCookie } from '@/lib/cookies/typed'
+import { setCookie, getCookie } from '@/lib/cookies/typed';
 
 // Set cookie with type safety
-await setCookie('theme', 'dark', { maxAge: 30 * 24 * 60 * 60 })
+await setCookie('theme', 'dark', { maxAge: 30 * 24 * 60 * 60 });
 
 // Get cookie with type inference
-const theme = await getCookie('theme') // string | undefined
+const theme = await getCookie('theme'); // string | undefined
 ```
 
 ### Collection Authorization
 
 ```typescript
-import { requireCollectionAccess } from '@/lib/auth/collection-auth'
+import { requireCollectionAccess } from '@/lib/auth/collection-auth';
 
 export async function updatePost(id: string, data: any) {
   // Auto-check permissions based on collection config
-  await requireCollectionAccess(postsConfig, 'write', id)
+  await requireCollectionAccess(postsConfig, 'write', id);
 
-  return await db.posts.update({ where: { id }, data })
+  return await db.posts.update({ where: { id }, data });
 }
 ```
 
@@ -233,7 +244,7 @@ export const config = defineConfig({
   performance: {
     webVitals: { enabled: true },
   },
-})
+});
 ```
 
 ---
@@ -264,30 +275,35 @@ npm run test performance/cache-hit-rate
 Use this checklist when migrating existing code:
 
 ### Error Handling
+
 - [ ] Replace `throw new Error()` with `ErrorFactory`
 - [ ] Add error categories and severities
 - [ ] Implement error boundaries
 - [ ] Set up error logging
 
 ### Authentication
+
 - [ ] Replace manual session checks with `requireAuth()`
 - [ ] Add role checks with `requireRole()`
 - [ ] Implement permission checks with `requirePermission()`
 - [ ] Set up collection-level auth
 
 ### Server Actions
+
 - [ ] Wrap actions with `withErrorHandling()`
 - [ ] Add `updateTag()` for mutations
 - [ ] Implement revalidation strategies
 - [ ] Add refresh calls
 
 ### Navigation
+
 - [ ] Replace `useRouter()` with `useDeesseNavigation()`
 - [ ] Implement URL state management
 - [ ] Add loading indicators
 - [ ] Set up redirects
 
 ### Cache
+
 - [ ] Configure smart refresh
 - [ ] Implement collection revalidation
 - [ ] Add progressive caching
@@ -300,6 +316,7 @@ Use this checklist when migrating existing code:
 Track these metrics to measure success:
 
 ### Performance
+
 - Cache hit rate > **80%**
 - Average response time < **200ms**
 - LCP < **2.5s**
@@ -307,6 +324,7 @@ Track these metrics to measure success:
 - CLS < **0.1**
 
 ### Errors
+
 - Error rate < **0.1%**
 - Recovery success rate > **90%**
 - Mean time to recovery < **5s**
@@ -320,13 +338,14 @@ Track these metrics to measure success:
 **Problem:** Changes not appearing immediately
 
 **Solution:**
+
 ```typescript
 // Ensure you're using updateTag()
-updateTag('posts')
-updateTag(`post-${id}`)
+updateTag('posts');
+updateTag(`post-${id}`);
 
 // And calling refresh()
-refresh()
+refresh();
 ```
 
 ### Auth Redirects Not Working
@@ -334,10 +353,11 @@ refresh()
 **Problem:** Unauthorized users can access protected pages
 
 **Solution:**
+
 ```typescript
 // Use requireAuth() instead of manual checks
 export default async function AdminPage() {
-  const session = await requireAuth() // This will redirect if not authenticated
+  const session = await requireAuth(); // This will redirect if not authenticated
   // ...
 }
 ```
@@ -347,18 +367,19 @@ export default async function AdminPage() {
 **Problem:** Errors not showing up in UI
 
 **Solution:**
+
 ```typescript
 // Use withErrorHandling wrapper
 export async function myAction(formData: FormData) {
   return withErrorHandling(async () => {
     // Your action logic
-  })
+  });
 }
 
 // Handle error in component
-const result = await myAction(formData)
+const result = await myAction(formData);
 if (!result.success) {
-  showError(result.error)
+  showError(result.error);
 }
 ```
 
@@ -367,12 +388,13 @@ if (!result.success) {
 **Problem:** URL state not syncing
 
 **Solution:**
+
 ```typescript
 // Use useCollectionURLState hook
-const { state, setPage } = useCollectionURLState()
+const { state, setPage } = useCollectionURLState();
 
 // URL will automatically update
-setPage(2) // URL becomes /blog?page=2
+setPage(2); // URL becomes /blog?page=2
 ```
 
 ---
@@ -389,25 +411,16 @@ setPage(2) // URL becomes /blog?page=2
 ## 🎓 Learning Path
 
 **Beginner (1-2 weeks):**
+
 1. Error handling basics
 2. Simple auth hooks
 3. Type-safe cookies
 
-**Intermediate (2-4 weeks):**
-4. Server Actions patterns
-5. Navigation hooks
-6. Basic caching
+**Intermediate (2-4 weeks):** 4. Server Actions patterns 5. Navigation hooks 6. Basic caching
 
-**Advanced (4-8 weeks):**
-7. Collection-level auth
-8. Smart cache revalidation
-9. Progressive caching
-10. Error recovery
+**Advanced (4-8 weeks):** 7. Collection-level auth 8. Smart cache revalidation 9. Progressive caching 10. Error recovery
 
-**Expert (8+ weeks):**
-11. Performance monitoring
-12. Advanced analytics
-13. Custom optimizations
+**Expert (8+ weeks):** 11. Performance monitoring 12. Advanced analytics 13. Custom optimizations
 
 ---
 
@@ -435,7 +448,7 @@ export const config = defineConfig({
       roles: ['admin', 'editor'],
     },
   },
-})
+});
 ```
 
 ---

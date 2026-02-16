@@ -7,12 +7,14 @@ Using Next.js `headers()` async function to read HTTP request headers in DeesseJ
 ## Features
 
 ### Read Request Headers
+
 - Access incoming HTTP headers
 - Async headers API
 - Read-only Headers object
 - Authorization header forwarding
 
 ### Use Cases
+
 - Authorization token forwarding
 - User agent detection
 - Referrer tracking
@@ -21,6 +23,7 @@ Using Next.js `headers()` async function to read HTTP request headers in DeesseJ
 ## Basic Usage
 
 ### Get Single Header
+
 ```typescript
 // app/page.tsx
 import { headers } from 'next/headers'
@@ -34,6 +37,7 @@ export default async function Page() {
 ```
 
 ### Get All Headers
+
 ```typescript
 export default async function Page() {
   const headersList = await headers()
@@ -51,6 +55,7 @@ export default async function Page() {
 ```
 
 ### Check Header Exists
+
 ```typescript
 export default async function Page() {
   const headersList = await headers()
@@ -67,16 +72,17 @@ export default async function Page() {
 ## Authorization Forwarding
 
 ### Forward Auth Token
+
 ```typescript
 // app/api/external/route.ts
-import { headers } from 'next/headers'
+import { headers } from 'next/headers';
 
 export async function GET() {
-  const headersList = await headers()
-  const authHeader = headersList.get('authorization')
+  const headersList = await headers();
+  const authHeader = headersList.get('authorization');
 
   if (!authHeader) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   // Forward auth to external API
@@ -84,15 +90,16 @@ export async function GET() {
     headers: {
       authorization: authHeader,
     },
-  })
+  });
 
-  const data = await response.json()
+  const data = await response.json();
 
-  return Response.json(data)
+  return Response.json(data);
 }
 ```
 
 ### Context-Based Headers
+
 ```typescript
 // app/page.tsx
 import { headers } from 'next/headers'
@@ -117,6 +124,7 @@ export default async function Page() {
 ## Configuration
 
 ### Auto-Generated Header Forwarding
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -124,56 +132,61 @@ export const config = defineConfig({
     headers: {
       forward: ['authorization', 'user-agent', 'referer'],
       block: ['x-secret-key'],
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ### Per-Collection Headers
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    api: {
-      headers: {
-        required: ['authorization'],
-        optional: ['x-request-id'],
-      }
-    }
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      api: {
+        headers: {
+          required: ['authorization'],
+          optional: ['x-request-id'],
+        },
+      },
+    },
+  ],
+});
 ```
 
 ## Advanced Patterns
 
 ### Custom Auth Headers
+
 ```typescript
 // app/api/posts/route.ts
-import { headers } from 'next/headers'
+import { headers } from 'next/headers';
 
 export async function POST(request: Request) {
-  const headersList = await headers()
+  const headersList = await headers();
 
   // Extract custom auth header
-  const apiKey = headersList.get('x-api-key')
+  const apiKey = headersList.get('x-api-key');
 
   if (!apiKey) {
-    return Response.json({ error: 'Missing API key' }, { status: 401 })
+    return Response.json({ error: 'Missing API key' }, { status: 401 });
   }
 
-  const user = await verifyApiKey(apiKey)
+  const user = await verifyApiKey(apiKey);
 
-  const body = await request.json()
+  const body = await request.json();
   const post = await db.posts.create({
-    data: { ...body, author: user.id }
-  })
+    data: { ...body, author: user.id },
+  });
 
-  return Response.json(post)
+  return Response.json(post);
 }
 ```
 
 ### Request Tracing
+
 ```typescript
 export default async function Page() {
   const headersList = await headers()
@@ -193,6 +206,7 @@ export default async function Page() {
 ```
 
 ### Device Detection
+
 ```typescript
 export default async function Page() {
   const headersList = await headers()
@@ -208,6 +222,7 @@ export default async function Page() {
 ## Integration with Other Systems
 
 ### Analytics Tracking
+
 ```typescript
 // app/page.tsx
 import { headers } from 'next/headers'
@@ -222,6 +237,7 @@ export default async function Page() {
 ```
 
 ### A/B Testing
+
 ```typescript
 export default async function Page() {
   const headersList = await headers()
@@ -234,54 +250,59 @@ export default async function Page() {
 ## Best Practices
 
 ### Always Await
+
 ```typescript
 // ✅ Correct
-const headersList = await headers()
+const headersList = await headers();
 
 // ❌ Wrong
-const headersList = headers() // Returns promise
+const headersList = headers(); // Returns promise
 ```
 
 ### Headers Are Read-Only
+
 - Cannot modify outgoing headers in Server Components
 - Use Route Handlers for response headers
 - Use cookies() for set/delete operations
 
 ### Check Before Using
-```typescript
-const headersList = await headers()
 
-const auth = headersList.get('authorization')
+```typescript
+const headersList = await headers();
+
+const auth = headersList.get('authorization');
 if (!auth) {
-  throw new Error('Unauthorized')
+  throw new Error('Unauthorized');
 }
 ```
 
 ## Integration Points
 
 ### With fetch
+
 ```typescript
-const headersList = await headers()
+const headersList = await headers();
 
 fetch('https://api.example.com', {
   headers: {
-    'authorization': headersList.get('authorization') || '',
+    authorization: headersList.get('authorization') || '',
     'user-agent': headersList.get('user-agent') || '',
   },
-})
+});
 ```
 
 ### With Server Actions
-```typescript
-'use server'
 
-import { headers } from 'next/headers'
+```typescript
+'use server';
+
+import { headers } from 'next/headers';
 
 export async function serverAction() {
-  const headersList = await headers()
-  const userId = headersList.get('x-user-id')
+  const headersList = await headers();
+  const userId = headersList.get('x-user-id');
 
-  await performAction({ userId })
+  await performAction({ userId });
 }
 ```
 

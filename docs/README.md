@@ -36,6 +36,7 @@ DeesseJS is a modern, headless CMS framework built for Next.js that provides:
 ## 🌟 Key Features
 
 ### Content Management
+
 - **Collections**: Define your content structure with typed schemas
 - **Visual Editor**: Drag-and-drop page builder
 - **Media Management**: Upload and manage images, videos, and files
@@ -43,6 +44,7 @@ DeesseJS is a modern, headless CMS framework built for Next.js that provides:
 - **Multi-Language**: Built-in internationalization support
 
 ### Developer Experience
+
 - **TypeScript First**: Full type safety with auto-generated types
 - **Hot Module Replacement**: Instant feedback during development
 - **Code Generation**: API, types, and utilities auto-generated
@@ -50,6 +52,7 @@ DeesseJS is a modern, headless CMS framework built for Next.js that provides:
 - **Convention over Configuration**: Sensible defaults, easy to override
 
 ### Next.js Integration
+
 - **App Router Support**: Native Next.js 13+ App Router integration
 - **Server Components**: Optimized for React Server Components
 - **Server Actions**: Built-in support for mutations
@@ -57,6 +60,7 @@ DeesseJS is a modern, headless CMS framework built for Next.js that provides:
 - **Streaming & Suspense**: Progressive rendering out of the box
 
 ### Performance & Scalability
+
 - **Smart Caching**: Intelligent cache invalidation and revalidation
 - **Incremental Static Regeneration**: Build static pages dynamically
 - **Edge Runtime Support**: Deploy to the edge for global performance
@@ -67,6 +71,7 @@ DeesseJS is a modern, headless CMS framework built for Next.js that provides:
 ## 📖 Documentation Structure
 
 ### 1. [Getting Started](./01-getting-started/)
+
 New to DeesseJS? Start here to learn the basics.
 
 - [Overview](./01-getting-started/overview.md) - What is DeesseJS?
@@ -76,6 +81,7 @@ New to DeesseJS? Start here to learn the basics.
 - [Project Structure](./01-getting-started/project-structure.md) - Understanding the file structure
 
 ### 2. [Core Concepts](./02-core-concepts/)
+
 Deep dive into DeesseJS architecture and concepts.
 
 - [Architecture](./02-core-concepts/architecture.md) - System architecture overview
@@ -85,9 +91,11 @@ Deep dive into DeesseJS architecture and concepts.
 - [Data Modeling](./02-core-concepts/data-modeling.md) - Designing your data model
 
 ### 3. [Features](./03-features/)
+
 Explore all DeesseJS features in detail.
 
 #### Content Management
+
 - [Overview](./03-features/content-management/) - Content management features
 - [Creating Content](./03-features/content-management/creating-content.md) - Creating content
 - [Editing Content](./03-features/content-management/editing-content.md) - Editing content
@@ -95,29 +103,34 @@ Explore all DeesseJS features in detail.
 - [Media Management](./03-features/content-management/media-management.md) - Managing media
 
 #### Admin Dashboard
+
 - [Overview](./03-features/admin-dashboard/) - Dashboard interface
 - [Collections Management](./03-features/admin-dashboard/collections-management.md) - Manage collections
 - [Settings](./03-features/admin-dashboard/settings.md) - Configure settings
 
 #### Visual Editor
+
 - [Overview](./03-features/visual-editor/) - Visual page editor
 - [Page Builder](./03-features/visual-editor/page-builder.md) - Building pages
 - [Components](./03-features/visual-editor/components.md) - Using components
 - [Templates](./03-features/visual-editor/templates.md) - Working with templates
 
 #### API
+
 - [Auto-Generated API](./03-features/api/auto-generated.md) - Auto-generated endpoints
 - [REST API](./03-features/api/rest-api.md) - RESTful API
 - [GraphQL](./03-features/api/graphql.md) - GraphQL support
 - [Webhooks](./03-features/api/webhooks.md) - Webhook integration
 
 #### Plugins
+
 - [Overview](./03-features/plugins/) - Plugin system
 - [Extensions vs Plugins](./03-features/plugins/extensions-vs-plugins.md) - Understanding the difference
 - [Plugin Examples](./03-features/plugins/plugin-examples.md) - Example plugins
 - [Creating Plugins](./03-features/plugins/creating-plugins.md) - Building your own plugins
 
 ### 4. [Next.js Integration](./04-nextjs-integration/)
+
 Complete guide to integrating with Next.js App Router.
 
 - [Getting Started](./04-nextjs-integration/getting-started.md) - Integration overview
@@ -132,6 +145,7 @@ Complete guide to integrating with Next.js App Router.
 - [Advanced](./04-nextjs-integration/advanced/) - Advanced topics
 
 ### 5. [Enhancements](./05-enhancements/)
+
 Recommended enhancements for advanced Next.js features.
 
 - [Overview](./05-enhancements/README.md) - Enhancement roadmap
@@ -144,6 +158,7 @@ Recommended enhancements for advanced Next.js features.
 - [Server Actions](./05-enhancements/server-actions/) - Server Action patterns
 
 ### 6. [API Reference](./06-api-reference/)
+
 Complete API reference.
 
 - [Configuration](./06-api-reference/configuration.md) - Configuration API
@@ -154,45 +169,54 @@ Complete API reference.
 - [Types](./06-api-reference/types.md) - TypeScript types
 
 ### 7. [Guides](./07-guides/)
+
 Practical guides for common tasks.
 
 #### Deployment
+
 - [Vercel](./07-guides/deployment/vercel.md) - Deploy to Vercel
 - [Docker](./07-guides/deployment/docker.md) - Docker deployment
 - [Self-Hosted](./07-guides/deployment/self-hosted.md) - Self-hosting guide
 - [Performance](./07-guides/deployment/performance.md) - Performance optimization
 
 #### Testing
+
 - [Unit Testing](./07-guides/testing/unit-testing.md) - Writing unit tests
 - [Integration Testing](./07-guides/testing/integration-testing.md) - Integration tests
 - [E2E Testing](./07-guides/testing/e2e-testing.md) - End-to-end tests
 
 #### Migration
+
 - [From v1](./07-guides/migration/migrating-from-v1.md) - Migrate from v1
 - [From Other CMS](./07-guides/migration/migrating-from-cms.md) - Migrate from other CMS
 - [Breaking Changes](./07-guides/migration/breaking-changes.md) - Breaking changes guide
 
 #### Best Practices
+
 - [Performance](./07-guides/best-practices/performance.md) - Performance best practices
 - [Security](./07-guides/best-practices/security.md) - Security guidelines
 - [Accessibility](./07-guides/best-practices/accessibility.md) - A11y guidelines
 - [SEO](./07-guides/best-practices/seo.md) - SEO best practices
 
 ### 8. [Resources](./08-resources/)
+
 Additional resources and examples.
 
 #### Examples
+
 - [Blog](./08-resources/examples/blog.md) - Blog example
 - [E-commerce](./08-resources/examples/ecommerce.md) - E-commerce example
 - [Dashboard](./08-resources/examples/dashboard.md) - Dashboard example
 - [Portfolio](./08-resources/examples/portfolio.md) - Portfolio example
 
 #### Tutorials
+
 - [Build a Blog](./08-resources/tutorials/build-a-blog.md) - Blog tutorial
 - [Build E-commerce](./08-resources/tutorials/build-an-ecommerce.md) - E-commerce tutorial
 - [Build SaaS](./08-resources/tutorials/build-a-saas.md) - SaaS tutorial
 
 #### Support
+
 - [FAQ](./08-resources/faq.md) - Frequently asked questions
 - [Glossary](./08-resources/glossary.md) - Terminology
 - [Changelog](./08-resources/changelog.md) - Version history
@@ -204,18 +228,21 @@ Additional resources and examples.
 ## 🎓 Learning Paths
 
 ### Beginner Path (1-2 weeks)
+
 1. Start with [Getting Started](./01-getting-started/)
 2. Learn [Core Concepts](./02-core-concepts/)
 3. Follow the [Quick Start](./01-getting-started/quick-start.md) tutorial
 4. Build your first project
 
 ### Intermediate Path (3-4 weeks)
+
 5. Explore [Features](./03-features/)
 6. Learn [Next.js Integration](./04-nextjs-integration/)
 7. Follow the [Build a Blog](./08-resources/tutorials/build-a-blog.md) tutorial
 8. Implement [Enhancements](./05-enhancements/) (Phase 1-2)
 
 ### Advanced Path (5-8 weeks)
+
 9. Deep dive into [Advanced Topics](./04-nextjs-integration/advanced/)
 10. Implement all [Enhancements](./05-enhancements/)
 11. Follow [Best Practices](./07-guides/best-practices/)
@@ -242,7 +269,7 @@ npm run dev
 
 ```typescript
 // deesse.config.ts
-import { defineConfig } from '@deessejs/core'
+import { defineConfig } from '@deessejs/core';
 
 export const config = defineConfig({
   collections: [
@@ -255,14 +282,14 @@ export const config = defineConfig({
       ],
     },
   ],
-})
+});
 ```
 
 ### Create Your First Post
 
 ```typescript
 // Server Action
-import { db } from '@deessejs/db'
+import { db } from '@deessejs/db';
 
 export async function createPost(formData: FormData) {
   const post = await db.posts.create({
@@ -271,9 +298,9 @@ export async function createPost(formData: FormData) {
       content: formData.get('content'),
       published: false,
     },
-  })
+  });
 
-  return post
+  return post;
 }
 ```
 

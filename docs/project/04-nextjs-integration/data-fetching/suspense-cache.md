@@ -7,24 +7,28 @@ Advanced React Suspense and Next.js Cache integration for optimal data fetching 
 ## Features
 
 ### Automatic Suspense Boundaries
+
 - Suspense boundaries for dynamic route params
 - Streaming HTML with fallbacks
 - Progressive rendering
 - Loading states per component
 
 ### use Cache Directive
+
 - Automatic `use cache` directive integration
 - Per-collection cache configuration
 - Cache tags for invalidation
 - Revalidation strategies
 
 ### Partial Prerendering (PPR)
+
 - PPR support for hybrid static/dynamic rendering
 - Shell static + content dynamic
 - Instant initial page load
 - Progressive enhancement
 
 ### Streaming with Fallbacks
+
 - Stream HTML chunks to client
 - Skeleton screens during loading
 - Progressive hydration
@@ -33,6 +37,7 @@ Advanced React Suspense and Next.js Cache integration for optimal data fetching 
 ## Suspense Patterns
 
 ### Dynamic Route Params
+
 ```typescript
 // app/blog/[slug]/page.tsx
 import { Suspense } from 'react'
@@ -50,6 +55,7 @@ export default function Page({ params }: PageProps<'/blog/[slug]'>) {
 ```
 
 ### Collection Queries
+
 ```typescript
 // Auto-generated Suspense boundary
 export default function BlogList() {
@@ -72,36 +78,42 @@ async function BlogListContent() {
 ## Cache Patterns
 
 ### Per-Collection Cache Strategy
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    cache: {
-      strategy: 'cache',
-      tags: ['posts'],
-      revalidate: 3600, // 1 hour
-    }
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      cache: {
+        strategy: 'cache',
+        tags: ['posts'],
+        revalidate: 3600, // 1 hour
+      },
+    },
+  ],
+});
 ```
 
 ### Automatic Cache Tags
+
 - Collection-level tags: `posts`, `users`, `products`
 - Item-level tags: `post:123`, `user:456`
 - Query-based tags: `posts:published`
 - Automatic invalidation on mutations
 
 ### Cache Revalidation
+
 ```typescript
 // Automatic revalidation on mutation
-await db.posts.update({ id: 1, data: { title: 'New Title' } })
+await db.posts.update({ id: 1, data: { title: 'New Title' } });
 // Automatically invalidates tags: ['posts', 'post:1']
 ```
 
 ## Partial Prerendering
 
 ### Shell + Content Pattern
+
 ```typescript
 // app/blog/[slug]/page.tsx
 export const experimental_ppr = true
@@ -120,6 +132,7 @@ export default function Page({ params }: PageProps<'/blog/[slug]'>) {
 ```
 
 ### PPR Configuration
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -127,14 +140,15 @@ export const config = defineConfig({
     partialPrerendering: {
       enabled: true,
       defaultStrategy: 'hybrid',
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ## Streaming Architecture
 
 ### Progressive HTML Streaming
+
 1. Server renders static shell
 2. Streams HTML to client progressively
 3. Suspense boundaries show fallbacks
@@ -142,6 +156,7 @@ export const config = defineConfig({
 5. Page becomes interactive incrementally
 
 ### Loading States
+
 ```typescript
 // Auto-generated skeleton components
 export function PostSkeleton() {
@@ -158,6 +173,7 @@ export function PostSkeleton() {
 ## Cache Strategies
 
 ### Strategy: Static
+
 ```typescript
 cache: {
   strategy: 'static',
@@ -166,6 +182,7 @@ cache: {
 ```
 
 ### Strategy: Stale While Revalidate
+
 ```typescript
 cache: {
   strategy: 'swr',
@@ -174,6 +191,7 @@ cache: {
 ```
 
 ### Strategy: On-Demand
+
 ```typescript
 cache: {
   strategy: 'ondemand',
@@ -192,14 +210,14 @@ export const config = defineConfig({
     tags: {
       prefix: 'deesse',
       delimiter: ':',
-    }
+    },
   },
   suspense: {
     autoBoundaries: true,
     fallbackComponent: 'Skeleton',
     streaming: true,
-  }
-})
+  },
+});
 ```
 
 ## Benefits

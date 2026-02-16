@@ -113,6 +113,7 @@ deessejs/
 **Purpose:** CLI tool to bootstrap new DeesseJS projects
 
 **Key Files:**
+
 - `bin/index.js` - Executable entry point (shebang: `#!/usr/bin/env node`)
 - `src/index.ts` - Main CLI logic
 - `src/prompts.ts` - Interactive questions using `@clack/prompts`
@@ -123,6 +124,7 @@ deessejs/
 - `src/utils/install.ts` - Run package manager install
 
 **Dependencies:**
+
 - `@clack/prompts` - Interactive prompts
 - `commander` - CLI argument parsing
 - `picocolors` - Terminal colors
@@ -130,6 +132,7 @@ deessejs/
 - `replace-in-file` - String replacement
 
 **Usage:**
+
 ```bash
 # Local development
 pnpm --filter create-deesse-app dev
@@ -148,14 +151,16 @@ npx create-deesse-app@latest
 **Purpose:** Core DeesseJS framework
 
 **Responsibilities:**
+
 - Collection system
 - Configuration management
 - Plugin system
 - Type generation
 
 **Will export:**
+
 ```typescript
-import { defineConfig, defineCollection } from '@deessejs/core'
+import { defineConfig, defineCollection } from '@deessejs/core';
 ```
 
 ---
@@ -165,12 +170,14 @@ import { defineConfig, defineCollection } from '@deessejs/core'
 **Purpose:** ORM layer on top of Drizzle
 
 **Responsibilities:**
+
 - Drizzle ORM wrapper
 - Auto-generated CRUD methods
 - Migration system
 - Type-safe queries
 
 **Will export:**
+
 ```typescript
 import { db } from '@deessejs/orm'
 
@@ -188,11 +195,13 @@ db.posts.delete({ where: {...} })
 **Purpose:** Admin dashboard for content management
 
 **Structure:**
+
 - Next.js 15+ App Router
 - Accessible at `/admin/[...slug]`
 - Plugin system for extensions
 
 **Will provide:**
+
 - Content management UI
 - Collection management
 - Media management
@@ -207,6 +216,7 @@ db.posts.delete({ where: {...} })
 **Purpose:** Rapid prototyping and learning
 
 **Contents:**
+
 - Next.js 15+ (App Router)
 - TypeScript
 - Tailwind CSS
@@ -224,6 +234,7 @@ db.posts.delete({ where: {...} })
 **Purpose:** Standard projects (recommended)
 
 **Contents:**
+
 - Next.js 15+ (App Router)
 - TypeScript
 - Tailwind CSS
@@ -243,6 +254,7 @@ db.posts.delete({ where: {...} })
 **Purpose:** Production-ready applications
 
 **Contents:**
+
 - Everything from `default`
 - Vitest UI mode
 - Test coverage
@@ -270,6 +282,7 @@ packages:
 ```
 
 **Why pnpm?**
+
 - Fast installation
 - Efficient disk space usage
 - Strict dependency management
@@ -349,17 +362,17 @@ test-results/
 
 ## 📊 Directory Summary
 
-| Directory | Purpose | Status |
-|-----------|---------|--------|
-| `packages/create-deesse-app/` | CLI tool | 🆕 To create |
-| `packages/core/` | Core framework | ⏳ Future |
-| `packages/orm/` | ORM layer | ⏳ Future |
-| `packages/admin/` | Admin dashboard | ⏳ Future |
-| `templates/minimal/` | Minimal template | 🆕 To create |
-| `templates/default/` | Default template | 🆕 To create |
-| `templates/full-stack/` | Full-stack template | 🆕 To create |
-| `apps/web/` | Documentation site | ✅ Existing |
-| `docs/` | Markdown docs | ✅ Existing |
+| Directory                     | Purpose             | Status       |
+| ----------------------------- | ------------------- | ------------ |
+| `packages/create-deesse-app/` | CLI tool            | 🆕 To create |
+| `packages/core/`              | Core framework      | ⏳ Future    |
+| `packages/orm/`               | ORM layer           | ⏳ Future    |
+| `packages/admin/`             | Admin dashboard     | ⏳ Future    |
+| `templates/minimal/`          | Minimal template    | 🆕 To create |
+| `templates/default/`          | Default template    | 🆕 To create |
+| `templates/full-stack/`       | Full-stack template | 🆕 To create |
+| `apps/web/`                   | Documentation site  | ✅ Existing  |
+| `docs/`                       | Markdown docs       | ✅ Existing  |
 
 ---
 
@@ -412,6 +425,7 @@ node /path/to/deessejs/packages/create-deesse-app/bin/index.js
 ## 🎯 Next Steps
 
 ### Phase 1: Foundation ✅
+
 - [x] Architecture design
 - [x] Documentation (v0.0.1)
 - [ ] Create `pnpm-workspace.yaml`
@@ -419,6 +433,7 @@ node /path/to/deessejs/packages/create-deesse-app/bin/index.js
 - [ ] Set up TypeScript configuration
 
 ### Phase 2: CLI Package
+
 - [ ] Create `packages/create-deesse-app/` structure
 - [ ] Implement basic CLI with `@clack/prompts`
 - [ ] Add template copying logic
@@ -426,11 +441,13 @@ node /path/to/deessejs/packages/create-deesse-app/bin/index.js
 - [ ] Add git initialization
 
 ### Phase 3: Templates
+
 - [ ] Create `minimal` template
 - [ ] Create `default` template
 - [ ] Create `full-stack` template
 
 ### Phase 4: Testing
+
 - [ ] Test CLI with all templates
 - [ ] Test generated projects
 - [ ] Add CI/CD for CLI

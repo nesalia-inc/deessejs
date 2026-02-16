@@ -7,6 +7,7 @@ Recommendations for enhancing DeesseJS's ImageResponse integration for dynamic O
 ## Current State Analysis
 
 Based on the documentation analysis, DeesseJS already has basic ImageResponse support in:
+
 - `docs\next\metadata-icons-manifest.md` - Basic icon generation
 - `docs\next\opengraph-twitter-images.md` - OG and Twitter card generation
 
@@ -193,26 +194,28 @@ Enhance collection config to automatically generate OG images:
 ```typescript
 // deesse.config.ts enhancement
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    seo: {
-      openGraphImage: {
-        enabled: true,
-        template: 'blog',
-        dynamicFields: {
-          title: 'title',
-          subtitle: 'excerpt',
-          author: 'author.name',
-          imageUrl: 'featuredImage.url',
+  collections: [
+    {
+      name: 'posts',
+      seo: {
+        openGraphImage: {
+          enabled: true,
+          template: 'blog',
+          dynamicFields: {
+            title: 'title',
+            subtitle: 'excerpt',
+            author: 'author.name',
+            imageUrl: 'featuredImage.url',
+          },
+          fallback: {
+            title: 'Blog Post',
+            gradient: { from: '#667eea', to: '#764ba2' },
+          },
         },
-        fallback: {
-          title: 'Blog Post',
-          gradient: { from: '#667eea', to: '#764ba2' },
-        }
-      }
-    }
-  }]
-})
+      },
+    },
+  ],
+});
 ```
 
 ### 3. Image Bundle Size Optimization
@@ -229,22 +232,22 @@ export async function checkImageBundleSize(
   const估算Size =
     JSON.stringify(element).length +
     fonts.reduce((acc, f) => acc + f.data.byteLength, 0) +
-    images.reduce((acc, i) => acc + i.data.byteLength, 0)
+    images.reduce((acc, i) => acc + i.data.byteLength, 0);
 
-  const suggestions = []
+  const suggestions = [];
 
   if (估算Size > 500 * 1024) {
-    suggestions.push('Consider reducing font file sizes - use TTF instead of WOFF')
-    suggestions.push('Optimize images: use WebP format, reduce dimensions')
-    suggestions.push('Load some assets at runtime instead of bundling')
-    suggestions.push('Simplify JSX structure and reduce text length')
+    suggestions.push('Consider reducing font file sizes - use TTF instead of WOFF');
+    suggestions.push('Optimize images: use WebP format, reduce dimensions');
+    suggestions.push('Load some assets at runtime instead of bundling');
+    suggestions.push('Simplify JSX structure and reduce text length');
   }
 
   return {
     size: 估算Size,
     withinLimit: 估算Size <= 500 * 1024,
     suggestions,
-  }
+  };
 }
 ```
 
@@ -254,24 +257,24 @@ Centralized font loading with caching:
 
 ```typescript
 // lib/image-fonts.ts
-import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
-import { cache } from 'react'
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { cache } from 'react';
 
 export interface FontConfig {
-  name: string
-  path: string
-  weight: number
-  style: 'normal' | 'italic'
+  name: string;
+  path: string;
+  weight: number;
+  style: 'normal' | 'italic';
 }
 
-const fontCache = new Map<string, ArrayBuffer>()
+const fontCache = new Map<string, ArrayBuffer>();
 
 export async function loadFont(config: FontConfig): Promise<{
-  name: string
-  data: ArrayBuffer
-  weight: number
-  style: 'normal' | 'italic'
+  name: string;
+  data: ArrayBuffer;
+  weight: number;
+  style: 'normal' | 'italic';
 }> {
   if (fontCache.has(config.path)) {
     return {
@@ -279,22 +282,22 @@ export async function loadFont(config: FontConfig): Promise<{
       data: fontCache.get(config.path)!,
       weight: config.weight,
       style: config.style,
-    }
+    };
   }
 
-  const data = await readFile(join(process.cwd(), config.path))
-  fontCache.set(config.path, data)
+  const data = await readFile(join(process.cwd(), config.path));
+  fontCache.set(config.path, data);
 
   return {
     name: config.name,
     data,
     weight: config.weight,
     style: config.style,
-  }
+  };
 }
 
 export async function loadFonts(configs: FontConfig[]) {
-  return Promise.all(configs.map(loadFont))
+  return Promise.all(configs.map(loadFont));
 }
 ```
 
@@ -309,9 +312,9 @@ export const config = defineConfig({
     imageGeneration: {
       emoji: 'twemoji', // 'twemoji' | 'blobmoji' | 'noto' | 'openmoji'
       fallbackEmoji: '🎯',
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ### 6. Dynamic Image Variants
@@ -321,37 +324,37 @@ Generate multiple image sizes for different platforms:
 ```typescript
 // lib/image-variants.ts
 export interface ImageVariant {
-  name: string
-  width: number
-  height: number
-  contentType: string
+  name: string;
+  width: number;
+  height: number;
+  contentType: string;
 }
 
 export const imageVariants: Record<string, ImageVariant[]> = {
-  'opengraph': [
+  opengraph: [
     { name: 'default', width: 1200, height: 630, contentType: 'image/png' },
     { name: 'square', width: 1200, height: 1200, contentType: 'image/png' },
     { name: 'twitter-large', width: 1200, height: 600, contentType: 'image/png' },
   ],
-  'twitter': [
+  twitter: [
     { name: 'summary', width: 1200, height: 600, contentType: 'image/png' },
     { name: 'large', width: 1200, height: 630, contentType: 'image/png' },
   ],
-  'favicon': [
+  favicon: [
     { name: 'icon-32', width: 32, height: 32, contentType: 'image/png' },
     { name: 'icon-192', width: 192, height: 192, contentType: 'image/png' },
     { name: 'icon-512', width: 512, height: 512, contentType: 'image/png' },
   ],
-}
+};
 
 export function generateImageVariants(
   type: string,
   generator: (variant: ImageVariant) => ImageResponse
 ) {
-  return imageVariants[type].map(variant => ({
+  return imageVariants[type].map((variant) => ({
     ...variant,
     response: generator(variant),
-  }))
+  }));
 }
 ```
 
@@ -446,5 +449,5 @@ export const config = defineConfig({
       twitter: ['summary', 'large'],
     },
   },
-})
+});
 ```

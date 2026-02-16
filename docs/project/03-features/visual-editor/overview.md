@@ -7,6 +7,7 @@ A visual page editor that combines the best of Unity and Figma for building page
 ## Unity + Figma Hybrid
 
 ### Visual Design (Figma-like)
+
 - Drag and drop interface
 - Visual layout editing
 - Style and appearance controls
@@ -14,6 +15,7 @@ A visual page editor that combines the best of Unity and Figma for building page
 - Real-time visual feedback
 
 ### Backend Logic (Unity-like)
+
 - Connect backend elements to visual components
 - Add interactivity and logic
 - Data binding to collections
@@ -23,6 +25,7 @@ A visual page editor that combines the best of Unity and Figma for building page
 ## The Mix
 
 ### Design Meets Functionality
+
 - Create beautiful designs visually
 - Attach backend functionality to any element
 - Bind data from collections to UI components

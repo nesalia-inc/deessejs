@@ -59,11 +59,7 @@ Location: ./${projectName}`,
   s.stop('Project created (dummy version)');
 
   // Next steps
-  const nextSteps = [
-    `cd ${projectName}`,
-    'pnpm install',
-    'pnpm dev',
-  ];
+  const nextSteps = [`cd ${projectName}`, 'pnpm install', 'pnpm dev'];
 
   p.note(nextSteps.join('\n'), 'Next steps');
 

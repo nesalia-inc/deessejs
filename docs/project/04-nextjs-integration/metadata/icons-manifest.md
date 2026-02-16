@@ -7,12 +7,14 @@ Auto-generated icons, favicons, and web app manifests for DeesseJS collections a
 ## Features
 
 ### Auto-Generated Icons
+
 - favicon, icon, apple-icon from collections
 - Programmatic icon generation with ImageResponse
 - Multiple sizes and formats
 - Per-collection branding
 
 ### Web App Manifest
+
 - Auto-generated manifest.json
 - Collection-based app configuration
 - PWA support
@@ -21,6 +23,7 @@ Auto-generated icons, favicons, and web app manifests for DeesseJS collections a
 ## Icon Generation
 
 ### Image File Icons
+
 ```
 app/
   favicon.ico              # Browser tab icon
@@ -29,6 +32,7 @@ app/
 ```
 
 ### Programmatic Icons
+
 ```typescript
 // app/icon.tsx
 import { ImageResponse } from 'next/og'
@@ -61,6 +65,7 @@ export default function Icon() {
 ```
 
 ### Apple Icon
+
 ```typescript
 // app/apple-icon.tsx
 import { ImageResponse } from 'next/og'
@@ -95,6 +100,7 @@ export default function AppleIcon() {
 ## Collection-Based Icons
 
 ### Per-Collection Icons
+
 ```typescript
 // app/blog/icon.tsx
 import { ImageResponse } from 'next/og'
@@ -126,6 +132,7 @@ export default function Icon() {
 ```
 
 ### Configuration
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -142,16 +149,17 @@ export const config = defineConfig({
           letter: 'S',
           color: '#16a34a',
           gradient: true,
-        }
-      }
-    }
-  }
-})
+        },
+      },
+    },
+  },
+});
 ```
 
 ## Web App Manifest
 
 ### Static Manifest
+
 ```json
 // app/manifest.json
 {
@@ -173,6 +181,7 @@ export const config = defineConfig({
 ```
 
 ### Generated Manifest
+
 ```typescript
 // app/manifest.ts
 import type { MetadataRoute } from 'next'
@@ -198,10 +207,11 @@ export default function manifest(): MetadataRoute.Manifest {
 ```
 
 ### Dynamic Manifest from Config
+
 ```typescript
 // app/manifest.ts
-import type { MetadataRoute } from 'next'
-import { config } from '@deessejs/config'
+import type { MetadataRoute } from 'next';
+import { config } from '@deessejs/config';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -224,13 +234,14 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/png',
       },
     ],
-  }
+  };
 }
 ```
 
 ## Configuration
 
 ### Branding Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -242,7 +253,7 @@ export const config = defineConfig({
       background: '#ffffff',
       theme: '#000000',
       primary: '#2563eb',
-    }
+    },
   },
   branding: {
     icons: {
@@ -255,12 +266,13 @@ export const config = defineConfig({
       enabled: true,
       display: 'standalone',
       orientation: 'portrait',
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ### Icon Generator Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -277,14 +289,15 @@ export const config = defineConfig({
         angle: 135,
       },
       shape: 'square', // 'square' | 'rounded' | 'circle'
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ## Multiple Icons
 
 ### Icon Sizes
+
 ```typescript
 // app/icon.tsx
 import { ImageResponse } from 'next/og'
@@ -311,6 +324,7 @@ export default function Icon() {
 ```
 
 ### Auto-Generated Sizes
+
 ```
 /icon              → 32x32
 /icon-96           → 96x96
@@ -323,6 +337,7 @@ export default function Icon() {
 ## Dynamic Icons with Params
 
 ### Collection-Based Icons
+
 ```typescript
 // app/[locale]/icon.tsx
 import { ImageResponse } from 'next/og'

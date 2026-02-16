@@ -7,17 +7,20 @@ Advanced Next.js layout patterns with DeesseJS integration, including typed layo
 ## Features
 
 ### LayoutProps Typing
+
 - Auto-generated `LayoutProps<'/route'>` helper
 - Strongly typed params inferred from directory structure
 - Typed named slots for parallel routes
 - Global helper available after type generation
 
 ### Params as Promises
+
 - params prop is now a promise (Next.js 15)
 - Async/await or React.use() to access values
 - Backward compatibility with synchronous access (deprecated)
 
 ### Nested Layouts
+
 - Deeply nested layout hierarchies
 - Shared UI across route segments
 - Collection-based layout generation
@@ -26,6 +29,7 @@ Advanced Next.js layout patterns with DeesseJS integration, including typed layo
 ## Layout Patterns
 
 ### Root Layout
+
 ```typescript
 // app/layout.tsx
 export default function RootLayout({
@@ -44,6 +48,7 @@ export default function RootLayout({
 ```
 
 ### Collection Layout
+
 ```typescript
 // app/blog/layout.tsx
 export default async function BlogLayout({
@@ -63,6 +68,7 @@ export default async function BlogLayout({
 ```
 
 ### Dynamic Layout with Params
+
 ```typescript
 // app/[locale]/layout.tsx
 export default async function LocaleLayout({
@@ -80,6 +86,7 @@ export default async function LocaleLayout({
 ```
 
 ### Parallel Route Slots Layout
+
 ```typescript
 // app/@admin/layout.tsx
 export default function AdminLayout(props: LayoutProps<'/@admin'>) {
@@ -100,6 +107,7 @@ export default function AdminLayout(props: LayoutProps<'/@admin'>) {
 ## Multiple Root Layouts
 
 ### Route Group Pattern
+
 ```
 app/
   (shop)/
@@ -113,6 +121,7 @@ app/
 ```
 
 ### Dedicated Root Layouts
+
 ```
 app/
   dashboard/
@@ -126,11 +135,13 @@ app/
 ## Layout Caching
 
 ### Automatic Layout Caching
+
 - Layouts cached during navigation
 - No unnecessary server requests
 - Reusable across routes
 
 ### Data Fetching in Layouts
+
 ```typescript
 // Deduped with React.cache or fetch
 export async function getUser(id: string) {
@@ -165,6 +176,7 @@ export default async function Page() {
 ## Active Nav Links
 
 ### useSelectedLayoutSegment
+
 ```typescript
 // app/ui/nav-link.tsx
 'use client'
@@ -204,18 +216,19 @@ export const config = defineConfig({
       posts: {
         layout: 'blog',
         nested: true,
-      }
+      },
     },
     parallelRoutes: {
       admin: ['@analytics', '@settings'],
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ## Params Handling
 
 ### Server Component (Async)
+
 ```typescript
 export default async function Layout({
   params,
@@ -226,6 +239,7 @@ export default async function Layout({
 ```
 
 ### Client Component (use())
+
 ```typescript
 'use client'
 
@@ -244,6 +258,7 @@ export default function Layout({
 ## Layout Exports
 
 ### Metadata in Layouts
+
 ```typescript
 import type { Metadata } from 'next'
 

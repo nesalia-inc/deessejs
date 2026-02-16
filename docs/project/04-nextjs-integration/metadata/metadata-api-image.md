@@ -7,6 +7,7 @@ Using `generateImageMetadata` to generate multiple versions of images for Deesse
 ## Features
 
 ### Multiple Image Versions
+
 - Generate different sizes of the same image
 - Dynamic metadata based on params
 - External data integration
@@ -15,6 +16,7 @@ Using `generateImageMetadata` to generate multiple versions of images for Deesse
 ## Basic Usage
 
 ### Multiple Icon Sizes
+
 ```typescript
 // app/icon.tsx
 import { ImageResponse } from 'next/og'
@@ -70,6 +72,7 @@ export default async function Icon({ id }: { id: Promise<string> }) {
 ## Dynamic Images with External Data
 
 ### Collection-Based Images
+
 ```typescript
 // app/posts/[id]/opengraph-image.tsx
 import { ImageResponse } from 'next/og'
@@ -137,6 +140,7 @@ export default async function Image({
 ```
 
 ### Multi-Language Images
+
 ```typescript
 // app/[locale]/opengraph-image.tsx
 import { ImageResponse } from 'next/og'
@@ -190,6 +194,7 @@ export default async function Image({
 ## Configuration
 
 ### Auto-Generated Image Metadata
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -202,38 +207,42 @@ export const config = defineConfig({
         { name: 'twitter', width: 1200, height: 600 },
         { name: 'square', width: 1200, height: 1200 },
       ],
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ### Collection Image Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    seo: {
-      openGraphImage: {
-        enabled: true,
-        multipleSizes: true,
-        sizes: [
-          { width: 1200, height: 630 },
-          { width: 800, height: 418 },
-          { width: 400, height: 209 },
-        ]
-      }
-    }
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      seo: {
+        openGraphImage: {
+          enabled: true,
+          multipleSizes: true,
+          sizes: [
+            { width: 1200, height: 630 },
+            { width: 800, height: 418 },
+            { width: 400, height: 209 },
+          ],
+        },
+      },
+    },
+  ],
+});
 ```
 
 ## Advanced Patterns
 
 ### Dynamic Image Selection
+
 ```typescript
 export function generateImageMetadata({ params }: { params: { id: string } }) {
-  const post = await fetchPost(params.id)
+  const post = await fetchPost(params.id);
 
   return [
     {
@@ -241,19 +250,20 @@ export function generateImageMetadata({ params }: { params: { id: string } }) {
       size: { width: 1200, height: 630 },
       alt: post.title,
     },
-    ...post.hasGallery && {
+    ...(post.hasGallery && {
       id: 'gallery',
       size: { width: 1200, height: 600 },
       alt: `${post.title} - Gallery`,
-    },
-  ]
+    }),
+  ];
 }
 ```
 
 ### Conditional Metadata
+
 ```typescript
 export function generateImageMetadata({ params }: { params: { id: string } }) {
-  const post = await fetchPost(params.id)
+  const post = await fetchPost(params.id);
 
   const images = [
     {
@@ -261,33 +271,36 @@ export function generateImageMetadata({ params }: { params: { id: string } }) {
       size: { width: 1200, height: 630 },
       alt: post.title,
     },
-  ]
+  ];
 
   if (post.featuredImage) {
     images.push({
       id: 'with-image',
       size: { width: 1200, height: 630 },
       alt: `${post.title} - Featured Image`,
-    })
+    });
   }
 
-  return images
+  return images;
 }
 ```
 
 ## Best Practices
 
 ### Always Provide Alt Text
+
 - Accessibility requirement
 - SEO benefit
 - Describe image content
 
 ### Use Appropriate Sizes
+
 - OG: 1200x630 (default), 1200x600 (Twitter)
 - Icons: 32x32, 192x192, 512x512
 - Square: 1:1 aspect ratio
 
 ### Generate Images Efficiently
+
 - Cache external data fetches
 - Use shared components
 - Optimize ImageResponse calls

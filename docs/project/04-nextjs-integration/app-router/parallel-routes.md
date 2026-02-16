@@ -7,6 +7,7 @@ Deep integration with Next.js Parallel Routes and Intercepts for advanced admin 
 ## Features
 
 ### Automatic default.js Generation
+
 - Auto-generate `default.js` files for Parallel Routes slots
 - Fallback UI when active state cannot be recovered
 - Handle hard navigation (full-page load) vs soft navigation
@@ -14,6 +15,7 @@ Deep integration with Next.js Parallel Routes and Intercepts for advanced admin 
 - Preserve old behavior with 404 if needed
 
 ### Admin Dashboard Parallel Routes
+
 - Pre-configured slots for admin sections
 - `@analytics` - Analytics and metrics
 - `@content` - Content management
@@ -22,6 +24,7 @@ Deep integration with Next.js Parallel Routes and Intercepts for advanced admin 
 - Maintain independent navigation states per slot
 
 ### Intercepts for Modals
+
 - Intercept routes for modal patterns
 - Preview modals (preview content without leaving list)
 - Edit modals (edit in place)
@@ -30,6 +33,7 @@ Deep integration with Next.js Parallel Routes and Intercepts for advanced admin 
 - Deep linking with modal states
 
 ### Route State Management
+
 - Soft navigation state tracking
 - Hard navigation recovery with defaults
 - URL-based modal states
@@ -39,6 +43,7 @@ Deep integration with Next.js Parallel Routes and Intercepts for advanced admin 
 ## Examples
 
 ### Admin Slot Structure
+
 ```
 app/
   @analytics/
@@ -54,6 +59,7 @@ app/
 ```
 
 ### Intercept Pattern for Preview
+
 ```
 app/
   (.)
@@ -80,10 +86,10 @@ export const config = defineConfig({
         preview: true,
         edit: true,
         delete: true,
-      }
-    }
-  }
-})
+      },
+    },
+  },
+});
 ```
 
 ## Benefits

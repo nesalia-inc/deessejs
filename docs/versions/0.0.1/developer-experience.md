@@ -69,10 +69,7 @@ deessejs/
 ```json
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [
-    "**/.env.*local",
-    ".env"
-  ],
+  "globalDependencies": ["**/.env.*local", ".env"],
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
@@ -162,35 +159,38 @@ For v0.0.1, each package manages its own **local ESLint configuration**. This ke
 #### `packages/create-deesse-app/eslint.config.js`
 
 ```javascript
-import tseslint from "typescript-eslint";
+import tseslint from 'typescript-eslint';
 
 export default [
   {
     ignores: [
-      "**/node_modules/**",
-      "**/dist/**",
-      "**/.next/**",
-      "**/coverage/**",
-      "**/playwright-report/**"
-    ]
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.next/**',
+      '**/coverage/**',
+      '**/playwright-report/**',
+    ],
   },
   ...tseslint.configs.recommended,
   {
     rules: {
       // TypeScript
-      "@typescript-eslint/no-unused-vars": ["error", {
-        argsIgnorePattern: "^_",
-        varsIgnorePattern: "^_"
-      }],
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/explicit-function-return-type": "off",
-      "@typescript-eslint/explicit-module-boundary-types": "off",
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
 
       // General
-      "no-console": ["warn", { allow: ["warn", "error"] }],
-      "prefer-const": "error"
-    }
-  }
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'prefer-const': 'error',
+    },
+  },
 ];
 ```
 
@@ -218,29 +218,29 @@ Templates include React-specific rules:
 #### `templates/default/eslint.config.js`
 
 ```javascript
-import tseslint from "typescript-eslint";
-import eslintReact from "eslint-plugin-react";
+import tseslint from 'typescript-eslint';
+import eslintReact from 'eslint-plugin-react';
 
 export default [
   {
-    ignores: ["**/node_modules/**", "**/.next/**", "**/dist/**"]
+    ignores: ['**/node_modules/**', '**/.next/**', '**/dist/**'],
   },
   ...tseslint.configs.recommended,
   {
     plugins: {
-      react: eslintReact
+      react: eslintReact,
     },
     rules: {
-      "react/react-in-jsx-scope": "off",
-      "react/prop-types": "off",
-      "@typescript-eslint/no-unused-vars": "error"
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+      '@typescript-eslint/no-unused-vars': 'error',
     },
     settings: {
       react: {
-        version: "detect"
-      }
-    }
-  }
+        version: 'detect',
+      },
+    },
+  },
 ];
 ```
 
@@ -249,6 +249,7 @@ export default [
 ### When to Add Shared Configs?
 
 Consider introducing `@deessejs/eslint-config` when:
+
 - ✅ You have 5+ packages in the monorepo
 - ✅ You find yourself copying the same config repeatedly
 - ✅ Multiple developers are working on the project
@@ -269,13 +270,13 @@ Each package uses its own **local Prettier configuration**.
 ```javascript
 module.exports = {
   semi: true,
-  trailingComma: "es5",
+  trailingComma: 'es5',
   singleQuote: true,
   printWidth: 100,
   tabWidth: 2,
   useTabs: false,
-  arrowParens: "always",
-  endOfLine: "lf"
+  arrowParens: 'always',
+  endOfLine: 'lf',
 };
 ```
 
@@ -302,14 +303,14 @@ Templates include the Tailwind plugin:
 ```javascript
 module.exports = {
   semi: true,
-  trailingComma: "es5",
+  trailingComma: 'es5',
   singleQuote: true,
   printWidth: 100,
   tabWidth: 2,
   useTabs: false,
-  arrowParens: "always",
-  endOfLine: "lf",
-  plugins: ["prettier-plugin-tailwindcss"]
+  arrowParens: 'always',
+  endOfLine: 'lf',
+  plugins: ['prettier-plugin-tailwindcss'],
 };
 ```
 
@@ -329,6 +330,7 @@ module.exports = {
 ### When to Add Shared Config?
 
 Consider introducing `@deessejs/prettier-config` when:
+
 - ✅ You have 5+ packages with identical formatting needs
 - ✅ Teams are debating formatting standards
 - ✅ You want consistent formatting across all DeesseJS projects
@@ -414,6 +416,7 @@ Templates use Next.js-specific configuration:
 ### When to Add Shared Config?
 
 Consider introducing `@deessejs/typescript-config` when:
+
 - ✅ You have 5+ packages with complex TypeScript needs
 - ✅ You're frequently updating compiler options across packages
 - ✅ You want to publish a reusable TypeScript config for the community
@@ -468,20 +471,14 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'dist/',
-        '__tests__/',
-        '**/*.test.ts',
-        '**/*.config.*'
-      ]
-    }
+      exclude: ['node_modules/', 'dist/', '__tests__/', '**/*.test.ts', '**/*.config.*'],
+    },
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
-    }
-  }
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
 });
 ```
 
@@ -511,7 +508,7 @@ test('CLI creates minimal project successfully', async ({ page }) => {
 
   execSync(`node ${__dirname}/../bin/index.js ${projectName} --yes --template minimal`, {
     cwd: '/tmp',
-    stdio: 'inherit'
+    stdio: 'inherit',
   });
 
   // Verify project structure
@@ -531,16 +528,16 @@ test('CLI creates minimal project successfully', async ({ page }) => {
 
 ## 📊 Tools Summary
 
-| Category | Tool | Purpose |
-|----------|------|---------|
-| **Build System** | Turborepo | Monorepo build orchestration |
-| **Linting** | ESLint v9 | Code linting with flat config |
-| **Formatting** | Prettier | Code formatting |
-| **Type Checking** | TypeScript 5.7+ | Static typing |
-| **TypeScript Base Config** | @tsconfig/strictest | Strictest settings |
-| **Unit Tests** | Vitest | Fast unit testing |
-| **E2E Tests** | Playwright | End-to-end testing |
-| **Package Manager** | pnpm | Efficient monorepo management |
+| Category                   | Tool                | Purpose                       |
+| -------------------------- | ------------------- | ----------------------------- |
+| **Build System**           | Turborepo           | Monorepo build orchestration  |
+| **Linting**                | ESLint v9           | Code linting with flat config |
+| **Formatting**             | Prettier            | Code formatting               |
+| **Type Checking**          | TypeScript 5.7+     | Static typing                 |
+| **TypeScript Base Config** | @tsconfig/strictest | Strictest settings            |
+| **Unit Tests**             | Vitest              | Fast unit testing             |
+| **E2E Tests**              | Playwright          | End-to-end testing            |
+| **Package Manager**        | pnpm                | Efficient monorepo management |
 
 **For CI/CD and version management tools, see** [CI/CD & Version Management](./ci-cd.md).
 
@@ -626,6 +623,7 @@ For CI/CD resources, see [CI/CD & Version Management](./ci-cd.md).
 ## 📝 Next Steps
 
 ### Phase 1: Foundation
+
 - [ ] Set up Turborepo (`turbo.json`)
 - [ ] Set up `pnpm-workspace.yaml`
 - [ ] Configure root `package.json` scripts
@@ -636,6 +634,7 @@ For CI/CD resources, see [CI/CD & Version Management](./ci-cd.md).
   - [ ] `vitest.config.ts`
 
 ### Phase 2: CI/CD
+
 See [CI/CD & Version Management](./ci-cd.md) for complete CI/CD setup.
 
 - [ ] Create GitHub Actions workflows
@@ -643,11 +642,13 @@ See [CI/CD & Version Management](./ci-cd.md) for complete CI/CD setup.
 - [ ] Configure npm tokens
 
 ### Phase 3: Package Development
+
 - [ ] Implement `create-deesse-app` CLI
 - [ ] Create templates (minimal, default, full-stack)
 - [ ] Add tests to CLI package
 
 ### Phase 4: Future Enhancement (v0.3.0+)
+
 - [ ] Evaluate need for shared configs
 - [ ] Create `tools/` if we have 5+ packages
 - [ ] Publish `@deessejs/*` configs if useful for community

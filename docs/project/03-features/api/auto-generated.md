@@ -9,12 +9,14 @@ DeesseJS automatically generates a complete API based on your collection definit
 For each collection defined in `deesse.config.ts`, DeesseJS generates:
 
 ### CRUD Endpoints
+
 - **Create**: Add new documents
 - **Read**: Fetch single or multiple documents
 - **Update**: Modify existing documents
 - **Delete**: Remove documents
 
 ### Advanced Operations
+
 - Filtering and sorting
 - Pagination
 - Relationships and joins
@@ -46,6 +48,7 @@ API Ready to Use
 ## Integration
 
 The auto-generated API works seamlessly with:
+
 - Custom operations layer (`db.posts.find()`)
 - Cache and reactivity system
 - Permissions and roles

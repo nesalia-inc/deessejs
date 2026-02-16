@@ -7,12 +7,14 @@ Using Next.js `connection()` for dynamic rendering control in DeesseJS applicati
 ## Features
 
 ### Connection()
+
 - Wait for user request before rendering
 - Exclude from prerendering
 - Non-dynamic API alternative
 - Replace unstable_noStore
 
 ### Use Cases
+
 - Real-time data (timestamps, random values)
 - User-specific content
 - Time-sensitive data
@@ -21,6 +23,7 @@ Using Next.js `connection()` for dynamic rendering control in DeesseJS applicati
 ## Basic Usage
 
 ### Wait for Request
+
 ```typescript
 // app/page.tsx
 import { connection } from 'next/server'
@@ -36,6 +39,7 @@ export default async function Page() {
 ```
 
 ### Random Values
+
 ```typescript
 import { connection } from 'next/server'
 
@@ -51,6 +55,7 @@ export default async function Page() {
 ## Time-Based Content
 
 ### Current Timestamp
+
 ```typescript
 // app/page.tsx
 import { connection } from 'next/server'
@@ -70,6 +75,7 @@ export default async function Page() {
 ```
 
 ### Countdown Timer
+
 ```typescript
 // app/giveaway/page.tsx
 import { connection } from 'next/server'
@@ -93,6 +99,7 @@ export default async function GiveawayPage() {
 ## User-Specific Content
 
 ### Personalized Greeting
+
 ```typescript
 // app/page.tsx
 import { connection } from 'next/server'
@@ -112,6 +119,7 @@ export default async function Page() {
 ```
 
 ### User Stats
+
 ```typescript
 // app/dashboard/page.tsx
 import { connection } from 'next/server'
@@ -137,6 +145,7 @@ export default async function Dashboard() {
 ## External API Data
 
 ### Real-Time API
+
 ```typescript
 // app/stocks/page.tsx
 import { connection } from 'next/server'
@@ -152,6 +161,7 @@ export default async function StocksPage() {
 ```
 
 ### Weather Data
+
 ```typescript
 // app/weather/page.tsx
 import { connection } from 'next/server'
@@ -170,6 +180,7 @@ export default async function WeatherPage() {
 ## Collection-Based Dynamic Content
 
 ### Per-Collection Connection
+
 ```typescript
 // app/posts/[slug]/page.tsx
 import { connection } from 'next/server'
@@ -189,23 +200,27 @@ export default async function PostPage(props: PageProps<'/posts/[slug]'>) {
 ```
 
 ### Configuration
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    dynamic: {
-      draftMode: true,      // Dynamic in draft mode
-      published: false,     // Static when published
-      personalized: false,  // Static for all users
-    }
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      dynamic: {
+        draftMode: true, // Dynamic in draft mode
+        published: false, // Static when published
+        personalized: false, // Static for all users
+      },
+    },
+  ],
+});
 ```
 
 ## Conditional Dynamic Rendering
 
 ### Check Before Connection
+
 ```typescript
 // app/page.tsx
 import { connection } from 'next/server'
@@ -224,6 +239,7 @@ export default async function Page() {
 ```
 
 ### Feature Flag Dynamic
+
 ```typescript
 // app/page.tsx
 import { connection } from 'next/server'
@@ -243,12 +259,14 @@ export default async function Page() {
 ## Performance Considerations
 
 ### When to Use connection()
+
 - Need dynamic content per request
 - Using Math.random(), new Date(), etc.
 - User-specific data without auth cookies
 - Time-sensitive content
 
 ### When NOT to Use connection()
+
 - Can use headers() or cookies() instead
 - Static content is acceptable
 - Can use revalidation instead
@@ -257,6 +275,7 @@ export default async function Page() {
 ## Comparison with Other APIs
 
 ### vs headers()
+
 ```typescript
 // Using headers() - automatically dynamic
 import { headers } from 'next/headers'
@@ -269,6 +288,7 @@ export default async function Page() {
 ```
 
 ### vs cookies()
+
 ```typescript
 // Using cookies() - automatically dynamic
 import { cookies } from 'next/headers'
@@ -281,6 +301,7 @@ export default async function Page() {
 ```
 
 ### vs connection()
+
 ```typescript
 // Using connection() - explicitly dynamic
 import { connection } from 'next/server'
@@ -296,20 +317,23 @@ export default async function Page() {
 ## Best Practices
 
 ### Prefer Dynamic APIs Over connection()
+
 - Use headers() when possible
 - Use cookies() when possible
 - Use connection() only when needed
 
 ### Use for Non-Dynamic APIs
+
 - Math.random()
 - new Date()
 - External changing data
 - User request context
 
 ### Document Why
+
 ```typescript
 // Use connection() for non-Dynamic APIs
-await connection() // Required for Math.random() - time-based random seed
+await connection(); // Required for Math.random() - time-based random seed
 ```
 
 ## Benefits

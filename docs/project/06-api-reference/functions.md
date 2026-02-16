@@ -7,6 +7,7 @@
 ## Functional Programming Types
 
 ### Core Types
+
 - **Maybe**: Handle optional values
 - **Result**: Handle operations that can fail
 - **Unit**: Represent void/no return
@@ -16,9 +17,11 @@
 ## Purpose
 
 ### Foundation for DeesseJS API Layer
+
 The package provides the type-safe, functional foundation for DeesseJS's API communication layer (similar to tRPC).
 
 ### Benefits
+
 - Type-safe client-server communication
 - Functional error handling
 - Composable operations

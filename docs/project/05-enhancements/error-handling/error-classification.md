@@ -7,11 +7,13 @@ Recommendations for enhancing DeesseJS's error handling system using Next.js `no
 ## Current State Analysis
 
 Based on documentation analysis, DeesseJS has:
+
 - `docs\next\advanced-error-handling.md` - Basic error handling
 - `docs\next\not-found-handling.md` - 404 handling
 - `docs\next\auth-status-pages.md` - 401/403 handling
 
 Current gaps:
+
 - No centralized error logging
 - Limited error recovery strategies
 - No error analytics dashboard
@@ -45,30 +47,26 @@ export enum ErrorSeverity {
 }
 
 export interface ErrorContext {
-  category: ErrorCategory
-  severity: ErrorSeverity
-  userMessage?: string
-  technicalMessage?: string
-  code?: string
-  metadata?: Record<string, any>
-  recoverable?: boolean
+  category: ErrorCategory;
+  severity: ErrorSeverity;
+  userMessage?: string;
+  technicalMessage?: string;
+  code?: string;
+  metadata?: Record<string, any>;
+  recoverable?: boolean;
 }
 
 export class DeesseError extends Error {
-  public readonly context: ErrorContext
-  public readonly originalError?: Error
-  public readonly timestamp: Date
+  public readonly context: ErrorContext;
+  public readonly originalError?: Error;
+  public readonly timestamp: Date;
 
-  constructor(
-    message: string,
-    context: ErrorContext,
-    originalError?: Error
-  ) {
-    super(message)
-    this.name = 'DeesseError'
-    this.context = context
-    this.originalError = originalError
-    this.timestamp = new Date()
+  constructor(message: string, context: ErrorContext, originalError?: Error) {
+    super(message);
+    this.name = 'DeesseError';
+    this.context = context;
+    this.originalError = originalError;
+    this.timestamp = new Date();
   }
 
   toJSON() {
@@ -84,113 +82,75 @@ export class DeesseError extends Error {
           stack: this.originalError.stack,
         },
       }),
-    }
+    };
   }
 }
 
 // Error factories
 export class ErrorFactory {
-  static notFound(
-    resource: string,
-    identifier?: string
-  ): DeesseError {
-    return new DeesseError(
-      `${resource}${identifier ? ` (${identifier})` : ''} not found`,
-      {
-        category: ErrorCategory.NOT_FOUND,
-        severity: ErrorSeverity.LOW,
-        userMessage: `The requested ${resource.toLowerCase()} could not be found.`,
-        code: 'NOT_FOUND',
-        recoverable: false,
-      }
-    )
+  static notFound(resource: string, identifier?: string): DeesseError {
+    return new DeesseError(`${resource}${identifier ? ` (${identifier})` : ''} not found`, {
+      category: ErrorCategory.NOT_FOUND,
+      severity: ErrorSeverity.LOW,
+      userMessage: `The requested ${resource.toLowerCase()} could not be found.`,
+      code: 'NOT_FOUND',
+      recoverable: false,
+    });
   }
 
-  static unauthorized(
-    action: string
-  ): DeesseError {
-    return new DeesseError(
-      `Unauthorized: ${action}`,
-      {
-        category: ErrorCategory.AUTHENTICATION,
-        severity: ErrorSeverity.MEDIUM,
-        userMessage: 'You must be logged in to perform this action.',
-        code: 'UNAUTHORIZED',
-        recoverable: true,
-      }
-    )
+  static unauthorized(action: string): DeesseError {
+    return new DeesseError(`Unauthorized: ${action}`, {
+      category: ErrorCategory.AUTHENTICATION,
+      severity: ErrorSeverity.MEDIUM,
+      userMessage: 'You must be logged in to perform this action.',
+      code: 'UNAUTHORIZED',
+      recoverable: true,
+    });
   }
 
-  static forbidden(
-    resource: string,
-    action: string
-  ): DeesseError {
-    return new DeesseError(
-      `Forbidden: ${action} on ${resource}`,
-      {
-        category: ErrorCategory.AUTHORIZATION,
-        severity: ErrorSeverity.MEDIUM,
-        userMessage: 'You do not have permission to perform this action.',
-        code: 'FORBIDDEN',
-        recoverable: false,
-      }
-    )
+  static forbidden(resource: string, action: string): DeesseError {
+    return new DeesseError(`Forbidden: ${action} on ${resource}`, {
+      category: ErrorCategory.AUTHORIZATION,
+      severity: ErrorSeverity.MEDIUM,
+      userMessage: 'You do not have permission to perform this action.',
+      code: 'FORBIDDEN',
+      recoverable: false,
+    });
   }
 
-  static validation(
-    field: string,
-    message: string
-  ): DeesseError {
-    return new DeesseError(
-      `Validation failed: ${field}`,
-      {
-        category: ErrorCategory.VALIDATION,
-        severity: ErrorSeverity.LOW,
-        userMessage: `Invalid ${field}: ${message}`,
-        code: 'VALIDATION_ERROR',
-        metadata: { field },
-        recoverable: true,
-      }
-    )
+  static validation(field: string, message: string): DeesseError {
+    return new DeesseError(`Validation failed: ${field}`, {
+      category: ErrorCategory.VALIDATION,
+      severity: ErrorSeverity.LOW,
+      userMessage: `Invalid ${field}: ${message}`,
+      code: 'VALIDATION_ERROR',
+      metadata: { field },
+      recoverable: true,
+    });
   }
 
-  static conflict(
-    resource: string,
-    identifier: string
-  ): DeesseError {
-    return new DeesseError(
-      `Conflict: ${resource} (${identifier}) already exists`,
-      {
-        category: ErrorCategory.CONFLICT,
-        severity: ErrorSeverity.MEDIUM,
-        userMessage: `This ${resource.toLowerCase()} already exists.`,
-        code: 'CONFLICT',
-        recoverable: true,
-      }
-    )
+  static conflict(resource: string, identifier: string): DeesseError {
+    return new DeesseError(`Conflict: ${resource} (${identifier}) already exists`, {
+      category: ErrorCategory.CONFLICT,
+      severity: ErrorSeverity.MEDIUM,
+      userMessage: `This ${resource.toLowerCase()} already exists.`,
+      code: 'CONFLICT',
+      recoverable: true,
+    });
   }
 
-  static rateLimit(
-    limit: number,
-    windowMs: number
-  ): DeesseError {
-    return new DeesseError(
-      'Rate limit exceeded',
-      {
-        category: ErrorCategory.RATE_LIMIT,
-        severity: ErrorSeverity.MEDIUM,
-        userMessage: `Too many requests. Please try again later.`,
-        code: 'RATE_LIMIT_EXCEEDED',
-        metadata: { limit, windowMs },
-        recoverable: true,
-      }
-    )
+  static rateLimit(limit: number, windowMs: number): DeesseError {
+    return new DeesseError('Rate limit exceeded', {
+      category: ErrorCategory.RATE_LIMIT,
+      severity: ErrorSeverity.MEDIUM,
+      userMessage: `Too many requests. Please try again later.`,
+      code: 'RATE_LIMIT_EXCEEDED',
+      metadata: { limit, windowMs },
+      recoverable: true,
+    });
   }
 
-  static database(
-    operation: string,
-    originalError: Error
-  ): DeesseError {
+  static database(operation: string, originalError: Error): DeesseError {
     return new DeesseError(
       `Database error during ${operation}`,
       {
@@ -201,13 +161,10 @@ export class ErrorFactory {
         recoverable: false,
       },
       originalError
-    )
+    );
   }
 
-  static externalService(
-    service: string,
-    originalError: Error
-  ): DeesseError {
+  static externalService(service: string, originalError: Error): DeesseError {
     return new DeesseError(
       `External service error: ${service}`,
       {
@@ -219,7 +176,7 @@ export class ErrorFactory {
         recoverable: true,
       },
       originalError
-    )
+    );
   }
 }
 ```
@@ -230,33 +187,33 @@ Comprehensive error logging system:
 
 ```typescript
 // lib/errors/logging.ts
-import { DeesseError } from './classification'
+import { DeesseError } from './classification';
 
 export interface ErrorLog {
-  id: string
-  timestamp: Date
-  error: DeesseError
+  id: string;
+  timestamp: Date;
+  error: DeesseError;
   request: {
-    url: string
-    method: string
-    headers: Record<string, string>
-    body?: any
-    userId?: string
-    sessionId?: string
-  }
+    url: string;
+    method: string;
+    headers: Record<string, string>;
+    body?: any;
+    userId?: string;
+    sessionId?: string;
+  };
   environment: {
-    nodeEnv: string
-    appVersion: string
-    server: string
-  }
-  resolved: boolean
-  resolvedAt?: Date
-  resolvedBy?: string
+    nodeEnv: string;
+    appVersion: string;
+    server: string;
+  };
+  resolved: boolean;
+  resolvedAt?: Date;
+  resolvedBy?: string;
 }
 
 class ErrorLogger {
-  private logs: ErrorLog[] = []
-  private maxLogs = 10000
+  private logs: ErrorLog[] = [];
+  private maxLogs = 10000;
 
   async log(error: DeesseError, request?: Request): Promise<string> {
     const errorLog: ErrorLog = {
@@ -276,72 +233,72 @@ class ErrorLogger {
         server: process.env.HOSTNAME || 'localhost',
       },
       resolved: false,
-    }
+    };
 
-    this.logs.push(errorLog)
+    this.logs.push(errorLog);
 
     // Prune old logs
     if (this.logs.length > this.maxLogs) {
-      this.logs = this.logs.slice(-this.maxLogs)
+      this.logs = this.logs.slice(-this.maxLogs);
     }
 
     // Send to external logging service
-    await this.sendToLoggingService(errorLog)
+    await this.sendToLoggingService(errorLog);
 
-    return errorLog.id
+    return errorLog.id;
   }
 
   async resolve(errorId: string, resolvedBy: string) {
-    const log = this.logs.find(l => l.id === errorId)
+    const log = this.logs.find((l) => l.id === errorId);
     if (log) {
-      log.resolved = true
-      log.resolvedAt = new Date()
-      log.resolvedBy = resolvedBy
+      log.resolved = true;
+      log.resolvedAt = new Date();
+      log.resolvedBy = resolvedBy;
     }
   }
 
   async getErrors(filters?: {
-    category?: string
-    severity?: string
-    userId?: string
-    resolved?: boolean
-    startDate?: Date
-    endDate?: Date
+    category?: string;
+    severity?: string;
+    userId?: string;
+    resolved?: boolean;
+    startDate?: Date;
+    endDate?: Date;
   }): Promise<ErrorLog[]> {
-    let filtered = [...this.logs]
+    let filtered = [...this.logs];
 
     if (filters?.category) {
-      filtered = filtered.filter(l => l.error.context.category === filters.category)
+      filtered = filtered.filter((l) => l.error.context.category === filters.category);
     }
 
     if (filters?.severity) {
-      filtered = filtered.filter(l => l.error.context.severity === filters.severity)
+      filtered = filtered.filter((l) => l.error.context.severity === filters.severity);
     }
 
     if (filters?.userId) {
-      filtered = filtered.filter(l => l.request.userId === filters.userId)
+      filtered = filtered.filter((l) => l.request.userId === filters.userId);
     }
 
     if (filters?.resolved !== undefined) {
-      filtered = filtered.filter(l => l.resolved === filters.resolved)
+      filtered = filtered.filter((l) => l.resolved === filters.resolved);
     }
 
     if (filters?.startDate) {
-      filtered = filtered.filter(l => l.timestamp >= filters.startDate!)
+      filtered = filtered.filter((l) => l.timestamp >= filters.startDate!);
     }
 
     if (filters?.endDate) {
-      filtered = filtered.filter(l => l.timestamp <= filters.endDate!)
+      filtered = filtered.filter((l) => l.timestamp <= filters.endDate!);
     }
 
-    return filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    return filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }
 
   async getErrorStats() {
-    const total = this.logs.length
-    const byCategory = this.groupBy(l => l.error.context.category)
-    const bySeverity = this.groupBy(l => l.error.context.severity)
-    const resolvedCount = this.logs.filter(l => l.resolved).length
+    const total = this.logs.length;
+    const byCategory = this.groupBy((l) => l.error.context.category);
+    const bySeverity = this.groupBy((l) => l.error.context.severity);
+    const resolvedCount = this.logs.filter((l) => l.resolved).length;
 
     return {
       total,
@@ -350,34 +307,37 @@ class ErrorLogger {
       resolutionRate: total > 0 ? (resolvedCount / total) * 100 : 0,
       byCategory,
       bySeverity,
-    }
+    };
   }
 
   private generateId(): string {
-    return `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    return `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   private groupBy<T>(array: T[], keyFn: (item: T) => string): Record<string, number> {
-    return array.reduce((acc, item) => {
-      const key = keyFn(item)
-      acc[key] = (acc[key] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
+    return array.reduce(
+      (acc, item) => {
+        const key = keyFn(item);
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
   }
 
   private async getUserId(request?: Request): Promise<string | undefined> {
     // Extract user ID from session/JWT
-    return undefined // Implementation depends on auth system
+    return undefined; // Implementation depends on auth system
   }
 
   private async getSessionId(request?: Request): Promise<string | undefined> {
     // Extract session ID from cookies
-    return undefined // Implementation depends on auth system
+    return undefined; // Implementation depends on auth system
   }
 
   private async sendToLoggingService(log: ErrorLog) {
     if (!process.env.LOGGING_ENDPOINT) {
-      return
+      return;
     }
 
     try {
@@ -385,14 +345,14 @@ class ErrorLogger {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(log),
-      })
+      });
     } catch (error) {
-      console.error('Failed to send error to logging service:', error)
+      console.error('Failed to send error to logging service:', error);
     }
   }
 }
 
-export const errorLogger = new ErrorLogger()
+export const errorLogger = new ErrorLogger();
 ```
 
 ### 3. Error Boundary Components
@@ -484,17 +444,14 @@ Auto-generated error handling for collections:
 
 ```typescript
 // lib/errors/collection-handlers.ts
-import { notFound } from 'next/navigation'
-import { ErrorFactory } from './classification'
-import { db } from '@deessejs/db'
+import { notFound } from 'next/navigation';
+import { ErrorFactory } from './classification';
+import { db } from '@deessejs/db';
 
-export async function handleCollectionError(
-  collection: string,
-  error: unknown
-): never {
+export async function handleCollectionError(collection: string, error: unknown): never {
   // Database not found
   if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
-    notFound()
+    notFound();
   }
 
   // Validation error
@@ -502,50 +459,47 @@ export async function handleCollectionError(
     throw ErrorFactory.validation(
       'query',
       error instanceof Error ? error.message : 'Invalid query'
-    )
+    );
   }
 
   // Unique constraint violation
   if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-    const target = (error as any).meta?.target || ['unknown']
-    throw ErrorFactory.conflict(collection, target.join(', '))
+    const target = (error as any).meta?.target || ['unknown'];
+    throw ErrorFactory.conflict(collection, target.join(', '));
   }
 
   // Foreign key constraint
   if (error && typeof error === 'object' && 'code' in error && error.code === 'P2003') {
-    throw ErrorFactory.validation(
-      'relation',
-      'Referenced resource does not exist'
-    )
+    throw ErrorFactory.validation('relation', 'Referenced resource does not exist');
   }
 
   // Default database error
   if (error instanceof Error) {
-    throw ErrorFactory.database(`${collection} operation`, error)
+    throw ErrorFactory.database(`${collection} operation`, error);
   }
 
-  throw error
+  throw error;
 }
 
 export async function handleCollectionNotFound(
   collection: string,
   identifier: Record<string, any>
 ): never {
-  throw ErrorFactory.notFound(collection, JSON.stringify(identifier))
+  throw ErrorFactory.notFound(collection, JSON.stringify(identifier));
 }
 
 // Usage in collection operations
 export async function getPost(slug: string) {
   try {
-    const post = await db.posts.findBySlug(slug)
+    const post = await db.posts.findBySlug(slug);
 
     if (!post) {
-      handleCollectionNotFound('posts', { slug })
+      handleCollectionNotFound('posts', { slug });
     }
 
-    return post
+    return post;
   } catch (error) {
-    handleCollectionError('posts', error)
+    handleCollectionError('posts', error);
   }
 }
 ```
@@ -556,31 +510,31 @@ Standardized error handling for server actions:
 
 ```typescript
 // lib/errors/server-actions.ts
-'use server'
+'use server';
 
-import { DeesseError } from './classification'
-import { redirect } from 'next/navigation'
-import { errorLogger } from './logging'
+import { DeesseError } from './classification';
+import { redirect } from 'next/navigation';
+import { errorLogger } from './logging';
 
 export async function handleServerError(
   error: unknown,
   context?: {
-    action?: string
-    userId?: string
-    metadata?: Record<string, any>
+    action?: string;
+    userId?: string;
+    metadata?: Record<string, any>;
   }
 ): Promise<{ success: false; error: string; code?: string }> {
-  console.error('Server action error:', error)
+  console.error('Server action error:', error);
 
   // Log error
   if (error instanceof DeesseError) {
-    await errorLogger.log(error)
+    await errorLogger.log(error);
 
     return {
       success: false,
       error: error.context.userMessage || error.message,
       code: error.context.code,
-    }
+    };
   }
 
   // Unknown error
@@ -595,52 +549,52 @@ export async function handleServerError(
       metadata: context?.metadata,
     },
     error instanceof Error ? error : undefined
-  )
+  );
 
-  await errorLogger.log(unknownError)
+  await errorLogger.log(unknownError);
 
   return {
     success: false,
     error: unknownError.context.userMessage || unknownError.message,
     code: unknownError.context.code,
-  }
+  };
 }
 
 export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
   action: T,
   options?: {
-    redirectOnError?: string
-    logErrors?: boolean
+    redirectOnError?: string;
+    logErrors?: boolean;
   }
 ): T {
   return (async (...args: any[]) => {
     try {
-      return await action(...args)
+      return await action(...args);
     } catch (error) {
       const result = await handleServerError(error, {
         action: action.name,
-      })
+      });
 
       if (options?.redirectOnError) {
-        redirect(options.redirectOnError)
+        redirect(options.redirectOnError);
       }
 
-      return result
+      return result;
     }
-  }) as T
+  }) as T;
 }
 
 // Usage example
 export const createPost = withErrorHandling(
   async (data: { title: string; content: string }) => {
-    const post = await db.posts.create({ data })
-    return { success: true, data: post }
+    const post = await db.posts.create({ data });
+    return { success: true, data: post };
   },
   {
     redirectOnError: '/posts/new?error=failed',
     logErrors: true,
   }
-)
+);
 ```
 
 ### 6. Error Analytics Dashboard
@@ -704,28 +658,28 @@ Integration with external alerting services:
 
 ```typescript
 // lib/errors/alerts.ts
-import { DeesseError } from './classification'
+import { DeesseError } from './classification';
 
 export interface AlertConfig {
-  enabled: boolean
-  service: 'sentry' | 'datadog' | 'pagerduty' | 'slack'
-  severityThreshold: ErrorSeverity
-  rateLimit: number // alerts per hour
-  webhook?: string
+  enabled: boolean;
+  service: 'sentry' | 'datadog' | 'pagerduty' | 'slack';
+  severityThreshold: ErrorSeverity;
+  rateLimit: number; // alerts per hour
+  webhook?: string;
 }
 
 export class AlertManager {
-  private config: AlertConfig
-  private alertCount: number = 0
-  private resetTime: Date = new Date(Date.now() + 3600000) // 1 hour
+  private config: AlertConfig;
+  private alertCount: number = 0;
+  private resetTime: Date = new Date(Date.now() + 3600000); // 1 hour
 
   constructor(config: AlertConfig) {
-    this.config = config
+    this.config = config;
   }
 
   async sendAlert(error: DeesseError) {
     if (!this.config.enabled) {
-      return
+      return;
     }
 
     // Check severity threshold
@@ -734,39 +688,39 @@ export class AlertManager {
       [ErrorSeverity.MEDIUM]: 2,
       [ErrorSeverity.HIGH]: 3,
       [ErrorSeverity.CRITICAL]: 4,
-    }
+    };
 
     if (severityLevels[error.context.severity] < severityLevels[this.config.severityThreshold]) {
-      return
+      return;
     }
 
     // Rate limiting
     if (this.alertCount >= this.config.rateLimit) {
-      console.warn('Alert rate limit exceeded')
-      return
+      console.warn('Alert rate limit exceeded');
+      return;
     }
 
     if (new Date() > this.resetTime) {
-      this.alertCount = 0
-      this.resetTime = new Date(Date.now() + 3600000)
+      this.alertCount = 0;
+      this.resetTime = new Date(Date.now() + 3600000);
     }
 
-    this.alertCount++
+    this.alertCount++;
 
     // Send to service
     switch (this.config.service) {
       case 'sentry':
-        await this.sendToSentry(error)
-        break
+        await this.sendToSentry(error);
+        break;
       case 'datadog':
-        await this.sendToDatadog(error)
-        break
+        await this.sendToDatadog(error);
+        break;
       case 'slack':
-        await this.sendToSlack(error)
-        break
+        await this.sendToSlack(error);
+        break;
       case 'pagerduty':
-        await this.sendToPagerDuty(error)
-        break
+        await this.sendToPagerDuty(error);
+        break;
     }
   }
 
@@ -779,23 +733,25 @@ export class AlertManager {
   }
 
   private async sendToSlack(error: DeesseError) {
-    if (!this.config.webhook) return
+    if (!this.config.webhook) return;
 
     await fetch(this.config.webhook, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         text: `🚨 *${error.context.severity.toUpperCase()}* Error: ${error.message}`,
-        attachments: [{
-          color: this.getColorForSeverity(error.context.severity),
-          fields: [
-            { title: 'Category', value: error.context.category, short: true },
-            { title: 'Code', value: error.context.code || 'N/A', short: true },
-            { title: 'Time', value: error.timestamp.toISOString(), short: true },
-          ],
-        }],
+        attachments: [
+          {
+            color: this.getColorForSeverity(error.context.severity),
+            fields: [
+              { title: 'Category', value: error.context.category, short: true },
+              { title: 'Code', value: error.context.code || 'N/A', short: true },
+              { title: 'Time', value: error.timestamp.toISOString(), short: true },
+            ],
+          },
+        ],
       }),
-    })
+    });
   }
 
   private async sendToPagerDuty(error: DeesseError) {
@@ -808,8 +764,8 @@ export class AlertManager {
       [ErrorSeverity.MEDIUM]: '#ff9900', // orange
       [ErrorSeverity.HIGH]: '#ff0000', // red
       [ErrorSeverity.CRITICAL]: '#8b0000', // dark red
-    }
-    return colors[severity]
+    };
+    return colors[severity];
   }
 }
 
@@ -819,7 +775,7 @@ export const alertManager = new AlertManager({
   severityThreshold: ErrorSeverity.HIGH,
   rateLimit: 10,
   webhook: process.env.SLACK_WEBHOOK_URL,
-})
+});
 ```
 
 ## Implementation Priority
@@ -866,5 +822,5 @@ export const config = defineConfig({
       logAllErrors: true,
     },
   },
-})
+});
 ```

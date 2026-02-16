@@ -7,10 +7,12 @@ Recommendations for implementing advanced URL state management, navigation aware
 ## Current State Analysis
 
 Based on documentation analysis, DeesseJS has:
+
 - `docs\next\route-segment-config.md` - Basic route configuration
 - `docs\next\parallel-routes-advanced.md` - Parallel route handling
 
 Current gaps:
+
 - No type-safe search params management
 - Limited active state detection for navigation
 - Missing breadcrumb generation
@@ -875,76 +877,74 @@ Use `userAgent` for responsive design and device-specific features:
 
 ```typescript
 // lib/device/detection.ts
-import { userAgent } from 'next/server'
-import { NextRequest } from 'next/server'
+import { userAgent } from 'next/server';
+import { NextRequest } from 'next/server';
 
 export interface DeviceInfo {
-  type: 'mobile' | 'tablet' | 'desktop' | 'console' | 'smarttv' | 'wearable' | 'embedded'
-  isBot: boolean
+  type: 'mobile' | 'tablet' | 'desktop' | 'console' | 'smarttv' | 'wearable' | 'embedded';
+  isBot: boolean;
   browser?: {
-    name: string
-    version: string
-  }
+    name: string;
+    version: string;
+  };
   os?: {
-    name: string
-    version: string
-  }
+    name: string;
+    version: string;
+  };
   engine?: {
-    name: string
-    version: string
-  }
+    name: string;
+    version: string;
+  };
   cpu?: {
-    architecture: string
-  }
+    architecture: string;
+  };
 }
 
 // Get device info from request
 export function getDeviceInfo(request: NextRequest): DeviceInfo {
-  const ua = userAgent(request)
+  const ua = userAgent(request);
 
   return {
     type: ua.device.type || 'desktop',
     isBot: ua.isBot,
-    browser: ua.browser.name && ua.browser.version
-      ? { name: ua.browser.name, version: ua.browser.version }
-      : undefined,
-    os: ua.os.name && ua.os.version
-      ? { name: ua.os.name, version: ua.os.version }
-      : undefined,
-    engine: ua.engine.name && ua.engine.version
-      ? { name: ua.engine.name, version: ua.engine.version }
-      : undefined,
-    cpu: ua.cpu.architecture
-      ? { architecture: ua.cpu.architecture }
-      : undefined,
-  }
+    browser:
+      ua.browser.name && ua.browser.version
+        ? { name: ua.browser.name, version: ua.browser.version }
+        : undefined,
+    os: ua.os.name && ua.os.version ? { name: ua.os.name, version: ua.os.version } : undefined,
+    engine:
+      ua.engine.name && ua.engine.version
+        ? { name: ua.engine.name, version: ua.engine.version }
+        : undefined,
+    cpu: ua.cpu.architecture ? { architecture: ua.cpu.architecture } : undefined,
+  };
 }
 
 // Check if request is from a mobile device
 export function isMobile(request: NextRequest): boolean {
-  const ua = userAgent(request)
-  return ua.device.type === 'mobile'
+  const ua = userAgent(request);
+  return ua.device.type === 'mobile';
 }
 
 // Check if request is from a tablet
 export function isTablet(request: NextRequest): boolean {
-  const ua = userAgent(request)
-  return ua.device.type === 'tablet'
+  const ua = userAgent(request);
+  return ua.device.type === 'tablet';
 }
 
 // Check if request is from a bot
 export function isBot(request: NextRequest): boolean {
-  const ua = userAgent(request)
-  return ua.isBot
+  const ua = userAgent(request);
+  return ua.isBot;
 }
 
 // Get viewport size hint for SSR
 export function getViewportHint(request: NextRequest): 'mobile' | 'tablet' | 'desktop' {
-  const ua = userAgent(request)
+  const ua = userAgent(request);
 
-  if (ua.device.type === 'mobile') return 'mobile'
-  if (ua.device.type === 'tablet') return 'tablet'
-  return 'desktop'
+  if (ua.device.type === 'mobile') return 'mobile';
+  if (ua.device.type === 'tablet') return 'tablet';
+  return 'desktop';
 }
 
 // Device-specific middleware
@@ -952,9 +952,9 @@ export function withDeviceInfo<T>(
   handler: (request: NextRequest, device: DeviceInfo) => Promise<T> | T
 ) {
   return async (request: NextRequest) => {
-    const device = getDeviceInfo(request)
-    return handler(request, device)
-  }
+    const device = getDeviceInfo(request);
+    return handler(request, device);
+  };
 }
 ```
 
@@ -1061,51 +1061,48 @@ Handle bots differently for better SEO:
 
 ```typescript
 // lib/seo/bot-handling.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { userAgent, isBot } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
+import { userAgent, isBot } from 'next/server';
 
 // Bot detection middleware
 export function botDetectionMiddleware(request: NextRequest) {
-  const ua = userAgent(request)
+  const ua = userAgent(request);
 
   if (ua.isBot) {
     // Log bot access
-    console.log(`Bot detected: ${request.headers.get('user-agent')}`)
+    console.log(`Bot detected: ${request.headers.get('user-agent')}`);
 
     // Add bot-specific headers
-    const response = NextResponse.next()
-    response.headers.set('X-Bot-Detected', 'true')
-    response.headers.set('X-Bot-Name', ua.browser.name || 'unknown')
+    const response = NextResponse.next();
+    response.headers.set('X-Bot-Detected', 'true');
+    response.headers.set('X-Bot-Name', ua.browser.name || 'unknown');
 
-    return response
+    return response;
   }
 
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
 // Disable indexing for certain routes (e.g., admin, drafts)
 export function noIndexResponse(request: NextRequest, response: NextResponse) {
-  const ua = userAgent(request)
+  const ua = userAgent(request);
 
   if (ua.isBot) {
     // Add noindex header
-    response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   }
 
-  return response
+  return response;
 }
 
 // Generate bot-friendly metadata
-export function generateBotMetadata(
-  type: 'website' | 'article' | 'product',
-  data: any
-) {
+export function generateBotMetadata(type: 'website' | 'article' | 'product', data: any) {
   const base = {
     openGraph: {
       type,
       locale: 'en_US',
     },
-  }
+  };
 
   switch (type) {
     case 'article':
@@ -1125,7 +1122,7 @@ export function generateBotMetadata(
           description: data.excerpt,
           images: [data.featuredImage],
         },
-      }
+      };
 
     case 'product':
       return {
@@ -1138,10 +1135,10 @@ export function generateBotMetadata(
           price: data.price,
           currency: data.currency,
         },
-      }
+      };
 
     default:
-      return base
+      return base;
   }
 }
 
@@ -1149,15 +1146,9 @@ export function generateBotMetadata(
 export async function prerenderForBots(path: string) {
   // Trigger build-time static generation for important pages
   // This would typically be done during the build process
-  const importantPaths = [
-    '/',
-    '/about',
-    '/contact',
-    '/blog',
-    '/products',
-  ]
+  const importantPaths = ['/', '/about', '/contact', '/blog', '/products'];
 
-  return importantPaths.includes(path)
+  return importantPaths.includes(path);
 }
 ```
 
@@ -1167,15 +1158,15 @@ Client-side complement to server-side detection:
 
 ```typescript
 // lib/device/client-hooks.ts
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 
 export interface ClientDeviceInfo {
-  type: 'mobile' | 'tablet' | 'desktop'
-  viewport: { width: number; height: number }
-  isBot: boolean
-  touch: boolean
+  type: 'mobile' | 'tablet' | 'desktop';
+  viewport: { width: number; height: number };
+  isBot: boolean;
+  touch: boolean;
 }
 
 export function useDeviceInfo() {
@@ -1184,86 +1175,86 @@ export function useDeviceInfo() {
     viewport: { width: 1920, height: 1080 },
     isBot: false,
     touch: false,
-  })
+  });
 
   useEffect(() => {
     // Detect device type from viewport and user agent
-    const ua = navigator.userAgent
-    const width = window.innerWidth
-    const height = window.innerHeight
+    const ua = navigator.userAgent;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
-    let type: 'mobile' | 'tablet' | 'desktop' = 'desktop'
+    let type: 'mobile' | 'tablet' | 'desktop' = 'desktop';
     if (width < 768) {
-      type = 'mobile'
+      type = 'mobile';
     } else if (width < 1024) {
-      type = 'tablet'
+      type = 'tablet';
     }
 
     // Detect touch capability
-    const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+    const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
     setDevice({
       type,
       viewport: { width, height },
       isBot: /bot|crawler|spider/i.test(ua),
       touch,
-    })
+    });
 
     // Update on resize
     const handleResize = () => {
-      const width = window.innerWidth
-      let newType: 'mobile' | 'tablet' | 'desktop' = 'desktop'
+      const width = window.innerWidth;
+      let newType: 'mobile' | 'tablet' | 'desktop' = 'desktop';
       if (width < 768) {
-        newType = 'mobile'
+        newType = 'mobile';
       } else if (width < 1024) {
-        newType = 'tablet'
+        newType = 'tablet';
       }
 
-      setDevice(prev => ({
+      setDevice((prev) => ({
         ...prev,
         type: newType,
         viewport: { width: window.innerWidth, height: window.innerHeight },
-      }))
-    }
+      }));
+    };
 
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  return device
+  return device;
 }
 
 // Media query hook
 export function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(false)
+  const [matches, setMatches] = useState(false);
 
   useEffect(() => {
-    const media = window.matchMedia(query)
-    setMatches(media.matches)
+    const media = window.matchMedia(query);
+    setMatches(media.matches);
 
-    const listener = (e: MediaQueryListEvent) => setMatches(e.matches)
-    media.addEventListener('change', listener)
-    return () => media.removeEventListener('change', listener)
-  }, [query])
+    const listener = (e: MediaQueryListEvent) => setMatches(e.matches);
+    media.addEventListener('change', listener);
+    return () => media.removeEventListener('change', listener);
+  }, [query]);
 
-  return matches
+  return matches;
 }
 
 // Orientation hook
 export function useOrientation() {
-  const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('landscape')
+  const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('landscape');
 
   useEffect(() => {
     const updateOrientation = () => {
-      setOrientation(window.innerHeight > window.innerWidth ? 'portrait' : 'landscape')
-    }
+      setOrientation(window.innerHeight > window.innerWidth ? 'portrait' : 'landscape');
+    };
 
-    updateOrientation()
-    window.addEventListener('resize', updateOrientation)
-    return () => window.removeEventListener('resize', updateOrientation)
-  }, [])
+    updateOrientation();
+    window.addEventListener('resize', updateOrientation);
+    return () => window.removeEventListener('resize', updateOrientation);
+  }, []);
 
-  return orientation
+  return orientation;
 }
 ```
 
@@ -1273,24 +1264,21 @@ Track device and search params for analytics:
 
 ```typescript
 // lib/analytics/tracking.ts
-import { NextRequest } from 'next/server'
-import { getDeviceInfo } from '@/lib/device/detection'
+import { NextRequest } from 'next/server';
+import { getDeviceInfo } from '@/lib/device/detection';
 
 export interface AnalyticsEvent {
-  event: string
-  properties: Record<string, any>
-  device?: DeviceInfo
-  timestamp: number
+  event: string;
+  properties: Record<string, any>;
+  device?: DeviceInfo;
+  timestamp: number;
 }
 
 // Track page views with device info
-export function trackPageView(
-  request: NextRequest,
-  properties: Record<string, any> = {}
-) {
-  const device = getDeviceInfo(request)
-  const pathname = request.nextUrl.pathname
-  const searchParams = Object.fromEntries(request.nextUrl.searchParams)
+export function trackPageView(request: NextRequest, properties: Record<string, any> = {}) {
+  const device = getDeviceInfo(request);
+  const pathname = request.nextUrl.pathname;
+  const searchParams = Object.fromEntries(request.nextUrl.searchParams);
 
   const event: AnalyticsEvent = {
     event: 'page_view',
@@ -1301,10 +1289,10 @@ export function trackPageView(
     },
     device,
     timestamp: Date.now(),
-  }
+  };
 
   // Send to analytics service
-  sendToAnalytics(event)
+  sendToAnalytics(event);
 }
 
 // Track search filter usage
@@ -1313,7 +1301,7 @@ export function trackSearchFilters(
   collection: string,
   filters: Record<string, any>
 ) {
-  const device = getDeviceInfo(request)
+  const device = getDeviceInfo(request);
 
   const event: AnalyticsEvent = {
     event: 'search_filters',
@@ -1324,18 +1312,14 @@ export function trackSearchFilters(
     },
     device,
     timestamp: Date.now(),
-  }
+  };
 
-  sendToAnalytics(event)
+  sendToAnalytics(event);
 }
 
 // Track navigation patterns
-export function trackNavigation(
-  request: NextRequest,
-  from: string,
-  to: string
-) {
-  const device = getDeviceInfo(request)
+export function trackNavigation(request: NextRequest, from: string, to: string) {
+  const device = getDeviceInfo(request);
 
   const event: AnalyticsEvent = {
     event: 'navigation',
@@ -1345,9 +1329,9 @@ export function trackNavigation(
     },
     device,
     timestamp: Date.now(),
-  }
+  };
 
-  sendToAnalytics(event)
+  sendToAnalytics(event);
 }
 
 // Send events to analytics service
@@ -1355,7 +1339,7 @@ function sendToAnalytics(event: AnalyticsEvent) {
   // Integrate with your analytics service (Vercel Analytics, Plausible, PostHog, etc.)
   if (typeof window !== 'undefined' && (window as any).va) {
     // Vercel Analytics
-    ;(window as any).va('event', event.event, event.properties)
+    (window as any).va('event', event.event, event.properties);
   }
 
   // Or send to your own endpoint
@@ -1366,7 +1350,7 @@ function sendToAnalytics(event: AnalyticsEvent) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(event),
       keepalive: true,
-    }).catch(console.error)
+    }).catch(console.error);
   }
 }
 ```
@@ -1456,5 +1440,5 @@ export const config = defineConfig({
       deviceInfo: true,
     },
   },
-})
+});
 ```

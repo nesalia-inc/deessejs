@@ -7,18 +7,21 @@ Advanced parallel routing patterns for dashboards, conditional routes, and indep
 ## Features
 
 ### Named Slots
+
 - @analytics, @team, @auth, etc.
 - Passed as props to parent layout
 - Independent navigation per slot
 - URL structure unaffected by slots
 
 ### Independent Loading/Error States
+
 - Each slot has its own loading state
 - Independent error boundaries
 - Streaming support per slot
 - Non-blocking rendering
 
 ### Conditional Routing
+
 - Role-based slot rendering
 - Auth-dependent layouts
 - User-type specific dashboards
@@ -27,6 +30,7 @@ Advanced parallel routing patterns for dashboards, conditional routes, and indep
 ## Slot Architecture
 
 ### Basic Parallel Routes
+
 ```typescript
 // app/layout.tsx
 export default function Layout({
@@ -50,6 +54,7 @@ export default function Layout({
 ```
 
 ### File Structure
+
 ```
 app/
   @analytics/
@@ -67,6 +72,7 @@ app/
 ## Admin Dashboard Parallel Routes
 
 ### Dashboard Structure
+
 ```typescript
 // app/@admin/layout.tsx
 export default function AdminLayout(props: LayoutProps<'/@admin'>) {
@@ -94,6 +100,7 @@ export default function AdminLayout(props: LayoutProps<'/@admin'>) {
 ```
 
 ### Auto-Generated Admin Slots
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -104,13 +111,14 @@ export const config = defineConfig({
         analytics: 'DashboardAnalytics',
         settings: 'DashboardSettings',
         team: 'TeamManagement',
-      }
-    }
-  }
-})
+      },
+    },
+  },
+});
 ```
 
 ### Tab Groups
+
 ```typescript
 // app/@analytics/layout.tsx
 import Link from 'next/link'
@@ -136,25 +144,27 @@ export default function AnalyticsLayout({
 ## Conditional Routes
 
 ### Role-Based Dashboard
+
 ```typescript
 // app/dashboard/layout.tsx
-import { checkUserRole } from '@deessejs/auth'
+import { checkUserRole } from '@deessejs/auth';
 
 export default function DashboardLayout({
   user,
   admin,
 }: {
-  user: React.ReactNode
-  admin: React.ReactNode
+  user: React.ReactNode;
+  admin: React.ReactNode;
 }) {
-  const role = checkUserRole()
+  const role = checkUserRole();
 
   // Render different slot based on role
-  return role === 'admin' ? admin : user
+  return role === 'admin' ? admin : user;
 }
 ```
 
 ### Auth-Dependent Layouts
+
 ```typescript
 // app/layout.tsx
 import { getServerSession } from '@deessejs/auth'
@@ -183,6 +193,7 @@ export default async function RootLayout(props: LayoutProps<'/'>) {
 ```
 
 ### Collection-Based Slots
+
 ```typescript
 // app/@content/layout.tsx
 export default async function ContentLayout(props: LayoutProps<'/@content'>) {
@@ -203,6 +214,7 @@ export default async function ContentLayout(props: LayoutProps<'/@content'>) {
 ## Independent State Management
 
 ### useSelectedLayoutSegment
+
 ```typescript
 // app/ui/nav.tsx
 'use client'
@@ -232,6 +244,7 @@ export function SlotNav({ slot }: { slot: string }) {
 ```
 
 ### Multiple Slot Segments
+
 ```typescript
 'use client'
 
@@ -255,6 +268,7 @@ export function DebugSlots() {
 ## Independent Loading States
 
 ### Per-Slot Loading
+
 ```typescript
 // app/@analytics/loading.tsx
 export default function AnalyticsLoading() {
@@ -268,6 +282,7 @@ export default function TeamLoading() {
 ```
 
 ### Streaming Independent Slots
+
 ```typescript
 // app/dashboard/layout.tsx
 import { Suspense } from 'react'
@@ -300,6 +315,7 @@ export default function DashboardLayout({
 ## Independent Error States
 
 ### Per-Slot Error Boundaries
+
 ```typescript
 // app/@analytics/error.tsx
 'use client'
@@ -342,11 +358,11 @@ export const config = defineConfig({
         role: {
           admin: '@admin',
           user: '@user',
-        }
-      }
-    }
-  }
-})
+        },
+      },
+    },
+  },
+});
 ```
 
 ## Benefits

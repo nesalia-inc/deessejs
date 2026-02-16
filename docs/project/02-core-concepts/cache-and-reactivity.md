@@ -7,11 +7,13 @@ DeesseJS features an intelligent caching system combined with automatic reactivi
 ## Cache System
 
 ### Intelligent Caching
+
 Multi-layer caching strategy that optimizes performance while maintaining data consistency.
 
 ## Reactivity System
 
 ### Automatic Updates
+
 The system automatically updates local user data whenever modifications occur on the backend.
 
 ### How It Works

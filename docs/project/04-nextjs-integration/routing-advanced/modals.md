@@ -7,18 +7,21 @@ Complete modal implementation using parallel routes and intercepting routes for 
 ## Features
 
 ### Shareable Modals
+
 - URL-based modal state
 - Deep linking to modals
 - Share modal URLs
 - Modal content accessible on refresh
 
 ### Context Preservation
+
 - Background content stays on refresh
 - Independent navigation states
 - Modal closes on back navigation
 - Reopens on forward navigation
 
 ### Auto-Generated Modal Infrastructure
+
 - Modal slot (@modal)
 - Intercept routes
 - default.js for slot reset
@@ -29,6 +32,7 @@ Complete modal implementation using parallel routes and intercepting routes for 
 ### Login Modal
 
 **1. Main Login Page**
+
 ```typescript
 // app/login/page.tsx
 import { Login } from '@/components/login'
@@ -39,6 +43,7 @@ export default function LoginPage() {
 ```
 
 **2. Modal Slot with Intercept**
+
 ```typescript
 // app/@auth/(.)login/page.tsx
 import { Modal } from '@/components/ui/modal'
@@ -54,14 +59,16 @@ export default function LoginModal() {
 ```
 
 **3. Modal Slot Default**
+
 ```typescript
 // app/@auth/default.tsx
 export default function AuthDefault() {
-  return null
+  return null;
 }
 ```
 
 **4. Root Layout with Modal Slot**
+
 ```typescript
 // app/layout.tsx
 export default function RootLayout(props: LayoutProps<'/'>) {
@@ -77,6 +84,7 @@ export default function RootLayout(props: LayoutProps<'/'>) {
 ```
 
 **5. Open Modal from Link**
+
 ```typescript
 // Any component
 import Link from 'next/link'
@@ -91,6 +99,7 @@ export function Navigation() {
 ```
 
 **6. Close Modal with Back**
+
 ```typescript
 // components/ui/modal.tsx
 'use client'
@@ -120,6 +129,7 @@ export function Modal({ children }: { children: React.ReactNode }) {
 ```
 
 **7. Close Modal with Link**
+
 ```typescript
 // components/ui/modal.tsx
 import Link from 'next/link'
@@ -141,22 +151,24 @@ export function Modal({ children }: { children: React.ReactNode }) {
 ```
 
 **8. Reset Modal Slot**
+
 ```typescript
 // app/@auth/page.tsx
 export default function AuthPage() {
-  return null
+  return null;
 }
 
 // OR catch-all
 // app/@auth/[...catchAll]/page.tsx
 export default function CatchAll() {
-  return null
+  return null;
 }
 ```
 
 ## Collection Modals
 
 ### Auto-Generated Preview Modal
+
 ```typescript
 // app/@modal/(.)posts/[slug]/page.tsx
 import { Modal } from '@/components/ui/modal'
@@ -182,6 +194,7 @@ export default async function PostPreviewModal(
 ```
 
 ### Auto-Generated Edit Modal
+
 ```typescript
 // app/@modal/(.)posts/[id]/edit/page.tsx
 import { Modal } from '@/components/ui/modal'
@@ -207,6 +220,7 @@ export default async function PostEditModal(
 ```
 
 ### Delete Confirmation Modal
+
 ```typescript
 // app/@modal/(.)posts/[id]/delete/page.tsx
 import { Modal } from '@/components/ui/modal'
@@ -230,38 +244,42 @@ export default async function PostDeleteModal(
 ## Configuration
 
 ### Collection Modal Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    ui: {
-      modals: {
-        preview: {
-          enabled: true,
-          route: '/@modal/(.)posts/[slug]',
-          layout: 'Modal',
-          size: 'large',
+  collections: [
+    {
+      name: 'posts',
+      ui: {
+        modals: {
+          preview: {
+            enabled: true,
+            route: '/@modal/(.)posts/[slug]',
+            layout: 'Modal',
+            size: 'large',
+          },
+          edit: {
+            enabled: true,
+            route: '/@modal/(.)posts/[id]/edit',
+            layout: 'Modal',
+            size: 'medium',
+          },
+          delete: {
+            enabled: true,
+            route: '/@modal/(.)posts/[id]/delete',
+            layout: 'Modal',
+            size: 'small',
+          },
         },
-        edit: {
-          enabled: true,
-          route: '/@modal/(.)posts/[id]/edit',
-          layout: 'Modal',
-          size: 'medium',
-        },
-        delete: {
-          enabled: true,
-          route: '/@modal/(.)posts/[id]/delete',
-          layout: 'Modal',
-          size: 'small',
-        }
-      }
-    }
-  }]
-})
+      },
+    },
+  ],
+});
 ```
 
 ### Modal Slot Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -273,15 +291,16 @@ export const config = defineConfig({
         preview: '/(.)posts/[slug]',
         edit: '/(.)posts/[id]/edit',
         delete: '/(.)posts/[id]/delete',
-      }
-    }
-  }
-})
+      },
+    },
+  },
+});
 ```
 
 ## Modal Variants
 
 ### Size Variants
+
 ```typescript
 // components/ui/modal.tsx
 export function Modal({
@@ -312,6 +331,7 @@ export function Modal({
 ```
 
 ### Side Modal
+
 ```typescript
 // components/ui/side-modal.tsx
 export function SideModal({ children }: { children: React.ReactNode }) {
@@ -327,6 +347,7 @@ export function SideModal({ children }: { children: React.ReactNode }) {
 ```
 
 ### Bottom Sheet (Mobile)
+
 ```typescript
 // components/ui/bottom-sheet.tsx
 export function BottomSheet({ children }: { children: React.ReactNode }) {
@@ -343,22 +364,26 @@ export function BottomSheet({ children }: { children: React.ReactNode }) {
 ## Best Practices
 
 ### Modal vs Page
+
 - Use modals for quick actions (preview, edit, delete)
 - Use dedicated pages for complex workflows
 - Always provide a page version for SEO
 
 ### Back Button Behavior
+
 - Modal closes on back navigation
 - Not previous page navigation
 - Use router.back() to close
 
 ### URL Structure
+
 ```
 /modal/(.)posts/[slug]     → Intercepted modal
 /posts/[slug]              → Dedicated page
 ```
 
 ### Accessibility
+
 - Focus trap in modal
 - Escape key closes modal
 - Click outside closes modal

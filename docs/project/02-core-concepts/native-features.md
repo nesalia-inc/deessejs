@@ -3,6 +3,7 @@
 ## i18n (Internationalization)
 
 ### Built-in Translation System
+
 DeesseJS includes native internationalization support.
 
 - Integrated translation management
@@ -13,6 +14,7 @@ DeesseJS includes native internationalization support.
 ## Permissions & Roles
 
 ### Native Access Control
+
 Built-in permission and role management system.
 
 - Role definitions
@@ -24,6 +26,7 @@ Built-in permission and role management system.
 ## DevTools
 
 ### Native Developer Tools
+
 DeesseJS provides native development tools.
 
 - Debug dashboard
@@ -36,6 +39,7 @@ DeesseJS provides native development tools.
 ## All Native, All Integrated
 
 These features are:
+
 - Built into DeesseJS core
 - Configured through `deesse.config.ts`
 - Work seamlessly together

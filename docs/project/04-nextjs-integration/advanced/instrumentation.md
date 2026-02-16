@@ -7,12 +7,14 @@ Automatic server and client instrumentation for observability, performance monit
 ## Features
 
 ### Server-Side Instrumentation
+
 - Auto-generated `instrumentation.ts`
 - OpenTelemetry integration (Vercel OTel)
 - Server startup code execution
 - Runtime-specific registration (Node.js vs Edge)
 
 ### Client-Side Instrumentation
+
 - Auto-generated `instrumentation-client.ts`
 - Pre-hydration analytics initialization
 - Performance marks
@@ -20,12 +22,14 @@ Automatic server and client instrumentation for observability, performance monit
 - Error boundary setup
 
 ### Error Tracking
+
 - Automatic error reporting setup
 - Client-side error listeners
 - Server-side onRequestError hook
 - Digest-based error correlation
 
 ### Performance Monitoring
+
 - Time to Interactive tracking
 - Navigation performance marks
 - Component render timing
@@ -34,19 +38,16 @@ Automatic server and client instrumentation for observability, performance monit
 ## Server Instrumentation
 
 ### Auto-Generated instrumentation.ts
+
 ```typescript
 // instrumentation.ts
-import { registerOTel } from '@vercel/otel'
+import { registerOTel } from '@vercel/otel';
 
 export function register() {
-  registerOTel('next-app')
+  registerOTel('next-app');
 }
 
-export const onRequestError: Instrumentation.onRequestError = async (
-  err,
-  request,
-  context
-) => {
+export const onRequestError: Instrumentation.onRequestError = async (err, request, context) => {
   // Report to error tracking service
   await errorTracking.report({
     digest: err.digest,
@@ -54,18 +55,19 @@ export const onRequestError: Instrumentation.onRequestError = async (
     path: request.path,
     routeType: context.routeType,
     renderSource: context.renderSource,
-  })
-}
+  });
+};
 ```
 
 ### Runtime-Specific Registration
+
 ```typescript
 // instrumentation.ts
 export function register() {
   if (process.env.NEXT_RUNTIME === 'edge') {
-    return require('./register.edge')
+    return require('./register.edge');
   } else {
-    return require('./register.node')
+    return require('./register.node');
   }
 }
 ```
@@ -73,34 +75,36 @@ export function register() {
 ## Client Instrumentation
 
 ### Auto-Generated instrumentation-client.ts
+
 ```typescript
 // instrumentation-client.ts
 // Performance monitoring
-performance.mark('app-init')
+performance.mark('app-init');
 
 // Initialize analytics
-analytics.init()
+analytics.init();
 
 // Error tracking
 window.addEventListener('error', (event) => {
-  reportError(event.error)
-})
+  reportError(event.error);
+});
 
 export function onRouterTransitionStart(
   url: string,
   navigationType: 'push' | 'replace' | 'traverse'
 ) {
   // Track navigation
-  analytics.track('page_navigation', { url, type: navigationType })
+  analytics.track('page_navigation', { url, type: navigationType });
 
   // Performance marks
-  performance.mark(`nav-start-${Date.now()}`)
+  performance.mark(`nav-start-${Date.now()}`);
 }
 ```
 
 ## Navigation Breadcrumbs
 
 ### Track User Journey
+
 ```typescript
 // instrumentation-client.ts
 export function onRouterTransitionStart(url: string, type: string) {
@@ -108,28 +112,29 @@ export function onRouterTransitionStart(url: string, type: string) {
   debugging.addBreadcrumb({
     category: 'navigation',
     message: `Navigation to ${url}`,
-    data: { type, timestamp: Date.now() }
-  })
+    data: { type, timestamp: Date.now() },
+  });
 }
 ```
 
 ## Performance Monitoring
 
 ### Time to Interactive
+
 ```typescript
 // instrumentation-client.ts
-const startTime = performance.now()
+const startTime = performance.now();
 
 const observer = new PerformanceObserver((list) => {
   for (const entry of list.getEntries()) {
     if (entry instanceof PerformanceNavigationTiming) {
-      const tti = entry.loadEventEnd - startTime
-      analytics.track('tti', { value: tti })
+      const tti = entry.loadEventEnd - startTime;
+      analytics.track('tti', { value: tti });
     }
   }
-})
+});
 
-observer.observe({ entryTypes: ['navigation'] })
+observer.observe({ entryTypes: ['navigation'] });
 ```
 
 ## Configuration
@@ -148,14 +153,15 @@ export const config = defineConfig({
       errorTracking: true,
       performanceTracking: true,
       navigationBreadcrumbs: true,
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ## Observability Providers
 
 ### Supported Providers
+
 - **Vercel Analytics**: Auto-instrumented
 - **Sentry**: Error tracking and performance
 - **Datadog**: APM and error tracking

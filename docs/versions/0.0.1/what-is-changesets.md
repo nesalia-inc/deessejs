@@ -35,6 +35,7 @@ You fix a bug in `package-a` and add a new feature to `package-b`.
    - Should you update it to `^1.0.1`? What if the bug fix breaks `package-c`?
 
 3. **Update package.json files:**
+
    ```json
    // packages/package-a/package.json
    {
@@ -68,6 +69,7 @@ You fix a bug in `package-a` and add a new feature to `package-b`.
    - Format it consistently
 
 5. **Publish to npm:**
+
    ```bash
    npm publish --workspace=package-a
    npm publish --workspace=package-b
@@ -83,6 +85,7 @@ You fix a bug in `package-a` and add a new feature to `package-b`.
    ```
 
 #### Problems with Manual Approach:
+
 - ❌ **Error-prone** - Easy to forget to update a dependency
 - ❌ **Time-consuming** - Lots of manual steps
 - ❌ **Inconsistent** - Different developers might do it differently
@@ -130,8 +133,8 @@ A **changeset** is just a Markdown file that describes a change:
 
 ```markdown
 ---
-"package-a": patch
-"package-b": minor
+'package-a': patch
+'package-b': minor
 ---
 
 Fixed a bug in package-a and added new feature to package-b
@@ -151,7 +154,7 @@ my-monorepo/
 
 ```markdown
 ---
-"package-name": version-type
+'package-name': version-type
 ---
 
 Human-readable description of the change
@@ -161,8 +164,8 @@ Human-readable description of the change
 
 ```markdown
 ---
-"@deessejs/core": minor
-"@deessejs/orm": patch
+'@deessejs/core': minor
+'@deessejs/orm': patch
 ---
 
 Added new collection system and fixed ORM bug with TypeScript types
@@ -237,8 +240,8 @@ Added new collection system to core and fixed type inference bug in ORM
 
 ```markdown
 ---
-"@deessejs/core": minor
-"@deessejs/orm": patch
+'@deessejs/core': minor
+'@deessejs/orm': patch
 ---
 
 Added new collection system to core and fixed type inference bug in ORM
@@ -282,6 +285,7 @@ This PR was opened by Changesets action
 **What the PR contains:**
 
 1. **Updated package.json files:**
+
    ```json
    // packages/core/package.json
    {
@@ -298,6 +302,7 @@ This PR was opened by Changesets action
    ```
 
 2. **Generated CHANGELOG.md files:**
+
    ```markdown
    # @deessejs/core
 
@@ -322,6 +327,7 @@ This PR was opened by Changesets action
 ### Step 8: Review and Merge
 
 **Review the PR:**
+
 - Check version bumps are correct
 - Check CHANGELOGs look good
 - Verify dependency updates
@@ -331,6 +337,7 @@ This PR was opened by Changesets action
 ### Step 9: Automatic Publish
 
 When merged, the Changesets Action:
+
 1. Publishes all packages to npm
 2. Creates git tags
 3. Creates a GitHub Release
@@ -391,7 +398,7 @@ Message: `Add new collection API`
 
 ```markdown
 ---
-"@deessejs/core": minor
+'@deessejs/core': minor
 ---
 
 Add new collection API
@@ -439,11 +446,11 @@ Examples: `1.3.0`, `2.0.1`, `0.5.2`
 
 ### When to Bump What
 
-| Type | Bump | Meaning | Example |
-|------|------|---------|---------|
-| **PATCH** | `1.0.0` → `1.0.1` | Bug fixes, no breaking changes | Fix typo, fix crash bug |
+| Type      | Bump              | Meaning                            | Example                          |
+| --------- | ----------------- | ---------------------------------- | -------------------------------- |
+| **PATCH** | `1.0.0` → `1.0.1` | Bug fixes, no breaking changes     | Fix typo, fix crash bug          |
 | **MINOR** | `1.0.0` → `1.1.0` | New features, backwards compatible | Add new function, add new option |
-| **MAJOR** | `1.0.0` → `2.0.0` | Breaking changes | Remove function, change API |
+| **MAJOR** | `1.0.0` → `2.0.0` | Breaking changes                   | Remove function, change API      |
 
 ### Real Examples
 
@@ -459,23 +466,23 @@ Breaking API:   1.2.3 → 2.0.0 (major)
 
 ### Changesets vs Lerna
 
-| Feature | Changesets | Lerna |
-|---------|-----------|-------|
-| **Complexity** | Simple | More complex |
-| **Approach** | Changeset files | CLI commands |
-| **Changelogs** | Auto-generated | Manual |
-| **Dependencies** | Auto-updates | Manual |
-| **Active** | ✅ Yes | ⚠️ Less active |
+| Feature          | Changesets      | Lerna          |
+| ---------------- | --------------- | -------------- |
+| **Complexity**   | Simple          | More complex   |
+| **Approach**     | Changeset files | CLI commands   |
+| **Changelogs**   | Auto-generated  | Manual         |
+| **Dependencies** | Auto-updates    | Manual         |
+| **Active**       | ✅ Yes          | ⚠️ Less active |
 
 ### Changesets vs Manual
 
-| Task | Manual | Changesets |
-|------|--------|-----------|
-| Version bump | Manual file edit | One CLI command |
-| Dep updates | Manual | Automatic |
-| CHANGELOG | Manual write | Auto-generated |
-| Publishing | Manual per package | One command |
-| Traceability | ❌ None | ✅ Git history |
+| Task         | Manual             | Changesets      |
+| ------------ | ------------------ | --------------- |
+| Version bump | Manual file edit   | One CLI command |
+| Dep updates  | Manual             | Automatic       |
+| CHANGELOG    | Manual write       | Auto-generated  |
+| Publishing   | Manual per package | One command     |
+| Traceability | ❌ None            | ✅ Git history  |
 
 ---
 
@@ -487,7 +494,7 @@ You declare WHAT changed, not HOW to version it.
 
 ```markdown
 ---
-"@deessejs/core": minor
+'@deessejs/core': minor
 ---
 
 Add new collection API
@@ -559,7 +566,7 @@ pnpm changeset pre enter <tag>
 
 ```markdown
 ---
-"@deessejs/orm": patch
+'@deessejs/orm': patch
 ---
 
 Fixed query builder not handling null values correctly
@@ -571,7 +578,7 @@ Fixed query builder not handling null values correctly
 
 ```markdown
 ---
-"@deessejs/core": minor
+'@deessejs/core': minor
 ---
 
 Added support for MongoDB adapter
@@ -583,7 +590,7 @@ Added support for MongoDB adapter
 
 ```markdown
 ---
-"@deessejs/core": major
+'@deessejs/core': major
 ---
 
 BREAKING: Removed deprecated `find()` method, use `query()` instead
@@ -595,15 +602,16 @@ BREAKING: Removed deprecated `find()` method, use `query()` instead
 
 ```markdown
 ---
-"@deessejs/core": minor
-"@deessejs/orm": minor
-"@deessejs/admin": patch
+'@deessejs/core': minor
+'@deessejs/orm': minor
+'@deessejs/admin': patch
 ---
 
 Added new collection system to core, updated ORM to use it, fixed admin UI bug
 ```
 
 **Result:**
+
 - `@deessejs/core`: `1.0.0` → `1.1.0`
 - `@deessejs/orm`: `2.0.0` → `2.1.0`
 - `@deessejs/admin`: `0.5.0` → `0.5.1`

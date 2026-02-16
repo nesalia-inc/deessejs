@@ -3,6 +3,7 @@
 ## Infrastructure & Backend
 
 ### Webhooks
+
 Event-driven webhook system for reacting to collection changes.
 
 - Trigger webhooks on create, update, delete operations
@@ -11,6 +12,7 @@ Event-driven webhook system for reacting to collection changes.
 - Signature verification for security
 
 ### Search Engine
+
 Integrated search capabilities for collections.
 
 - Full-text search across collections
@@ -19,6 +21,7 @@ Integrated search capabilities for collections.
 - Auto-sync on collection changes
 
 ### Rate Limiting
+
 API protection against abuse.
 
 - Rate limit per endpoint/user
@@ -27,6 +30,7 @@ API protection against abuse.
 - Automatic throttling
 
 ### Validation
+
 Schema validation integrated into collections.
 
 - Based on Zod or similar
@@ -37,6 +41,7 @@ Schema validation integrated into collections.
 ## Observability & Operations
 
 ### Audit Logs
+
 Track all actions in the system.
 
 - Who did what, when
@@ -45,6 +50,7 @@ Track all actions in the system.
 - Compliance and debugging
 
 ### Error Tracking
+
 Centralized error management beyond logging.
 
 - Error aggregation
@@ -53,6 +59,7 @@ Centralized error management beyond logging.
 - Alerting integration
 
 ### Analytics
+
 Native user and application analytics.
 
 - Usage tracking
@@ -63,6 +70,7 @@ Native user and application analytics.
 ## Extensions (Infrastructure SDKs)
 
 ### Emailing Extension
+
 Transaction email capabilities.
 
 - Password reset emails
@@ -71,6 +79,7 @@ Transaction email capabilities.
 - Provider abstraction (SendGrid, Resend, SES, etc.)
 
 ### Scheduled Tasks Extension
+
 Cron job and recurring task management.
 
 - Scheduled task execution
@@ -79,6 +88,7 @@ Cron job and recurring task management.
 - Provider abstraction (Trigger.dev, Inngest, etc.)
 
 ### Real-time Extension
+
 Live updates and WebSocket communication.
 
 - Real-time data synchronization
@@ -89,6 +99,7 @@ Live updates and WebSocket communication.
 ## Developer Experience
 
 ### CLI
+
 Command-line interface for DeesseJS.
 
 - Create collections, plugins, extensions
@@ -97,6 +108,7 @@ Command-line interface for DeesseJS.
 - Deployment helpers
 
 ### Testing Utilities
+
 Helpers for testing DeesseJS applications.
 
 - Collection testing helpers
@@ -105,6 +117,7 @@ Helpers for testing DeesseJS applications.
 - Integration test utilities
 
 ### Environment Management
+
 Environment variable handling.
 
 - Env variable validation
@@ -113,6 +126,7 @@ Environment variable handling.
 - Secrets management
 
 ### Backup & Restore
+
 Database backup and restoration.
 
 - Automated backups
@@ -121,6 +135,7 @@ Database backup and restoration.
 - Disaster recovery
 
 ### Data Seeding
+
 Populate database with test/development data.
 
 - Seed data definitions
@@ -129,6 +144,7 @@ Populate database with test/development data.
 - Data factories
 
 ### Workflows & Content States
+
 Workflow system for content lifecycle management.
 
 - Custom states per collection (draft → review → published → archived)
@@ -139,6 +155,7 @@ Workflow system for content lifecycle management.
 - Essential for teams with editorial validation processes
 
 ### Scheduling
+
 Automated publish and unpublish based on dates.
 
 - Automatic `publishDate` and `unpublishDate` fields
@@ -149,6 +166,7 @@ Automated publish and unpublish based on dates.
 - Standard CMS feature for content planning
 
 ### API Keys
+
 Programmatic access to DeesseJS API.
 
 - Generate API keys for third-party integrations
@@ -160,6 +178,7 @@ Programmatic access to DeesseJS API.
 - For integrations, automated scripts, webhooks
 
 ### Sessions Management
+
 User session control and security.
 
 - View all active sessions per user
@@ -171,6 +190,7 @@ User session control and security.
 - Security for detecting suspicious access
 
 ### Versions & Revisions
+
 Complete history of document changes.
 
 - Full modification history per document
@@ -182,6 +202,7 @@ Complete history of document changes.
 - Essential for content management and error correction
 
 ### Multi-locale Collections
+
 Translatable content at collection level.
 
 - Per-locale content (not just UI i18n)
@@ -193,6 +214,7 @@ Translatable content at collection level.
 - Essential for international websites
 
 ### Media Management & Transformations
+
 Complete media library with image optimization.
 
 - Media library with upload, drag & drop, folder organization
@@ -205,6 +227,7 @@ Complete media library with image optimization.
 - Standard CMS feature (Strapi, Payload, Contentful)
 
 ### Markdown Editor with Blocks
+
 Notion-like markdown editor with extensible blocks.
 
 - Native markdown editing experience (like Notion)
@@ -217,6 +240,7 @@ Notion-like markdown editor with extensible blocks.
 - Content creators build complex pages without developers
 
 ### API Documentation - Auto-generated
+
 Automatic API documentation (Swagger/OpenAPI).
 
 - Generated from collections and operations
@@ -228,6 +252,7 @@ Automatic API documentation (Swagger/OpenAPI).
 - For developers consuming the API
 
 ### Webhooks Signatures & Security
+
 Secure webhook delivery with HMAC signatures.
 
 - HMAC signatures for webhook verification
@@ -239,6 +264,7 @@ Secure webhook delivery with HMAC signatures.
 - Industry standard (like Stripe, GitHub webhooks)
 
 ### Preview Links - Content Preview
+
 Generate preview links for unpublished content.
 
 - Preview content before publication in real frontend context
@@ -248,6 +274,7 @@ Generate preview links for unpublished content.
 - Essential for editorial validation workflows
 
 ### Edge Caching
+
 Global edge caching for performance.
 
 - Cache at edge layer for worldwide performance
@@ -258,6 +285,7 @@ Global edge caching for performance.
 - Scale globally without latency
 
 ### Database Read Replicas
+
 Scale read operations with database replicas.
 
 - Support for read replicas to scale read operations
@@ -267,6 +295,7 @@ Scale read operations with database replicas.
 - For high-traffic applications
 
 ### Query Optimization & Suggestions
+
 Automatic query performance analysis and optimization.
 
 - Automatic slow query detection
@@ -278,6 +307,7 @@ Automatic query performance analysis and optimization.
 - Keep application performant
 
 ### GDPR & Privacy Tools
+
 GDPR compliance and data privacy management.
 
 - User data export (JSON/CSV)
@@ -289,6 +319,7 @@ GDPR compliance and data privacy management.
 - Mandatory for European applications
 
 ### Comments & Collaboration
+
 In-document collaboration and communication.
 
 - Comment system on documents and collections
@@ -300,6 +331,7 @@ In-document collaboration and communication.
 - For teams working on content together
 
 ### Keyboard Shortcuts & UI Polish
+
 Modern admin user experience.
 
 - Keyboard shortcuts in admin (Cmd+K search, Cmd+S save, etc.)
@@ -311,6 +343,7 @@ Modern admin user experience.
 - Modern admin experience
 
 ### Change Detection - Unsaved Changes
+
 Prevent data loss with automatic change detection.
 
 - Automatic detection of unsaved modifications
@@ -320,6 +353,7 @@ Prevent data loss with automatic change detection.
 - Prevent accidental data loss
 
 ### API Versioning
+
 Manage multiple API versions.
 
 - Multiple API versions (v1, v2, etc.)
@@ -329,6 +363,7 @@ Manage multiple API versions.
 - Backward compatibility management
 
 ### Server Actions Integration
+
 Native NextJS Server Actions for collections.
 
 - Auto-generate typed server actions for each collection
@@ -339,6 +374,7 @@ Native NextJS Server Actions for collections.
 - Reusable without manual API route creation
 
 ### React Server Components (RSC) Patterns
+
 Optimized React Server Components integration.
 
 - DeesseJS-optimized RSC components
@@ -350,6 +386,7 @@ Optimized React Server Components integration.
 - Optimal performance by default
 
 ### Route Handlers Auto-generation
+
 Automatic NextJS API route generation.
 
 - Auto-generate API routes for collections (`/api/posts`, `/api/posts/[id]`)
@@ -360,6 +397,7 @@ Automatic NextJS API route generation.
 - Type-safe requests/responses
 
 ### Metadata API Integration
+
 Automatic SEO metadata generation for NextJS.
 
 - Auto-generate SEO metatags from collections (title, description, OG, Twitter cards)
@@ -370,6 +408,7 @@ Automatic SEO metadata generation for NextJS.
 - Native integration with NextJS Metadata API
 
 ### App Router Layouts Integration
+
 Native NextJS App Router layouts support (App Router only).
 
 - Collection-based automatic layout generation
@@ -380,6 +419,7 @@ Native NextJS App Router layouts support (App Router only).
 - Full App Router support (no Pages Router)
 
 ### Middleware Integration
+
 Auto-generated NextJS middleware for DeesseJS features.
 
 - Auth checks on protected routes
@@ -390,6 +430,7 @@ Auto-generated NextJS middleware for DeesseJS features.
 - Configurable via `deesse.config.ts`
 
 ### TanStack Query Integration
+
 Deep TanStack Query support with custom DeesseJS overlays.
 
 - `useCollection` - Fetch data with suspense + error handling
@@ -402,6 +443,7 @@ Deep TanStack Query support with custom DeesseJS overlays.
 - Type-safe throughout
 
 ### Server Components Query Helpers
+
 Direct database usage in React Server Components.
 
 - Use `db.posts.find()` directly in Server Components
@@ -412,6 +454,7 @@ Direct database usage in React Server Components.
 - Compatible with NextJS RSC patterns
 
 ### Form Handling Integration
+
 Native React Hook Form + Zod integration.
 
 - Form schemas auto-generated from collections
@@ -422,6 +465,7 @@ Native React Hook Form + Zod integration.
 - End-to-end type safety
 
 ### Image Optimization Integration
+
 Next.js Image optimization for media management.
 
 - Auto-optimized collection images with `next/image`
@@ -432,6 +476,7 @@ Next.js Image optimization for media management.
 - Performance by default
 
 ### Environment Variables Schema
+
 Automatic environment variable validation.
 
 - Automatic env variable validation with Zod
@@ -443,6 +488,7 @@ Automatic environment variable validation.
 - Detection of unused variables
 
 ### Deployment Integration
+
 Native deployment platform support.
 
 - Native Vercel support (zero-config deploy)
@@ -454,6 +500,7 @@ Native deployment platform support.
 - Post-deploy hooks (migrations, etc.)
 
 ### Type Safety Across the Stack
+
 Full-stack type safety from single source of truth.
 
 - Types generated from `deesse.config.ts`
@@ -464,6 +511,7 @@ Full-stack type safety from single source of truth.
 - Early feedback on type errors
 
 ### Error Pages Integration
+
 Auto-generated NextJS error pages.
 
 - Auto-generated error pages (`error.tsx`, `not-found.tsx`)
@@ -475,6 +523,7 @@ Auto-generated NextJS error pages.
 - Support for `global-error` and per-collection `not-found`
 
 ### Loading States & Skeletons
+
 Auto-generated loading pages and skeletons.
 
 - Auto-generated loading pages (`loading.tsx`)
@@ -486,6 +535,7 @@ Auto-generated loading pages and skeletons.
 - Premium DX: no manual loader creation
 
 ### Analytics & Events
+
 Full-stack analytics and event tracking.
 
 - Trackable events on client and server
@@ -497,6 +547,7 @@ Full-stack analytics and event tracking.
 - Analytics dashboard in DeesseJS admin
 
 ### Internationalization (i18n) Routing
+
 Native Next.js internationalization support.
 
 - Native integration with `next-intl` or similar
@@ -509,6 +560,7 @@ Native Next.js internationalization support.
 - Integration with collection multi-locale system
 
 ### SEO & Performance Monitoring
+
 Automatic SEO and performance tracking.
 
 - Automatic Lighthouse scores
@@ -521,6 +573,7 @@ Automatic SEO and performance tracking.
 - Alerts on performance regressions
 
 ### Component Library (Shadcn/UI)
+
 Pre-built UI components using Shadcn/UI.
 
 - Pre-styled UI components for admin
@@ -535,7 +588,9 @@ Pre-built UI components using Shadcn/UI.
 ## Classification
 
 ### Core Features
+
 Built into DeesseJS core:
+
 - Webhooks
 - Search
 - Rate Limiting
@@ -588,7 +643,9 @@ Built into DeesseJS core:
 - Component Library (Shadcn/UI)
 
 ### Extension Features
+
 Implemented as Extensions (SDK + Provider pattern):
+
 - Emailing
 - Scheduled Tasks
 - Real-time (WebSocket/SSE)

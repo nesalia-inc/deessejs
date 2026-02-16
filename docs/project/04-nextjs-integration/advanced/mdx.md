@@ -7,18 +7,21 @@ Native MDX support for content collections with custom components and styling.
 ## Features
 
 ### Auto-Generated mdx-components.tsx
+
 - Required file for @next/mdx with App Router
 - Custom component mapping
 - Style customization
 - Global component availability
 
 ### Collection-Based MDX
+
 - MDX fields in collection schema
 - Auto-registered MDX components
 - Frontmatter support
 - Syntax highlighting
 
 ### Component Customization
+
 - Custom components for MDX elements
 - Reusable UI components in MDX
 - Shadcn/UI component integration
@@ -27,6 +30,7 @@ Native MDX support for content collections with custom components and styling.
 ## MDX Configuration
 
 ### Basic Setup
+
 ```typescript
 // mdx-components.tsx
 import type { MDXComponents } from 'mdx/types'
@@ -66,29 +70,33 @@ export function useMDXComponents(): MDXComponents {
 ## Collection Integration
 
 ### MDX Field in Collection
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    fields: [
-      {
-        name: 'content',
-        type: 'mdx',
-        required: true,
-      }
-    ]
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      fields: [
+        {
+          name: 'content',
+          type: 'mdx',
+          required: true,
+        },
+      ],
+    },
+  ],
+});
 ```
 
 ### Frontmatter Support
+
 ```markdown
 ---
-title: "My Post"
-slug: "my-post"
-publishedAt: "2025-01-15"
-tags: ["nextjs", "mdx"]
+title: 'My Post'
+slug: 'my-post'
+publishedAt: '2025-01-15'
+tags: ['nextjs', 'mdx']
 ---
 
 # Content here
@@ -99,6 +107,7 @@ This is MDX content with **markdown** and {<JSX />}
 ## Custom Components
 
 ### Shadcn/UI Integration
+
 ```typescript
 // mdx-components.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -128,6 +137,7 @@ const components: MDXComponents = {
 ```
 
 ### Usage in MDX
+
 ```markdown
 <Callout type="warning">
   This is a warning callout with **custom styling**.
@@ -148,6 +158,7 @@ const components: MDXComponents = {
 ## Syntax Highlighting
 
 ### Code Block Styling
+
 ```typescript
 // mdx-components.tsx
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -182,6 +193,7 @@ const components: MDXComponents = {
 ## Configuration
 
 ### MDX Options
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -191,19 +203,20 @@ export const config = defineConfig({
     rehypePlugins: [],
     options: {
       format: 'detect',
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ## Content Examples
 
 ### Blog Post with MDX
-```markdown
+
+````markdown
 ---
-title: "Getting Started with DeesseJS"
-description: "Learn how to build a CMS with DeesseJS"
-publishedAt: "2025-01-15"
+title: 'Getting Started with DeesseJS'
+description: 'Learn how to build a CMS with DeesseJS'
+publishedAt: '2025-01-15'
 ---
 
 import { Alert } from '@/components/ui/alert'
@@ -222,9 +235,12 @@ import { Alert } from '@/components/ui/alert'
 
 ```typescript
 const config = defineConfig({
-  collections: [/* ... */]
-})
+  collections: [
+    /* ... */
+  ],
+});
 ```
+````
 
 <Card>
   <CardHeader>

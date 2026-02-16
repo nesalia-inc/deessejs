@@ -7,6 +7,7 @@ DeesseJS provides native tools for content creators to work directly in the appl
 ## Rich Text Editor
 
 ### Built-in Rich Text
+
 - Native rich text editing capabilities
 - WYSIWYG editor
 - Formatted content creation
@@ -16,6 +17,7 @@ DeesseJS provides native tools for content creators to work directly in the appl
 ## SEO Tools
 
 ### Enhanced SEO Blocks
+
 - Advanced SEO management
 - Meta tag configuration
 - Open graph and Twitter cards
@@ -27,6 +29,7 @@ DeesseJS provides native tools for content creators to work directly in the appl
 ## Content Creator Focus
 
 ### Goal: Writers on the Platform
+
 - User-friendly interface for content creators
 - No technical knowledge required
 - Intuitive content editing

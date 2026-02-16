@@ -92,6 +92,7 @@ jobs:
 ```
 
 **What it checks:**
+
 - ✅ Code linting (ESLint)
 - ✅ Code formatting (Prettier)
 - ✅ Type checking (TypeScript)
@@ -147,6 +148,7 @@ jobs:
 ```
 
 **Why separate?**
+
 - Faster feedback on PRs
 - Can run independently
 - Focus only on code quality checks
@@ -214,6 +216,7 @@ jobs:
 ```
 
 **What it does:**
+
 1. Triggers on push to `main`
 2. Checks for Changesets
 3. If changesets exist: Creates "Version Packages" PR
@@ -245,6 +248,7 @@ pnpm changeset init
 ```
 
 This creates:
+
 - `.changeset/` directory
 - `.changeset/config.json`
 
@@ -270,12 +274,12 @@ This creates:
 
 **Configuration explained:**
 
-| Option | Value | Purpose |
-|--------|-------|---------|
-| `access` | `public` | Packages are publicly scoped |
-| `baseBranch` | `main` | Branch to trigger releases |
-| `updateInternalDependencies` | `patch` | Bump internal deps on patch versions |
-| `ignore` | `["web"]` | Don't publish web package |
+| Option                       | Value     | Purpose                              |
+| ---------------------------- | --------- | ------------------------------------ |
+| `access`                     | `public`  | Packages are publicly scoped         |
+| `baseBranch`                 | `main`    | Branch to trigger releases           |
+| `updateInternalDependencies` | `patch`   | Bump internal deps on patch versions |
+| `ignore`                     | `["web"]` | Don't publish web package            |
 
 ---
 
@@ -312,7 +316,7 @@ This creates a file like `.changeset/cool-words.md`:
 
 ```markdown
 ---
-"@deessejs/core": minor
+'@deessejs/core': minor
 ---
 
 Add new collection system
@@ -335,6 +339,7 @@ Changesets GitHub Action detects new changesets and creates a PR:
 ```
 
 The PR includes:
+
 - Updated `package.json` versions
 - Generated CHANGELOG.md files
 - Lockfile updates
@@ -342,6 +347,7 @@ The PR includes:
 #### 5. Merge PR
 
 When you merge the "Version Packages" PR:
+
 1. Changesets publishes to npm
 2. Creates GitHub release
 3. Pushes git tag
@@ -354,7 +360,7 @@ When you merge the "Version Packages" PR:
 
 ```markdown
 ---
-"@deessejs/create-deesse-app": patch
+'@deessejs/create-deesse-app': patch
 ---
 
 Fix template copy bug on Windows
@@ -364,8 +370,8 @@ Fix template copy bug on Windows
 
 ```markdown
 ---
-"@deessejs/core": minor
-"@deessejs/orm": minor
+'@deessejs/core': minor
+'@deessejs/orm': minor
 ---
 
 Add new collection system and update ORM
@@ -375,7 +381,7 @@ Add new collection system and update ORM
 
 ```markdown
 ---
-"@deessejs/core": major
+'@deessejs/core': major
 ---
 
 BREAKING: Redesign collection API
@@ -385,11 +391,11 @@ BREAKING: Redesign collection API
 
 ### Version Bump Types
 
-| Type | Meaning | Example |
-|------|---------|---------|
-| **patch** | Bug fixes | `1.0.0` → `1.0.1` |
+| Type      | Meaning                            | Example           |
+| --------- | ---------------------------------- | ----------------- |
+| **patch** | Bug fixes                          | `1.0.0` → `1.0.1` |
 | **minor** | New features, backwards compatible | `1.0.0` → `1.1.0` |
-| **major** | Breaking changes | `1.0.0` → `2.0.0` |
+| **major** | Breaking changes                   | `1.0.0` → `2.0.0` |
 
 ---
 
@@ -404,6 +410,7 @@ NPM_TOKEN=your_npm_token
 ```
 
 **How to generate:**
+
 1. Go to [npmjs.com](https://www.npmjs.com/)
 2. Account settings → Access Tokens
 3. Create new token → Automation
@@ -416,6 +423,7 @@ CODECOV_TOKEN=your_codecov_token
 ```
 
 **How to generate:**
+
 1. Go to [codecov.io](https://codecov.io/)
 2. Add your repository
 3. Get token from settings
@@ -535,6 +543,7 @@ CODECOV_TOKEN=your_codecov_token
 ### Changeset Messages
 
 Good examples:
+
 ```
 "Add new collection system API"
 "Fix template copy on Windows"
@@ -542,6 +551,7 @@ Good examples:
 ```
 
 Bad examples:
+
 ```
 "update"
 "stuff"
@@ -574,18 +584,21 @@ You can create multiple changesets in one PR:
 ## 📝 Next Steps
 
 ### Phase 1: Setup
+
 - [ ] Create `.github/workflows/` directory
 - [ ] Add `ci.yml` workflow
 - [ ] Add `lint.yml` workflow
 - [ ] Add `release.yml` workflow
 
 ### Phase 2: Changesets
+
 - [ ] Install `@changesets/cli`
 - [ ] Initialize Changesets
 - [ ] Configure `.changeset/config.json`
 - [ ] Add `NPM_TOKEN` to GitHub secrets
 
 ### Phase 3: Testing
+
 - [ ] Test CI workflow with a PR
 - [ ] Create a test changeset
 - [ ] Verify "Version Packages" PR creation

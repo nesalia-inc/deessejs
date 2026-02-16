@@ -7,11 +7,13 @@ DeesseJS provides the essential building blocks for creating applications withou
 ## Approach
 
 ### Foundation Over Features
+
 - Focus on providing the most important building blocks
 - Enable developers to build what they need
 - Avoid feature bloat
 
 ### Key Building Blocks
+
 - Authentication
 - Payments
 - Collections/ORM
@@ -20,6 +22,7 @@ DeesseJS provides the essential building blocks for creating applications withou
 - Plugin System
 
 ### Developer Freedom
+
 - Get the hard parts done
 - Build the rest your way
 - No opinionated constraints beyond core infrastructure
@@ -29,11 +32,13 @@ DeesseJS provides the essential building blocks for creating applications withou
 DeesseJS is not designed to be a feature-complete CMS with every possible functionality. Instead, it provides the critical foundations that applications typically need, then gets out of the way.
 
 ### What DeesseJS Provides
+
 - Core infrastructure (auth, payments, database)
 - Developer tools (ORM, caching, reactivity)
 - Extensibility framework (plugins, admin dashboard)
 
 ### What Developers Build
+
 - Custom business logic
 - Domain-specific features
 - Unique user experiences

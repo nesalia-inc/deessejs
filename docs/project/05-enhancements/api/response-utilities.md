@@ -7,6 +7,7 @@ Recommendations for enhancing DeesseJS's integration with NextRequest and NextRe
 ## Current State Analysis
 
 Based on documentation analysis, DeesseJS has:
+
 - `docs\next\route-handlers-advanced.md` - Covers cookies, headers, FormData
 - `docs\next\cookies-sessions.md` - Basic cookie management
 - `docs\next\proxy-integration.md` - Proxy patterns
@@ -19,23 +20,18 @@ Create a strongly-typed cookie system:
 
 ```typescript
 // lib/cookies.ts
-import { cookies } from 'next/headers'
+import { cookies } from 'next/headers';
 
-export type CookieName =
-  | 'session'
-  | 'theme'
-  | 'language'
-  | 'preferences'
-  | 'consent'
+export type CookieName = 'session' | 'theme' | 'language' | 'preferences' | 'consent';
 
 export interface CookieConfig {
-  name: CookieName
-  httpOnly?: boolean
-  secure?: boolean
-  sameSite?: 'strict' | 'lax' | 'none'
-  path?: string
-  maxAge?: number
-  priority?: 'low' | 'medium' | 'high'
+  name: CookieName;
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: 'strict' | 'lax' | 'none';
+  path?: string;
+  maxAge?: number;
+  priority?: 'low' | 'medium' | 'high';
 }
 
 export const cookieConfigs: Record<CookieName, CookieConfig> = {
@@ -84,15 +80,15 @@ export const cookieConfigs: Record<CookieName, CookieConfig> = {
     maxAge: 60 * 60 * 24 * 365, // 1 year
     priority: 'high',
   },
-}
+};
 
 export async function setCookie(
   name: CookieName,
   value: string,
   overrides?: Partial<CookieConfig>
 ) {
-  const config = { ...cookieConfigs[name], ...overrides }
-  const cookieStore = await cookies()
+  const config = { ...cookieConfigs[name], ...overrides };
+  const cookieStore = await cookies();
 
   cookieStore.set(name, value, {
     httpOnly: config.httpOnly,
@@ -101,19 +97,17 @@ export async function setCookie(
     path: config.path,
     maxAge: config.maxAge,
     priority: config.priority,
-  })
+  });
 }
 
-export async function getCookie<T extends CookieName>(
-  name: T
-): Promise<string | undefined> {
-  const cookieStore = await cookies()
-  return cookieStore.get(name)?.value
+export async function getCookie<T extends CookieName>(name: T): Promise<string | undefined> {
+  const cookieStore = await cookies();
+  return cookieStore.get(name)?.value;
 }
 
 export async function deleteCookie(name: CookieName) {
-  const cookieStore = await cookies()
-  cookieStore.delete(name)
+  const cookieStore = await cookies();
+  cookieStore.delete(name);
 }
 ```
 
@@ -123,13 +117,13 @@ Create reusable request validation middleware:
 
 ```typescript
 // lib/request-validation.ts
-import { NextRequest } from 'next/server'
-import { z } from 'zod'
+import { NextRequest } from 'next/server';
+import { z } from 'zod';
 
 export interface ValidationResult<T> {
-  success: boolean
-  data?: T
-  errors?: Record<string, string[]>
+  success: boolean;
+  data?: T;
+  errors?: Record<string, string[]>;
 }
 
 export async function validateRequest<T>(
@@ -138,39 +132,39 @@ export async function validateRequest<T>(
   source: 'body' | 'query' | 'both' = 'body'
 ): Promise<ValidationResult<T>> {
   try {
-    let data: any = {}
+    let data: any = {};
 
     if (source === 'body' || source === 'both') {
-      const cloned = request.clone()
-      data = { ...data, ...await cloned.json() }
+      const cloned = request.clone();
+      data = { ...data, ...(await cloned.json()) };
     }
 
     if (source === 'query' || source === 'both') {
-      data = { ...data, ...Object.fromEntries(request.nextUrl.searchParams) }
+      data = { ...data, ...Object.fromEntries(request.nextUrl.searchParams) };
     }
 
-    const result = schema.safeParse(data)
+    const result = schema.safeParse(data);
 
     if (!result.success) {
-      const errors: Record<string, string[]> = {}
+      const errors: Record<string, string[]> = {};
 
       result.error.errors.forEach((error) => {
-        const path = error.path.join('.')
+        const path = error.path.join('.');
         if (!errors[path]) {
-          errors[path] = []
+          errors[path] = [];
         }
-        errors[path].push(error.message)
-      })
+        errors[path].push(error.message);
+      });
 
-      return { success: false, errors }
+      return { success: false, errors };
     }
 
-    return { success: true, data: result.data }
+    return { success: true, data: result.data };
   } catch (error) {
     return {
       success: false,
       errors: { _form: ['Invalid request format'] },
-    }
+    };
   }
 }
 
@@ -180,16 +174,13 @@ const postSchema = z.object({
   content: z.string().min(1),
   slug: z.string().regex(/^[a-z0-9-]+$/),
   published: z.boolean().optional(),
-})
+});
 
 export async function POST(request: NextRequest) {
-  const validation = await validateRequest(request, postSchema)
+  const validation = await validateRequest(request, postSchema);
 
   if (!validation.success) {
-    return NextResponse.json(
-      { errors: validation.errors },
-      { status: 400 }
-    )
+    return NextResponse.json({ errors: validation.errors }, { status: 400 });
   }
 
   // Use validation.data
@@ -202,21 +193,17 @@ Create response utilities for common patterns:
 
 ```typescript
 // lib/responses.ts
-import { NextResponse } from 'next/server'
-import { ZodError } from 'zod'
+import { NextResponse } from 'next/server';
+import { ZodError } from 'zod';
 
 export interface ApiResponseOptions {
-  status?: number
-  headers?: Record<string, string>
-  revalidate?: number
+  status?: number;
+  headers?: Record<string, string>;
+  revalidate?: number;
 }
 
 export class ApiResponse {
-  static success<T>(
-    data: T,
-    message?: string,
-    options?: ApiResponseOptions
-  ): NextResponse {
+  static success<T>(data: T, message?: string, options?: ApiResponseOptions): NextResponse {
     return NextResponse.json(
       {
         success: true,
@@ -227,14 +214,10 @@ export class ApiResponse {
         status: options?.status || 200,
         headers: options?.headers,
       }
-    )
+    );
   }
 
-  static error(
-    message: string,
-    code?: string,
-    options?: ApiResponseOptions
-  ): NextResponse {
+  static error(message: string, code?: string, options?: ApiResponseOptions): NextResponse {
     return NextResponse.json(
       {
         success: false,
@@ -245,7 +228,7 @@ export class ApiResponse {
         status: options?.status || 400,
         headers: options?.headers,
       }
-    )
+    );
   }
 
   static validationError(
@@ -261,13 +244,10 @@ export class ApiResponse {
         status: options?.status || 422,
         headers: options?.headers,
       }
-    )
+    );
   }
 
-  static notFound(
-    resource: string,
-    options?: ApiResponseOptions
-  ): NextResponse {
+  static notFound(resource: string, options?: ApiResponseOptions): NextResponse {
     return NextResponse.json(
       {
         success: false,
@@ -278,7 +258,7 @@ export class ApiResponse {
         status: options?.status || 404,
         headers: options?.headers,
       }
-    )
+    );
   }
 
   static unauthorized(
@@ -295,13 +275,10 @@ export class ApiResponse {
         status: options?.status || 401,
         headers: options?.headers,
       }
-    )
+    );
   }
 
-  static forbidden(
-    message = 'Access denied',
-    options?: ApiResponseOptions
-  ): NextResponse {
+  static forbidden(message = 'Access denied', options?: ApiResponseOptions): NextResponse {
     return NextResponse.json(
       {
         success: false,
@@ -312,7 +289,7 @@ export class ApiResponse {
         status: options?.status || 403,
         headers: options?.headers,
       }
-    )
+    );
   }
 
   static created<T>(
@@ -330,14 +307,14 @@ export class ApiResponse {
         status: options?.status || 201,
         headers: options?.headers,
       }
-    )
+    );
   }
 
   static noContent(options?: ApiResponseOptions): NextResponse {
     return new NextResponse(null, {
       status: options?.status || 204,
       headers: options?.headers,
-    })
+    });
   }
 }
 ```
@@ -348,27 +325,27 @@ Enhanced session management with typed cookies:
 
 ```typescript
 // lib/session.ts
-import { cookies } from 'next/headers'
-import { encrypt, decrypt } from '@/lib/crypto'
+import { cookies } from 'next/headers';
+import { encrypt, decrypt } from '@/lib/crypto';
 
 export interface SessionData {
-  userId: string
-  role: string
-  expiresAt: Date
-  csrfToken: string
+  userId: string;
+  role: string;
+  expiresAt: Date;
+  csrfToken: string;
 }
 
-const SESSION_COOKIE_NAME = 'session' as const
-const SESSION_DURATION = 60 * 60 * 24 * 7 // 7 days
+const SESSION_COOKIE_NAME = 'session' as const;
+const SESSION_DURATION = 60 * 60 * 24 * 7; // 7 days
 
 export async function createSession(data: Omit<SessionData, 'expiresAt'>) {
   const sessionData: SessionData = {
     ...data,
     expiresAt: new Date(Date.now() + SESSION_DURATION * 1000),
-  }
+  };
 
-  const encrypted = await encrypt(JSON.stringify(sessionData))
-  const cookieStore = await cookies()
+  const encrypted = await encrypt(JSON.stringify(sessionData));
+  const cookieStore = await cookies();
 
   cookieStore.set(SESSION_COOKIE_NAME, encrypted, {
     httpOnly: true,
@@ -377,52 +354,50 @@ export async function createSession(data: Omit<SessionData, 'expiresAt'>) {
     path: '/',
     maxAge: SESSION_DURATION,
     priority: 'high',
-  })
+  });
 }
 
 export async function getSession(): Promise<SessionData | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
 
   if (!sessionCookie) {
-    return null
+    return null;
   }
 
   try {
-    const decrypted = await decrypt(sessionCookie.value)
-    const session = JSON.parse(decrypted) as SessionData
+    const decrypted = await decrypt(sessionCookie.value);
+    const session = JSON.parse(decrypted) as SessionData;
 
     // Check expiration
     if (new Date(session.expiresAt) < new Date()) {
-      await clearSession()
-      return null
+      await clearSession();
+      return null;
     }
 
-    return session
+    return session;
   } catch {
-    await clearSession()
-    return null
+    await clearSession();
+    return null;
   }
 }
 
 export async function clearSession() {
-  const cookieStore = await cookies()
-  cookieStore.delete(SESSION_COOKIE_NAME)
+  const cookieStore = await cookies();
+  cookieStore.delete(SESSION_COOKIE_NAME);
 }
 
-export async function updateSession(
-  updates: Partial<Omit<SessionData, 'expiresAt'>>
-) {
-  const session = await getSession()
+export async function updateSession(updates: Partial<Omit<SessionData, 'expiresAt'>>) {
+  const session = await getSession();
 
   if (!session) {
-    throw new Error('No active session')
+    throw new Error('No active session');
   }
 
   await createSession({
     ...session,
     ...updates,
-  })
+  });
 }
 ```
 
@@ -432,29 +407,25 @@ Comprehensive logging for debugging:
 
 ```typescript
 // lib/request-logger.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { headers } from 'next/headers'
+import { NextRequest, NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 
 export interface RequestLog {
-  timestamp: Date
-  method: string
-  url: string
-  userAgent?: string
-  ip?: string
-  headers: Record<string, string>
-  body?: any
-  duration?: number
-  status?: number
+  timestamp: Date;
+  method: string;
+  url: string;
+  userAgent?: string;
+  ip?: string;
+  headers: Record<string, string>;
+  body?: any;
+  duration?: number;
+  status?: number;
 }
 
-const requestLogs: RequestLog[] = []
+const requestLogs: RequestLog[] = [];
 
-export async function logRequest(
-  request: NextRequest,
-  response?: NextResponse,
-  duration?: number
-) {
-  const headersList = await headers()
+export async function logRequest(request: NextRequest, response?: NextResponse, duration?: number) {
+  const headersList = await headers();
 
   const log: RequestLog = {
     timestamp: new Date(),
@@ -465,13 +436,13 @@ export async function logRequest(
     headers: Object.fromEntries(request.headers.entries()),
     duration,
     status: response?.status,
-  }
+  };
 
-  requestLogs.push(log)
+  requestLogs.push(log);
 
   // Keep only last 1000 logs in memory
   if (requestLogs.length > 1000) {
-    requestLogs.shift()
+    requestLogs.shift();
   }
 
   // Send to logging service
@@ -480,16 +451,16 @@ export async function logRequest(
       method: 'POST',
       body: JSON.stringify(log),
       headers: { 'Content-Type': 'application/json' },
-    }).catch(console.error)
+    }).catch(console.error);
   }
 }
 
 export function getRequestLogs(limit = 100): RequestLog[] {
-  return requestLogs.slice(-limit)
+  return requestLogs.slice(-limit);
 }
 
 export function clearRequestLogs() {
-  requestLogs.length = 0
+  requestLogs.length = 0;
 }
 ```
 
@@ -499,38 +470,37 @@ Simplified CORS configuration:
 
 ```typescript
 // lib/cors.ts
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
 
 export interface CorsOptions {
-  origins: string[]
-  methods?: string[]
-  allowedHeaders?: string[]
-  credentials?: boolean
-  maxAge?: number
+  origins: string[];
+  methods?: string[];
+  allowedHeaders?: string[];
+  credentials?: boolean;
+  maxAge?: number;
 }
 
-export function handleCors(
-  request: NextRequest,
-  options: CorsOptions
-): NextResponse | null {
-  const origin = request.headers.get('origin')
-  const isAllowedOrigin = origin && options.origins.includes(origin)
+export function handleCors(request: NextRequest, options: CorsOptions): NextResponse | null {
+  const origin = request.headers.get('origin');
+  const isAllowedOrigin = origin && options.origins.includes(origin);
 
   const corsHeaders = {
     ...(isAllowedOrigin && { 'Access-Control-Allow-Origin': origin }),
-    'Access-Control-Allow-Methods': options.methods?.join(', ') || 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': options.allowedHeaders?.join(', ') || 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods':
+      options.methods?.join(', ') || 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers':
+      options.allowedHeaders?.join(', ') || 'Content-Type, Authorization',
     ...(options.credentials && { 'Access-Control-Allow-Credentials': 'true' }),
     ...(options.maxAge && { 'Access-Control-Max-Age': String(options.maxAge) }),
-  }
+  };
 
   // Handle preflight
   if (request.method === 'OPTIONS') {
-    return new NextResponse(null, { headers: corsHeaders })
+    return new NextResponse(null, { headers: corsHeaders });
   }
 
   // Return null to continue with normal request handling
-  return null
+  return null;
 }
 
 export function addCorsHeaders(
@@ -538,21 +508,27 @@ export function addCorsHeaders(
   request: NextRequest,
   options: CorsOptions
 ): NextResponse {
-  const origin = request.headers.get('origin')
-  const isAllowedOrigin = origin && options.origins.includes(origin)
+  const origin = request.headers.get('origin');
+  const isAllowedOrigin = origin && options.origins.includes(origin);
 
   if (isAllowedOrigin) {
-    response.headers.set('Access-Control-Allow-Origin', origin)
+    response.headers.set('Access-Control-Allow-Origin', origin);
   }
 
-  response.headers.set('Access-Control-Allow-Methods', options.methods?.join(', ') || 'GET, POST, PUT, DELETE')
-  response.headers.set('Access-Control-Allow-Headers', options.allowedHeaders?.join(', ') || 'Content-Type, Authorization')
+  response.headers.set(
+    'Access-Control-Allow-Methods',
+    options.methods?.join(', ') || 'GET, POST, PUT, DELETE'
+  );
+  response.headers.set(
+    'Access-Control-Allow-Headers',
+    options.allowedHeaders?.join(', ') || 'Content-Type, Authorization'
+  );
 
   if (options.credentials) {
-    response.headers.set('Access-Control-Allow-Credentials', 'true')
+    response.headers.set('Access-Control-Allow-Credentials', 'true');
   }
 
-  return response
+  return response;
 }
 ```
 
@@ -562,41 +538,40 @@ Implement rate limiting using request metadata:
 
 ```typescript
 // lib/rate-limit.ts
-import { NextRequest } from 'next/server'
-import { headers } from 'next/headers'
+import { NextRequest } from 'next/server';
+import { headers } from 'next/headers';
 
 interface RateLimitEntry {
-  count: number
-  resetAt: Date
+  count: number;
+  resetAt: Date;
 }
 
-const rateLimitStore = new Map<string, RateLimitEntry>()
+const rateLimitStore = new Map<string, RateLimitEntry>();
 
 export async function checkRateLimit(
   request: NextRequest,
   limit: number,
   windowMs: number
 ): Promise<{ allowed: boolean; resetAt: Date; remaining: number }> {
-  const headersList = await headers()
-  const identifier = headersList.get('x-forwarded-for') ||
-                    headersList.get('x-real-ip') ||
-                    'anonymous'
+  const headersList = await headers();
+  const identifier =
+    headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'anonymous';
 
-  const now = new Date()
-  const entry = rateLimitStore.get(identifier)
+  const now = new Date();
+  const entry = rateLimitStore.get(identifier);
 
   if (!entry || now > entry.resetAt) {
     const newEntry: RateLimitEntry = {
       count: 1,
       resetAt: new Date(now.getTime() + windowMs),
-    }
-    rateLimitStore.set(identifier, newEntry)
+    };
+    rateLimitStore.set(identifier, newEntry);
 
     return {
       allowed: true,
       resetAt: newEntry.resetAt,
       remaining: limit - 1,
-    }
+    };
   }
 
   if (entry.count >= limit) {
@@ -604,31 +579,34 @@ export async function checkRateLimit(
       allowed: false,
       resetAt: entry.resetAt,
       remaining: 0,
-    }
+    };
   }
 
-  entry.count++
+  entry.count++;
 
   return {
     allowed: true,
     resetAt: entry.resetAt,
     remaining: limit - entry.count,
-  }
+  };
 }
 
 export function addRateLimitHeaders(
   response: NextResponse,
   result: { allowed: boolean; resetAt: Date; remaining: number }
 ): NextResponse {
-  response.headers.set('X-RateLimit-Limit', String(result.remaining + (result.allowed ? 1 : 0)))
-  response.headers.set('X-RateLimit-Remaining', String(Math.max(0, result.remaining)))
-  response.headers.set('X-RateLimit-Reset', String(Math.floor(result.resetAt.getTime() / 1000)))
+  response.headers.set('X-RateLimit-Limit', String(result.remaining + (result.allowed ? 1 : 0)));
+  response.headers.set('X-RateLimit-Remaining', String(Math.max(0, result.remaining)));
+  response.headers.set('X-RateLimit-Reset', String(Math.floor(result.resetAt.getTime() / 1000)));
 
   if (!result.allowed) {
-    response.headers.set('Retry-After', String(Math.ceil((result.resetAt.getTime() - Date.now()) / 1000)))
+    response.headers.set(
+      'Retry-After',
+      String(Math.ceil((result.resetAt.getTime() - Date.now()) / 1000))
+    );
   }
 
-  return response
+  return response;
 }
 ```
 
@@ -673,5 +651,5 @@ export const config = defineConfig({
       logErrors: true,
     },
   },
-})
+});
 ```

@@ -7,18 +7,21 @@ Comprehensive 404 handling with not-found.js and global-not-found.js for collect
 ## Features
 
 ### Auto-Generated not-found.js Files
+
 - Per-collection not-found pages
 - Custom 404 UI for each route segment
 - Contextual error messages
 - Navigation suggestions
 
 ### Global 404 Handler
+
 - global-not-found.js for unmatched URLs
 - Single 404 page for entire app
 - Bypasses normal rendering
 - Full HTML document required
 
 ### Status Code Handling
+
 - 200 for streamed responses
 - 404 for non-streamed responses
 - SEO-friendly with noindex meta tags
@@ -27,6 +30,7 @@ Comprehensive 404 handling with not-found.js and global-not-found.js for collect
 ## Not Found Patterns
 
 ### Basic 404 Page
+
 ```typescript
 // app/not-found.tsx
 import Link from 'next/link'
@@ -50,6 +54,7 @@ export default function NotFound() {
 ```
 
 ### Collection 404
+
 ```typescript
 // app/blog/[slug]/not-found.tsx
 import Link from 'next/link'
@@ -77,6 +82,7 @@ export default function NotFound() {
 ```
 
 ### Dynamic 404 with Data
+
 ```typescript
 // app/not-found.tsx
 import Link from 'next/link'
@@ -105,16 +111,18 @@ export default async function NotFound() {
 ## Global Not Found
 
 ### Experimental Feature
+
 ```typescript
 // next.config.ts
 const nextConfig: NextConfig = {
   experimental: {
     globalNotFound: true,
   },
-}
+};
 ```
 
 ### Global 404 Page
+
 ```typescript
 // app/global-not-found.tsx
 import './globals.css'
@@ -149,6 +157,7 @@ export default function GlobalNotFound() {
 ### When to Use Global Not Found
 
 **Multiple Root Layouts**
+
 ```
 app/
   (admin)/
@@ -158,6 +167,7 @@ app/
 ```
 
 **Dynamic Root Layout**
+
 ```
 app/
   [locale]/
@@ -167,23 +177,27 @@ app/
 ## Configuration
 
 ### Per-Collection 404
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    notFound: {
-      title: 'Post Not Found',
-      message: 'The post you are looking for does not exist.',
-      showSuggestions: true,
-      backLink: '/blog',
-      homeLink: true,
-    }
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      notFound: {
+        title: 'Post Not Found',
+        message: 'The post you are looking for does not exist.',
+        showSuggestions: true,
+        backLink: '/blog',
+        homeLink: true,
+      },
+    },
+  ],
+});
 ```
 
 ### Global 404 Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -192,29 +206,34 @@ export const config = defineConfig({
       enabled: true,
       title: '404 - Page Not Found',
       message: 'The page you are looking for does not exist.',
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ## SEO Considerations
 
 ### Noindex Meta Tag
+
 - Automatically added to 404 pages
 - Prevents indexing of soft 404s
 - Google guidance compliant
 
 ### Status Codes
+
 **Streamed Responses**
+
 - Returns 200 status
 - Includes `<meta name="robots" content="noindex" />`
 - Content in streamed HTML
 
 **Non-Streamed Responses**
+
 - Returns 404 status
 - Proper SEO handling
 
 ### Soft 404 Prevention
+
 - Ensure resource exists before streaming
 - Use proxy for fast slug validation
 - Generate proper 404 responses when needed
@@ -222,6 +241,7 @@ export const config = defineConfig({
 ## Client Component 404
 
 ### usePathname for Dynamic 404
+
 ```typescript
 'use client'
 

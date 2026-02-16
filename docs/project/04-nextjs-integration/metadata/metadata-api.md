@@ -7,12 +7,14 @@ Using `generateMetadata` function for dynamic metadata generation from DeesseJS 
 ## Features
 
 ### Dynamic Metadata
+
 - Based on route params
 - External data integration
 - Parent metadata inheritance
 - SEO optimization per collection
 
 ### Metadata Types
+
 - Static metadata object
 - Dynamic generateMetadata function
 - Type-safe with Metadata type
@@ -20,31 +22,33 @@ Using `generateMetadata` function for dynamic metadata generation from DeesseJS 
 ## Basic Usage
 
 ### Static Metadata
+
 ```typescript
 // app/layout.tsx
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'DeesseJS',
   description: 'WordPress for developers',
-}
+};
 ```
 
 ### Dynamic Metadata
+
 ```typescript
 // app/posts/[slug]/page.tsx
-import type { Metadata, ResolvingMetadata } from 'next'
+import type { Metadata, ResolvingMetadata } from 'next';
 
 type Props = {
-  params: Promise<{ slug: string }>
-}
+  params: Promise<{ slug: string }>;
+};
 
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const { slug } = await params
-  const post = await db.posts.findBySlug(slug)
+  const { slug } = await params;
+  const post = await db.posts.findBySlug(slug);
 
   return {
     title: post.title,
@@ -54,30 +58,25 @@ export async function generateMetadata(
       description: post.excerpt,
       images: [post.coverImage],
     },
-  }
+  };
 }
 ```
 
 ## Collection-Based Metadata
 
 ### Auto-Generated Metadata
+
 ```typescript
 // app/posts/[slug]/page.tsx - Auto-generated
 export async function generateMetadata(
   { params }: PageProps<'/posts/[slug]'>,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const { slug } = await params
+  const { slug } = await params;
 
-  const [
-    post,
-    site,
-  ] = await Promise.all([
-    db.posts.findBySlug(slug),
-    fetchSiteSettings(),
-  ])
+  const [post, site] = await Promise.all([db.posts.findBySlug(slug), fetchSiteSettings()]);
 
-  const previousImages = (await parent).openGraph?.images || []
+  const previousImages = (await parent).openGraph?.images || [];
 
   return {
     title: `${post.title} | ${site.name}`,
@@ -96,11 +95,12 @@ export async function generateMetadata(
       description: post.excerpt,
       images: [post.coverImage],
     },
-  }
+  };
 }
 ```
 
 ### Configuration
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -119,40 +119,43 @@ export const config = defineConfig({
           description: 'auto', // Use description
           ogImage: 'mainImage',
           twitterCard: 'summary_large_image',
-        }
-      }
-    }
-  }
-})
+        },
+      },
+    },
+  },
+});
 ```
 
 ## Title Templates
 
 ### Root Layout Template
+
 ```typescript
 // app/layout.tsx
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: {
     template: '%s | DeesseJS',
     default: 'DeesseJS',
   },
-}
+};
 ```
 
 ### Page Title
+
 ```typescript
 // app/about/page.tsx
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'About',
   // Output: <title>About | DeesseJS</title>
-}
+};
 ```
 
 ### Absolute Title
+
 ```typescript
 // page.tsx
 export const metadata: Metadata = {
@@ -160,18 +163,17 @@ export const metadata: Metadata = {
     absolute: 'Custom Title',
   },
   // Ignores parent template
-}
+};
 ```
 
 ## Open Graph Metadata
 
 ### Article Type
+
 ```typescript
-export async function generateMetadata(
-  { params }: PageProps<'/posts/[slug]'>
-): Promise<Metadata> {
-  const { slug } = await params
-  const post = await db.posts.findBySlug(slug)
+export async function generateMetadata({ params }: PageProps<'/posts/[slug]'>): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await db.posts.findBySlug(slug);
 
   return {
     openGraph: {
@@ -191,11 +193,12 @@ export async function generateMetadata(
         },
       ],
     },
-  }
+  };
 }
 ```
 
 ### Website Type
+
 ```typescript
 export const metadata: Metadata = {
   openGraph: {
@@ -213,15 +216,16 @@ export const metadata: Metadata = {
       },
     ],
   },
-}
+};
 ```
 
 ## Twitter Cards
 
 ### Summary Large Image
+
 ```typescript
 export async function generateMetadata(): Promise<Metadata> {
-  const post = await getFeaturedPost()
+  const post = await getFeaturedPost();
 
   return {
     twitter: {
@@ -232,11 +236,12 @@ export async function generateMetadata(): Promise<Metadata> {
       creator: '@deessejs',
       images: [post.coverImage],
     },
-  }
+  };
 }
 ```
 
 ### App Card
+
 ```typescript
 export const metadata: Metadata = {
   twitter: {
@@ -247,15 +252,16 @@ export const metadata: Metadata = {
     creator: '@deessejs',
     images: ['/og-image.png'],
   },
-}
+};
 ```
 
 ## Advanced Patterns
 
 ### MetadataBase URL
+
 ```typescript
 // app/layout.tsx
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://example.com'),
@@ -269,55 +275,56 @@ export const metadata: Metadata = {
   openGraph: {
     images: '/og-image.png', // Relative path
   },
-}
+};
 ```
 
 ### Parent Metadata Inheritance
+
 ```typescript
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const previousImages = (await parent).openGraph?.images || []
+  const previousImages = (await parent).openGraph?.images || [];
 
   return {
     openGraph: {
       images: ['/new-image.png', ...previousImages],
     },
-  }
+  };
 }
 ```
 
 ### Conditional Metadata
+
 ```typescript
-export async function generateMetadata(
-  { params }: Props
-): Promise<Metadata> {
-  const { slug } = await params
-  const post = await db.posts.findBySlug(slug)
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await db.posts.findBySlug(slug);
 
   const metadata: Metadata = {
     title: post.title,
     description: post.excerpt,
-  }
+  };
 
   if (post.coverImage) {
     metadata.openGraph = {
       images: [post.coverImage],
-    }
+    };
   }
 
   if (post.author) {
-    metadata.authors = [{ name: post.author.name }]
+    metadata.authors = [{ name: post.author.name }];
   }
 
-  return metadata
+  return metadata;
 }
 ```
 
 ## Collection Configuration
 
 ### Auto-Generated Metadata
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -338,14 +345,15 @@ export const config = defineConfig({
           image: 'mainImage',
           type: 'website',
           price: 'price',
-        }
-      }
-    }
-  }
-})
+        },
+      },
+    },
+  },
+});
 ```
 
 ### Site-Wide Defaults
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -357,25 +365,28 @@ export const config = defineConfig({
     metadata: {
       titleTemplate: '%s | My App',
       descriptionTemplate: 'auto', // Generate from content
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ## Best Practices
 
 ### Use generateMetadata When
+
 - Depends on route params
 - Fetches external data
 - Dynamic based on content
 - Needs parent metadata
 
 ### Use Static Metadata When
+
 - Content is static
 - No external dependencies
 - Same across all pages
 
 ### Always Provide
+
 - Title and description
 - Open Graph images
 - Twitter cards

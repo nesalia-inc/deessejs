@@ -7,17 +7,20 @@ Advanced page props handling with PageProps helper, params as promises, and sear
 ## Features
 
 ### PageProps Helper
+
 - Auto-generated `PageProps<'/route'>` helper
 - Strongly typed params and searchParams
 - Inferred from directory structure
 - Global helper available after type generation
 
 ### Params as Promises
+
 - params prop is a promise (Next.js 15)
 - Async/await or React.use() to access values
 - Backward compatibility support (deprecated)
 
 ### SearchParams Handling
+
 - URL query string as searchParams prop
 - Filtering, pagination, sorting support
 - Type-safe search params
@@ -26,6 +29,7 @@ Advanced page props handling with PageProps helper, params as promises, and sear
 ## Page Patterns
 
 ### Basic Page with PageProps
+
 ```typescript
 // app/blog/[slug]/page.tsx
 export default async function Page(props: PageProps<'/blog/[slug]'>) {
@@ -35,6 +39,7 @@ export default async function Page(props: PageProps<'/blog/[slug]'>) {
 ```
 
 ### Page with SearchParams
+
 ```typescript
 // app/shop/page.tsx
 export default async function Page(props: PageProps<'/shop'>) {
@@ -54,6 +59,7 @@ export default async function Page(props: PageProps<'/shop'>) {
 ```
 
 ### Combined Params and SearchParams
+
 ```typescript
 // app/blog/[slug]/page.tsx
 export default async function Page(props: PageProps<'/blog/[slug]'>) {
@@ -74,6 +80,7 @@ export default async function Page(props: PageProps<'/blog/[slug]'>) {
 ## Collection Page Generation
 
 ### Auto-Generated List Pages
+
 ```typescript
 // app/posts/page.tsx - Auto-generated
 export default async function Page(props: PageProps<'/posts'>) {
@@ -90,6 +97,7 @@ export default async function Page(props: PageProps<'/posts'>) {
 ```
 
 ### Auto-Generated Single Pages
+
 ```typescript
 // app/posts/[slug]/page.tsx - Auto-generated
 export default async function Page(props: PageProps<'/posts/[slug]'>) {
@@ -108,63 +116,71 @@ export default async function Page(props: PageProps<'/posts/[slug]'>) {
 ## Configuration
 
 ### Collection Page Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    pages: {
-      list: {
-        path: '/posts',
-        enabled: true,
-        itemsPerPage: 10,
-        sortableFields: ['title', 'createdAt', 'updatedAt'],
-        filterableFields: ['status', 'category'],
+  collections: [
+    {
+      name: 'posts',
+      pages: {
+        list: {
+          path: '/posts',
+          enabled: true,
+          itemsPerPage: 10,
+          sortableFields: ['title', 'createdAt', 'updatedAt'],
+          filterableFields: ['status', 'category'],
+        },
+        detail: {
+          path: '/posts/[slug]',
+          enabled: true,
+          slugField: 'slug',
+        },
       },
-      detail: {
-        path: '/posts/[slug]',
-        enabled: true,
-        slugField: 'slug',
-      }
-    }
-  }]
-})
+    },
+  ],
+});
 ```
 
 ### SearchParams Schema
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    searchParams: {
-      page: { type: 'number', default: 1 },
-      sort: { type: 'enum', values: ['title', 'createdAt', 'updatedAt'], default: 'createdAt' },
-      order: { type: 'enum', values: ['asc', 'desc'], default: 'desc' },
-      query: { type: 'string', default: '' },
-      status: { type: 'enum', values: ['draft', 'published'], optional: true },
-    }
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      searchParams: {
+        page: { type: 'number', default: 1 },
+        sort: { type: 'enum', values: ['title', 'createdAt', 'updatedAt'], default: 'createdAt' },
+        order: { type: 'enum', values: ['asc', 'desc'], default: 'desc' },
+        query: { type: 'string', default: '' },
+        status: { type: 'enum', values: ['draft', 'published'], optional: true },
+      },
+    },
+  ],
+});
 ```
 
 ## URL Query Builders
 
 ### Auto-Generated Query Builders
+
 ```typescript
 // Client-side query builder
-import { buildUrl } from '@deessejs/url'
+import { buildUrl } from '@deessejs/url';
 
 const url = buildUrl('/posts', {
   page: 2,
   sort: 'title',
   order: 'asc',
   query: 'nextjs',
-})
+});
 // => /posts?page=2&sort=title&order=asc&query=nextjs
 ```
 
 ### Type-Safe Query Params
+
 ```typescript
 'use client'
 
@@ -187,6 +203,7 @@ export default function PostListPage(props: PageProps<'/posts'>) {
 ## Client Component Pages
 
 ### Using React.use()
+
 ```typescript
 'use client'
 
@@ -207,6 +224,7 @@ export default function Page({
 ```
 
 ### useSearchParams Hook
+
 ```typescript
 'use client'
 
@@ -233,6 +251,7 @@ export default function PostFilters() {
 ## Advanced Patterns
 
 ### Multi-Dimension Filtering
+
 ```typescript
 // app/products/page.tsx
 export default async function Page(props: PageProps<'/products'>) {
@@ -260,6 +279,7 @@ export default async function Page(props: PageProps<'/products'>) {
 ```
 
 ### Pagination with SearchParams
+
 ```typescript
 // Auto-generated pagination component
 export function Pagination({ page, totalPages }: { page: number, totalPages: number }) {

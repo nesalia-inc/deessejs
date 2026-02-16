@@ -7,12 +7,14 @@ Auto-generated robots.txt and sitemap.xml for DeesseJS collections with SEO opti
 ## Features
 
 ### Auto-Generated Robots.txt
+
 - Collection-based rules
 - Role-based access rules
 - Sitemap references
 - Crawler-specific rules
 
 ### Auto-Generated Sitemap
+
 - Collection URLs
 - Dynamic routes
 - Localization support
@@ -22,6 +24,7 @@ Auto-generated robots.txt and sitemap.xml for DeesseJS collections with SEO opti
 ## Robots.txt
 
 ### Static Robots
+
 ```txt
 # app/robots.txt
 User-Agent: *
@@ -34,9 +37,10 @@ Sitemap: https://example.com/sitemap.xml
 ```
 
 ### Generated Robots
+
 ```typescript
 // app/robots.ts
-import type { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -46,20 +50,21 @@ export default function robots(): MetadataRoute.Robots {
       disallow: ['/admin/', '/api/', '/private/'],
     },
     sitemap: 'https://example.com/sitemap.xml',
-  }
+  };
 }
 ```
 
 ### Collection-Based Rules
+
 ```typescript
 // app/robots.ts
-import type { MetadataRoute } from 'next'
-import { config } from '@deessejs/config'
+import type { MetadataRoute } from 'next';
+import { config } from '@deessejs/config';
 
 export default function robots(): MetadataRoute.Robots {
   const disallowed = config.collections
-    .filter(c => c.permissions?.read === 'admin')
-    .map(c => `/${c.name}/*`)
+    .filter((c) => c.permissions?.read === 'admin')
+    .map((c) => `/${c.name}/*`);
 
   return {
     rules: [
@@ -75,14 +80,15 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: 'https://example.com/sitemap.xml',
-  }
+  };
 }
 ```
 
 ### Crawler-Specific Rules
+
 ```typescript
 // app/robots.ts
-import type { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -104,13 +110,14 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: 'https://example.com/sitemap.xml',
-  }
+  };
 }
 ```
 
 ## Sitemap.xml
 
 ### Static Sitemap
+
 ```xml
 <!-- app/sitemap.xml -->
 <?xml version="1.0" encoding="UTF-8"?>
@@ -131,9 +138,10 @@ export default function robots(): MetadataRoute.Robots {
 ```
 
 ### Generated Sitemap
+
 ```typescript
 // app/sitemap.ts
-import type { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -149,28 +157,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
-  ]
+  ];
 }
 ```
 
 ### Collection-Based Sitemap
+
 ```typescript
 // app/sitemap.ts
-import type { MetadataRoute } from 'next'
-import { db } from '@deessejs/db'
+import type { MetadataRoute } from 'next';
+import { db } from '@deessejs/db';
 
 export default async function sitemap(): MetadataRoute.Sitemap {
   const posts = await db.posts.findMany({
     where: { status: 'published' },
     select: { slug: true, updatedAt: true },
-  })
+  });
 
   const blogUrls = posts.map((post) => ({
     url: `https://example.com/blog/${post.slug}`,
     lastModified: post.updatedAt,
     changeFrequency: 'weekly' as const,
     priority: 0.7,
-  }))
+  }));
 
   return [
     {
@@ -180,59 +189,66 @@ export default async function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     ...blogUrls,
-  ]
+  ];
 }
 ```
 
 ### Multi-Collection Sitemap
+
 ```typescript
 // app/sitemap.ts
-import type { MetadataRoute } from 'next'
-import { db } from '@deessejs/db'
+import type { MetadataRoute } from 'next';
+import { db } from '@deessejs/db';
 
 export default async function sitemap(): MetadataRoute.Sitemap {
   const [posts, products, pages] = await Promise.all([
     db.posts.findMany({ where: { status: 'published' } }),
     db.products.findMany({ where: { available: true } }),
     db.pages.findMany({ where: { published: true } }),
-  ])
+  ]);
 
   return [
-    { url: 'https://example.com', lastModified: new Date(), changeFrequency: 'daily' as const, priority: 1 },
-    ...posts.map(p => ({
+    {
+      url: 'https://example.com',
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 1,
+    },
+    ...posts.map((p) => ({
       url: `https://example.com/blog/${p.slug}`,
       lastModified: p.updatedAt,
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     })),
-    ...products.map(p => ({
+    ...products.map((p) => ({
       url: `https://example.com/shop/${p.slug}`,
       lastModified: p.updatedAt,
       changeFrequency: 'daily' as const,
       priority: 0.8,
     })),
-    ...pages.map(p => ({
+    ...pages.map((p) => ({
       url: `https://example.com/${p.slug}`,
       lastModified: p.updatedAt,
       changeFrequency: 'monthly' as const,
       priority: 0.5,
     })),
-  ]
+  ];
 }
 ```
 
 ## Localization
 
 ### Multi-Locale Sitemap
+
 ```typescript
 // app/sitemap.ts
-import type { MetadataRoute } from 'next'
-import { db } from '@deessejs/db'
-import { config } from '@deessejs/config'
+import type { MetadataRoute } from 'next';
+import { db } from '@deessejs/db';
+import { config } from '@deessejs/config';
 
 export default async function sitemap(): MetadataRoute.Sitemap {
-  const locales = config.i18n.locales // ['en', 'fr', 'de']
-  const posts = await db.posts.findMany({ where: { status: 'published' } })
+  const locales = config.i18n.locales; // ['en', 'fr', 'de']
+  const posts = await db.posts.findMany({ where: { status: 'published' } });
 
   const postUrls = posts.flatMap((post) => {
     return locales.map((locale) => ({
@@ -245,47 +261,47 @@ export default async function sitemap(): MetadataRoute.Sitemap {
           locales.map((l) => [l, `https://example.com/${l}/blog/${post.slug}`])
         ),
       },
-    }))
-  })
+    }));
+  });
 
-  return postUrls
+  return postUrls;
 }
 ```
 
 ## Image Sitemaps
 
 ### Image Sitemap
+
 ```typescript
 // app/sitemap.ts
-import type { MetadataRoute } from 'next'
-import { db } from '@deessejs/db'
+import type { MetadataRoute } from 'next';
+import { db } from '@deessejs/db';
 
 export default async function sitemap(): MetadataRoute.Sitemap {
   const posts = await db.posts.findMany({
     where: { status: 'published' },
     include: { featuredImage: true },
-  })
+  });
 
   return posts.map((post) => ({
     url: `https://example.com/blog/${post.slug}`,
     lastModified: post.updatedAt,
-    images: post.featuredImage
-      ? [`https://example.com${post.featuredImage.url}`]
-      : [],
-  }))
+    images: post.featuredImage ? [`https://example.com${post.featuredImage.url}`] : [],
+  }));
 }
 ```
 
 ## Video Sitemaps
 
 ### Video Sitemap
+
 ```typescript
 // app/sitemap.ts
-import type { MetadataRoute } from 'next'
-import { db } from '@deessejs/db'
+import type { MetadataRoute } from 'next';
+import { db } from '@deessejs/db';
 
 export default async function sitemap(): MetadataRoute.Sitemap {
-  const videos = await db.videos.findMany()
+  const videos = await db.videos.findMany();
 
   return videos.map((video) => ({
     url: `https://example.com/videos/${video.slug}`,
@@ -297,53 +313,55 @@ export default async function sitemap(): MetadataRoute.Sitemap {
         description: video.description,
       },
     ],
-  }))
+  }));
 }
 ```
 
 ## Multiple Sitemaps
 
 ### Large Site Sitemaps
+
 ```typescript
 // app/product/sitemap.ts
-import type { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next';
 
 export async function generateSitemaps() {
-  const totalCount = await db.products.count()
-  const sitemapCount = Math.ceil(totalCount / 50000)
+  const totalCount = await db.products.count();
+  const sitemapCount = Math.ceil(totalCount / 50000);
 
   return Array.from({ length: sitemapCount }, (_, i) => ({
     id: String(i),
-  }))
+  }));
 }
 
 export default async function sitemap({
   id,
 }: {
-  id: Promise<string>
+  id: Promise<string>;
 }): Promise<MetadataRoute.Sitemap> {
-  const index = Number(await id)
-  const start = index * 50000
-  const end = start + 50000
+  const index = Number(await id);
+  const start = index * 50000;
+  const end = start + 50000;
 
   const products = await db.products.findMany({
     skip: start,
     take: 50000,
     select: { id: true, updatedAt: true },
-  })
+  });
 
   return products.map((product) => ({
     url: `https://example.com/product/${product.id}`,
     lastModified: product.updatedAt,
     changeFrequency: 'weekly' as const,
     priority: 0.8,
-  }))
+  }));
 }
 ```
 
 ## Configuration
 
 ### SEO Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -353,7 +371,7 @@ export const config = defineConfig({
       collections: {
         protected: 'disallow',
         public: 'allow',
-      }
+      },
     },
     sitemap: {
       enabled: true,
@@ -367,28 +385,31 @@ export const config = defineConfig({
         posts: 0.7,
         products: 0.8,
         pages: 0.5,
-      }
-    }
-  }
-})
+      },
+    },
+  },
+});
 ```
 
 ### Collection Sitemap Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    sitemap: {
-      enabled: true,
-      path: 'blog',
-      changeFrequency: 'weekly',
-      priority: 0.7,
-      includeImages: true,
-      imageField: 'featuredImage',
-    }
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      sitemap: {
+        enabled: true,
+        path: 'blog',
+        changeFrequency: 'weekly',
+        priority: 0.7,
+        includeImages: true,
+        imageField: 'featuredImage',
+      },
+    },
+  ],
+});
 ```
 
 ## Benefits

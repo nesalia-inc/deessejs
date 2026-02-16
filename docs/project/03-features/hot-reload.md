@@ -7,6 +7,7 @@ When a collection is modified in `deesse.config.ts`, changes are applied automat
 ## Automatic Drizzle Migrations
 
 Collection modifications trigger:
+
 1. Automatic Drizzle schema generation
 2. Automatic migration creation
 3. Automatic migration application

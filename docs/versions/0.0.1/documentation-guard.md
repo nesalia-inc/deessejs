@@ -72,12 +72,14 @@ The Documentation Guard operates at multiple layers:
 #### Layer 1: File Change Detection
 
 Identifies which files have changed in a PR:
+
 - Source code files (`packages/`, `src/`)
 - Documentation files (`docs/`, `web/content/docs/`)
 
 #### Layer 2: Correlation Check
 
 Determines if code changes have corresponding documentation changes:
+
 - Which packages/modules changed
 - Which documentation sections should be updated
 - Whether documentation was actually updated
@@ -85,6 +87,7 @@ Determines if code changes have corresponding documentation changes:
 #### Layer 3: Enforcement
 
 Takes action based on the check:
+
 - **Pass:** PR can proceed to review
 - **Fail:** PR is blocked, clear error message provided
 
@@ -97,56 +100,68 @@ Takes action based on the check:
 Different parts of the codebase map to different documentation sections:
 
 #### `packages/create-deesse-app/`
+
 **Maps to:** `web/content/docs/cli/`
 
 **When to update:**
+
 - Adding new CLI commands
 - Changing CLI options
 - Modifying template structure
 - Fixing CLI bugs
 
 **Required documentation:**
+
 - Command reference
 - Usage examples
 - Option explanations
 - Template descriptions
 
 #### `packages/core/`
+
 **Maps to:** `web/content/docs/guides/`
 
 **When to update:**
+
 - New collection types
 - API changes
 - New hooks or events
 - Breaking changes
 
 **Required documentation:**
+
 - Feature guides
 - API reference
 - Migration guides (for breaking changes)
 
 #### `packages/orm/`
+
 **Maps to:** `web/content/docs/guides/` + Technical docs
 
 **When to update:**
+
 - New query methods
 - Schema changes
 - Performance improvements
 
 **Required documentation:**
+
 - Query examples
 - Schema documentation
 - Technical notes (in `docs/@versions/0.0.1/`)
 
 #### `packages/admin/`
+
 **Maps to:** `web/content/docs/admin-dashboard/`
 
 **When to update:**
+
 - New admin features
 - UI changes
 - Configuration options
 
 **Required documentation:**
+
 - Feature overview
 - Configuration guide
 - Screenshots (for UI changes)
@@ -285,6 +300,7 @@ Update the docs, push, and CI will re-run automatically.
 **Requirement:** Update user-facing documentation
 
 **Examples:**
+
 - New CLI command → Update `web/content/docs/cli/`
 - New config option → Update `web/content/docs/guides/configuration.md`
 - Breaking change → Update migration guide
@@ -296,6 +312,7 @@ Update the docs, push, and CI will re-run automatically.
 **Requirement:** Update technical documentation
 
 **Examples:**
+
 - New package structure → Update `docs/@versions/0.0.1/development/repository-structure.md`
 - Build process changes → Update `docs/@versions/0.0.1/development/developer-experience.md`
 
@@ -306,6 +323,7 @@ Update the docs, push, and CI will re-run automatically.
 **Requirement:** Document the fix if user-visible
 
 **Examples:**
+
 - Fixed crash → Update troubleshooting guide
 - Performance improvement → Mention in release notes
 - Fixed edge case → Add note to relevant docs
@@ -317,6 +335,7 @@ Update the docs, push, and CI will re-run automatically.
 **Requirement:** Comprehensive documentation
 
 **Examples:**
+
 - New feature → Create getting started guide
 - New capability → Add examples
 - Enhancement → Update feature overview
@@ -334,6 +353,7 @@ The Documentation Guard can operate at different strictness levels:
 Documentation issues generate warnings but don't block PRs.
 
 **Use when:**
+
 - Early development
 - Experimental features
 - Documentation migration in progress
@@ -343,6 +363,7 @@ Documentation issues generate warnings but don't block PRs.
 Documentation issues block PRs but can be overridden.
 
 **Use when:**
+
 - Normal development
 - Most features
 - Standard workflow
@@ -352,6 +373,7 @@ Documentation issues block PRs but can be overridden.
 Documentation issues strictly block PRs with no override.
 
 **Use when:**
+
 - Public APIs
 - Breaking changes
 - User-facing features
@@ -361,6 +383,7 @@ Documentation issues strictly block PRs with no override.
 Certain changes may be exempt from documentation requirements:
 
 **Exempt Changes:**
+
 - Internal test updates
 - Refactoring that doesn't affect behavior
 - Typo fixes in code
@@ -414,6 +437,7 @@ Based on metrics, we can:
 **Symptom:** PR blocked but documentation doesn't need updating
 
 **Solutions:**
+
 1. Use exemption tag: `[docs-not-required]`
 2. Update guard rules if this happens often
 3. Adjust strictness level temporarily
@@ -423,6 +447,7 @@ Based on metrics, we can:
 **Symptom:** PR passes but documentation was needed
 
 **Solutions:**
+
 1. Review guard rules for gaps
 2. Add new mapping rules
 3. Increase strictness level
@@ -432,6 +457,7 @@ Based on metrics, we can:
 **Symptom:** PR blocked but error message doesn't specify which docs
 
 **Solutions:**
+
 1. Check the Package → Documentation mapping above
 2. Review similar PRs for examples
 3. Ask in team chat for guidance

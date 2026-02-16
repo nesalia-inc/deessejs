@@ -14,6 +14,7 @@ Advanced intercepting route patterns for modals, overlays, and context-preservin
 ## Modal Patterns
 
 ### Photo/Gallery Modal
+
 ```
 app/
   feed/
@@ -27,6 +28,7 @@ app/
 ```
 
 ### Blog Post Preview Modal
+
 ```
 app/
   blog/
@@ -39,33 +41,38 @@ app/
 ```
 
 ### Collection Item Modal
+
 Auto-generated for all collections:
 
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    ui: {
-      intercepts: {
-        preview: true,      // /@modal/(.)posts/[slug]
-        edit: true,         // /@modal/(.)posts/[id]/edit
-        delete: true,       // /@modal/(.)posts/[id]/delete
-      }
-    }
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      ui: {
+        intercepts: {
+          preview: true, // /@modal/(.)posts/[slug]
+          edit: true, // /@modal/(.)posts/[id]/edit
+          delete: true, // /@modal/(.)posts/[id]/delete
+        },
+      },
+    },
+  ],
+});
 ```
 
 ## Context Preservation
 
 ### Modal State on Refresh
+
 - URL stays shareable (`/photo/123`)
 - Modal opens on direct navigation
 - Feed renders underneath on refresh
 - Back button closes modal (not previous page)
 
 ### Forward/Backward Navigation
+
 - Closing modal on back navigation
 - Reopening modal on forward navigation
 - Preserving scroll position
@@ -74,6 +81,7 @@ export const config = defineConfig({
 ## Admin Dashboard Modals
 
 ### Quick Edit Modal
+
 ```
 app/
   @admin/
@@ -89,6 +97,7 @@ app/
 ```
 
 ### Delete Confirmation
+
 ```
 app/
   @admin/
@@ -104,6 +113,7 @@ app/
 ```
 
 ### Login Modal (Top Navbar)
+
 ```
 app/
   layout.tsx                       # Root layout with navbar
@@ -119,6 +129,7 @@ app/
 ## Shopping Cart Modal
 
 ### Side Cart Pattern
+
 ```
 app/
   layout.tsx
@@ -132,6 +143,7 @@ app/
 ```
 
 ### Cart Management
+
 - Add to cart without leaving current page
 - Cart persists across navigation
 - Checkout via modal or dedicated page
@@ -155,22 +167,23 @@ export const config = defineConfig({
           layout: 'modal',
           size: 'medium',
         },
-      }
+      },
     },
     custom: [
       {
         name: 'login',
         route: '/(.)login/@modal/(.)/login',
         trigger: '.login-button',
-      }
-    ]
-  }
-})
+      },
+    ],
+  },
+});
 ```
 
 ## Modal Layouts
 
 ### Auto-Generated Modal Layout
+
 ```typescript
 // app/@modal/layout.tsx
 export default function ModalLayout({
@@ -190,6 +203,7 @@ export default function ModalLayout({
 ```
 
 ### Modal Size Variants
+
 - `small` - 400px max-width
 - `medium` - 600px max-width
 - `large` - 800px max-width
@@ -198,6 +212,7 @@ export default function ModalLayout({
 ## Back Button Behavior
 
 ### Custom Back Handler
+
 ```typescript
 'use client'
 

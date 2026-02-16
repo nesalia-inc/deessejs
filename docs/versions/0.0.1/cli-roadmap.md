@@ -95,6 +95,7 @@ create-deesse-app/
 - ⚪ No configured linters
 
 **Use case:**
+
 - Rapid prototyping
 - Learning/education
 - Personal projects
@@ -124,6 +125,7 @@ create-deesse-app/
   - Automated tests on PRs
 
 **Use case:**
+
 - Enterprise projects
 - Development teams
 - Production
@@ -137,22 +139,22 @@ create-deesse-app/
 
 ### CLI Tools
 
-| Tool | Usage |
-|------|-------|
-| **@clack/prompts** | Modern interactive prompts |
-| **commander** | CLI argument parsing |
-| **picocolors** | Terminal colors |
-| **fs-extra** or **cpy** | File/folder copying |
-| **replace-in-file** | Placeholder replacement |
+| Tool                    | Usage                      |
+| ----------------------- | -------------------------- |
+| **@clack/prompts**      | Modern interactive prompts |
+| **commander**           | CLI argument parsing       |
+| **picocolors**          | Terminal colors            |
+| **fs-extra** or **cpy** | File/folder copying        |
+| **replace-in-file**     | Placeholder replacement    |
 
 ### Testing Stack (2025)
 
-| Tool | Usage | Why? |
-|------|-------|------|
-| **Vitest** | Unit/component tests | ⚡ Faster than Jest, Vite-compatible |
-| **@testing-library/react** | React component tests | 🎯 Industry standard |
-| **Playwright** | E2E tests | 🎭 Parallel execution, multi-browser |
-| **MSW** | API mocking | 🎭 Mock Service Worker, modern standard |
+| Tool                       | Usage                 | Why?                                    |
+| -------------------------- | --------------------- | --------------------------------------- |
+| **Vitest**                 | Unit/component tests  | ⚡ Faster than Jest, Vite-compatible    |
+| **@testing-library/react** | React component tests | 🎯 Industry standard                    |
+| **Playwright**             | E2E tests             | 🎭 Parallel execution, multi-browser    |
+| **MSW**                    | API mocking           | 🎭 Mock Service Worker, modern standard |
 
 ---
 
@@ -364,41 +366,44 @@ Example of message displayed after project creation:
 
 ## 📊 Template Comparison
 
-| Feature | Minimal | Default | Full-stack |
-|---------|---------|---------|------------|
-| Next.js 15+ | ✅ | ✅ | ✅ |
-| TypeScript | ✅ | ✅ | ✅ |
-| Tailwind CSS | ✅ | ✅ | ✅ |
-| shadcn/ui | ❌ | ✅ | ✅ |
-| ESLint | ❌ | ✅ | ✅ |
-| Prettier | ❌ | ✅ | ✅ |
-| Vitest | ❌ | ✅ | ✅ |
-| Testing Library | ❌ | ✅ | ✅ |
-| Playwright | ❌ | ✅ | ✅ |
-| MSW | ❌ | ✅ | ✅ |
-| Husky | ❌ | ❌ | ✅ |
-| lint-staged | ❌ | ❌ | ✅ |
-| Commitlint | ❌ | ❌ | ✅ |
-| GitHub Actions | ❌ | ❌ | ✅ |
-| **Size** | ~50MB | ~150MB | ~180MB |
-| **Install** | ~30s | ~60s | ~90s |
+| Feature         | Minimal | Default | Full-stack |
+| --------------- | ------- | ------- | ---------- |
+| Next.js 15+     | ✅      | ✅      | ✅         |
+| TypeScript      | ✅      | ✅      | ✅         |
+| Tailwind CSS    | ✅      | ✅      | ✅         |
+| shadcn/ui       | ❌      | ✅      | ✅         |
+| ESLint          | ❌      | ✅      | ✅         |
+| Prettier        | ❌      | ✅      | ✅         |
+| Vitest          | ❌      | ✅      | ✅         |
+| Testing Library | ❌      | ✅      | ✅         |
+| Playwright      | ❌      | ✅      | ✅         |
+| MSW             | ❌      | ✅      | ✅         |
+| Husky           | ❌      | ❌      | ✅         |
+| lint-staged     | ❌      | ❌      | ✅         |
+| Commitlint      | ❌      | ❌      | ✅         |
+| GitHub Actions  | ❌      | ❌      | ✅         |
+| **Size**        | ~50MB   | ~150MB  | ~180MB     |
+| **Install**     | ~30s    | ~60s    | ~90s       |
 
 ---
 
 ## 🎯 Development Roadmap
 
 ### Phase 1: Foundation ✅ (In progress)
+
 - [x] Architecture and design
 - [x] v0.0.1 documentation
 - [ ] Monorepo setup (pnpm-workspace.yaml)
 - [ ] Basic `create-deesse-app` package
 
 ### Phase 2: Templates
+
 - [ ] `minimal` template
 - [ ] `default` template
 - [ ] `full-stack` template
 
 ### Phase 3: CLI Implementation
+
 - [ ] Interactive prompts (@clack/prompts)
 - [ ] Template copy logic
 - [ ] Placeholder replacement
@@ -406,10 +411,12 @@ Example of message displayed after project creation:
 - [ ] Git initialization
 
 ### Phase 4: Testing
+
 - [ ] CLI tests
 - [ ] Generated template tests
 
 ### Phase 5: Publishing
+
 - [ ] npm publishing
 - [ ] User documentation
 - [ ] Examples and guides
@@ -419,12 +426,14 @@ Example of message displayed after project creation:
 ## 🔗 Resources
 
 ### Documentation
+
 - [Clack Prompts - Beautiful CLIs](https://clack.cc/)
 - [Vitest Documentation](https://vitest.dev/)
 - [Playwright Documentation](https://playwright.dev/)
 - [shadcn/ui CLI](https://ui.shadcn.com/docs/cli)
 
 ### References
+
 - [GitHub Repository Best Practices](https://dev.to/pwd9000/github-repository-best-practices-23ck)
 - [Node.js CLI Apps Best Practices](https://github.com/lirantal/nodejs-cli-apps-best-practices)
 

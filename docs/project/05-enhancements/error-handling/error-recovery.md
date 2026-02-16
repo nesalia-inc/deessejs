@@ -7,10 +7,12 @@ Recommendations for implementing advanced error handling using Next.js `unstable
 ## Current State Analysis
 
 Based on documentation analysis, DeesseJS has:
+
 - `docs\next\advanced-error-handling.md` - Basic error handling
 - `docs\next\error-handling-enhancements.md` - Error classification
 
 Current gaps:
+
 - No unstable_rethrow integration
 - Limited error recovery patterns
 - Missing error boundary composition
@@ -24,69 +26,62 @@ Proper handling of Next.js framework errors:
 
 ```typescript
 // lib/errors/framework-handling.ts
-import { unstable_rethrow } from 'next/navigation'
-import { notFound, redirect, permanentRedirect } from 'next/navigation'
+import { unstable_rethrow } from 'next/navigation';
+import { notFound, redirect, permanentRedirect } from 'next/navigation';
 
 export type FrameworkError =
   | 'NOT_FOUND'
   | 'REDIRECT'
   | 'PERMANENT_REDIRECT'
   | 'DYNAMIC_ERROR'
-  | 'AUTH_ERROR'
+  | 'AUTH_ERROR';
 
 export function isFrameworkError(error: unknown): error is Error {
-  const frameworkErrors = [
-    'NEXT_NOT_FOUND',
-    'NEXT_REDIRECT',
-    'NEXT_PERMANENT_REDIRECT',
-  ]
+  const frameworkErrors = ['NEXT_NOT_FOUND', 'NEXT_REDIRECT', 'NEXT_PERMANENT_REDIRECT'];
 
-  return error instanceof Error &&
-    frameworkErrors.some(name => error.message.includes(name))
+  return error instanceof Error && frameworkErrors.some((name) => error.message.includes(name));
 }
 
-export async function handleFrameworkError<T>(
-  operation: () => Promise<T>
-): Promise<T> {
+export async function handleFrameworkError<T>(operation: () => Promise<T>): Promise<T> {
   try {
-    return await operation()
+    return await operation();
   } catch (error) {
     // Re-throw framework errors to let Next.js handle them
-    unstable_rethrow(error)
+    unstable_rethrow(error);
 
     // If not a framework error, handle normally
-    throw error
+    throw error;
   }
 }
 
 // Usage in Server Components
 export async function fetchPost(slug: string) {
   return handleFrameworkError(async () => {
-    const res = await fetch(`https://api.example.com/posts/${slug}`)
+    const res = await fetch(`https://api.example.com/posts/${slug}`);
 
     if (res.status === 404) {
-      notFound()
+      notFound();
     }
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch: ${res.statusText}`)
+      throw new Error(`Failed to fetch: ${res.statusText}`);
     }
 
-    return res.json()
-  })
+    return res.json();
+  });
 }
 
 // Usage in try/catch blocks
 export async function safeOperation() {
   try {
-    const result = await someOperation()
-    return result
+    const result = await someOperation();
+    return result;
   } catch (error) {
-    unstable_rethrow(error)
+    unstable_rethrow(error);
 
     // Log non-framework errors
-    console.error('Operation failed:', error)
-    throw error
+    console.error('Operation failed:', error);
+    throw error;
   }
 }
 ```
@@ -196,87 +191,87 @@ Aggregate multiple errors for batch operations:
 
 ```typescript
 // lib/errors/aggregation.ts
-import { DeesseError } from './classification'
+import { DeesseError } from './classification';
 
 export interface ErrorAggregator {
-  errors: Map<string, DeesseError[]>
-  add(error: DeesseError, key?: string): void
-  getErrors(key?: string): DeesseError[]
-  hasErrors(key?: string): boolean
-  getAll(): Map<string, DeesseError[]>
-  clear(key?: string): void
-  flush(): ErrorBatch
+  errors: Map<string, DeesseError[]>;
+  add(error: DeesseError, key?: string): void;
+  getErrors(key?: string): DeesseError[];
+  hasErrors(key?: string): boolean;
+  getAll(): Map<string, DeesseError[]>;
+  clear(key?: string): void;
+  flush(): ErrorBatch;
 }
 
 export interface ErrorBatch {
-  errors: Map<string, DeesseError[]>
-  count: number
-  byCategory: Record<string, DeesseError[]>
-  bySeverity: Record<string, DeesseError[]>
+  errors: Map<string, DeesseError[]>;
+  count: number;
+  byCategory: Record<string, DeesseError[]>;
+  bySeverity: Record<string, DeesseError[]>;
 }
 
 export class ErrorAggregatorImpl implements ErrorAggregator {
-  errors = new Map<string, DeesseError[]>()
+  errors = new Map<string, DeesseError[]>();
 
   add(error: DeesseError, key?: string): void {
-    const errorKey = key || 'default'
+    const errorKey = key || 'default';
 
     if (!this.errors.has(errorKey)) {
-      this.errors.set(errorKey, [])
+      this.errors.set(errorKey, []);
     }
 
-    this.errors.get(errorKey)!.push(error)
+    this.errors.get(errorKey)!.push(error);
   }
 
   getErrors(key?: string): DeesseError[] {
     if (key) {
-      return this.errors.get(key) || []
+      return this.errors.get(key) || [];
     }
 
-    const all: DeesseError[] = []
+    const all: DeesseError[] = [];
     for (const errors of this.errors.values()) {
-      all.push(...errors)
+      all.push(...errors);
     }
-    return all
+    return all;
   }
 
   hasErrors(key?: string): boolean {
-    return this.getErrors(key).length > 0
+    return this.getErrors(key).length > 0;
   }
 
   getAll(): Map<string, DeesseError[]> {
-    return new Map(this.errors)
+    return new Map(this.errors);
   }
 
   clear(key?: string): void {
     if (key) {
-      this.errors.delete(key)
+      this.errors.delete(key);
     } else {
-      this.errors.clear()
+      this.errors.clear();
     }
   }
 
   flush(): ErrorBatch {
-    const errors = this.errors
+    const errors = this.errors;
 
     // Calculate stats
-    const allErrors = this.getErrors()
-    const byCategory: Record<string, DeesseError[]> = {}
-    const bySeverity: Record<string, DeesseError[]> = {}
+    const allErrors = this.getErrors();
+    const byCategory: Record<string, DeesseError[]> = {};
+    const bySeverity: Record<string, DeesseError[]> = {};
 
     for (const error of allErrors) {
-      const category = error.context.category
-      const severity = error.context.severity
+      const category = error.context.category;
+      const severity = error.context.severity;
 
       if (!byCategory[category]) {
-        byCategory[category] = []
+        byCategory[category] = [];
       }
-      byCategory[category].push(error)
+      byCategory[category].push(error);
 
       if (!bySeverity[severity]) {
-        bySeverity[severity] = []
+        bySeverity[severity] = [];
       }
-      bySeverity[severity].push(error)
+      bySeverity[severity].push(error);
     }
 
     const batch: ErrorBatch = {
@@ -284,49 +279,46 @@ export class ErrorAggregatorImpl implements ErrorAggregator {
       count: allErrors.length,
       byCategory,
       bySeverity,
-    }
+    };
 
-    this.clear()
+    this.clear();
 
-    return batch
+    return batch;
   }
 
   toJSON() {
     return {
       errors: Object.fromEntries(this.errors.entries()),
       count: this.getErrors().length,
-    }
+    };
   }
 }
 
 export function createErrorAggregator(): ErrorAggregator {
-  return new ErrorAggregatorImpl()
+  return new ErrorAggregatorImpl();
 }
 
 // Usage in batch operations
 export async function batchCreatePosts(posts: Array<{ title: string; content: string }>) {
-  const aggregator = createErrorAggregator()
+  const aggregator = createErrorAggregator();
 
   const results = await Promise.allSettled(
     posts.map(async (post) => {
       try {
-        return await db.posts.create({ data: post })
+        return await db.posts.create({ data: post });
       } catch (error) {
-        aggregator.add(
-          ErrorFactory.database('create post', error as Error),
-          `post:${post.title}`
-        )
-        return null
+        aggregator.add(ErrorFactory.database('create post', error as Error), `post:${post.title}`);
+        return null;
       }
     })
-  )
+  );
 
   if (aggregator.hasErrors()) {
-    const batch = aggregator.flush()
-    console.error('Batch operation had errors:', batch)
+    const batch = aggregator.flush();
+    console.error('Batch operation had errors:', batch);
   }
 
-  return results
+  return results;
 }
 ```
 
@@ -336,119 +328,118 @@ Smart error recovery mechanisms:
 
 ```typescript
 // lib/errors/recovery.ts
-import { DeesseError } from './classification'
+import { DeesseError } from './classification';
 
 export interface RecoveryStrategy {
-  canRecover: (error: DeesseError) => boolean
-  recover: (error: DeesseError) => Promise<any>
-  maxRetries?: number
+  canRecover: (error: DeesseError) => boolean;
+  recover: (error: DeesseError) => Promise<any>;
+  maxRetries?: number;
 }
 
 export class ErrorRecoveryManager {
-  private strategies = new Map<string, RecoveryStrategy>()
+  private strategies = new Map<string, RecoveryStrategy>();
 
   register(errorCode: string, strategy: RecoveryStrategy) {
-    this.strategies.set(errorCode, strategy)
+    this.strategies.set(errorCode, strategy);
   }
 
   async attemptRecovery(error: DeesseError): Promise<{
-    recovered: boolean
-    result?: any
-    attempts?: number
+    recovered: boolean;
+    result?: any;
+    attempts?: number;
   }> {
-    const strategy = this.strategies.get(error.context.code || 'default')
+    const strategy = this.strategies.get(error.context.code || 'default');
 
     if (!strategy || !strategy.canRecover(error)) {
-      return { recovered: false }
+      return { recovered: false };
     }
 
-    const maxRetries = strategy.maxRetries || 3
+    const maxRetries = strategy.maxRetries || 3;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const result = await strategy.recover(error)
+        const result = await strategy.recover(error);
 
-        console.log(`Recovery successful after ${attempt} attempts`)
+        console.log(`Recovery successful after ${attempt} attempts`);
 
         return {
           recovered: true,
           result,
           attempts: attempt,
-        }
+        };
       } catch (recoveryError) {
         if (attempt === maxRetries) {
-          console.error(`Recovery failed after ${attempt} attempts`)
-          return { recovered: false }
+          console.error(`Recovery failed after ${attempt} attempts`);
+          return { recovered: false };
         }
 
-        console.log(`Recovery attempt ${attempt} failed, retrying...`)
+        console.log(`Recovery attempt ${attempt} failed, retrying...`);
       }
     }
 
-    return { recovered: false }
+    return { recovered: false };
   }
 
-  async handleError<T>(
-    operation: () => Promise<T>,
-    fallback?: () => Promise<T>
-  ): Promise<T> {
+  async handleError<T>(operation: () => Promise<T>, fallback?: () => Promise<T>): Promise<T> {
     try {
-      return await operation()
+      return await operation();
     } catch (error) {
       if (!(error instanceof DeesseError)) {
-        throw error
+        throw error;
       }
 
       // Try to recover
-      const { recovered, result } = await this.attemptRecovery(error)
+      const { recovered, result } = await this.attemptRecovery(error);
 
       if (recovered) {
-        return result as T
+        return result as T;
       }
 
       // Use fallback if available
       if (fallback) {
-        console.log('Using fallback after recovery failed')
-        return await fallback()
+        console.log('Using fallback after recovery failed');
+        return await fallback();
       }
 
-      throw error
+      throw error;
     }
   }
 }
 
-export const errorRecoveryManager = new ErrorRecoveryManager()
+export const errorRecoveryManager = new ErrorRecoveryManager();
 
 // Register recovery strategies
 errorRecovery.register('DATABASE_ERROR', {
   canRecover: (error) => {
     // Can recover from transient database errors
-    return error.originalError instanceof Error &&
-           ['ECONNRESET', 'ETIMEDOUT', 'ESERVERDOWN'].includes(error.originalError.code)
+    return (
+      error.originalError instanceof Error &&
+      ['ECONNRESET', 'ETIMEDOUT', 'ESERVERDOWN'].includes(error.originalError.code)
+    );
   },
   recover: async (error) => {
     // Wait before retrying
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Retry the operation (implementation depends on context)
-    return null
+    return null;
   },
   maxRetries: 3,
-})
+});
 
 errorRecovery.register('RATE_LIMIT_EXCEEDED', {
   canRecover: (error) => {
-    return error.context.category === 'rate_limit'
+    return error.context.category === 'rate_limit';
   },
   recover: async (error) => {
     // Wait for rate limit to reset
-    const waitTime = error.metadata?.windowMs || 60000
-    await new Promise(resolve => setTimeout(resolve, waitTime))
+    const waitTime = error.metadata?.windowMs || 60000;
+    await new Promise((resolve) => setTimeout(resolve, waitTime));
 
-    return null
+    return null;
   },
   maxRetries: 1,
-})
+});
 ```
 
 ### 5. Error Context Enrichment
@@ -457,37 +448,37 @@ Add rich context to errors for debugging:
 
 ```typescript
 // lib/errors/context.ts
-import { headers, cookies } from 'next/headers'
-import { DeesseError } from './classification'
+import { headers, cookies } from 'next/headers';
+import { DeesseError } from './classification';
 
 export interface ErrorContext {
-  timestamp: Date
+  timestamp: Date;
   request: {
-    url: string
-    method: string
-    headers: Record<string, string>
-    userAgent?: string
-    ip?: string
-  }
+    url: string;
+    method: string;
+    headers: Record<string, string>;
+    userAgent?: string;
+    ip?: string;
+  };
   user?: {
-    id: string
-    role: string
-  }
+    id: string;
+    role: string;
+  };
   environment: {
-    nodeEnv: string
-    appVersion: string
-    server?: string
-  }
-  stack?: string
-  cause?: Error
+    nodeEnv: string;
+    appVersion: string;
+    server?: string;
+  };
+  stack?: string;
+  cause?: Error;
 }
 
 export async function enrichError(
   error: DeesseError,
   request?: Request
 ): Promise<DeesseError & { context: ErrorContext }> {
-  const headersList = await headers()
-  const cookieStore = await cookies()
+  const headersList = await headers();
+  const cookieStore = await cookies();
 
   const context: ErrorContext = {
     timestamp: new Date(),
@@ -505,31 +496,34 @@ export async function enrichError(
     },
     stack: error.stack,
     cause: error.originalError,
-  }
+  };
 
   // Attach context to error
-  ;(error as any).context = context
+  (error as any).context = context;
 
-  return error as DeesseError & { context: ErrorContext }
+  return error as DeesseError & { context: ErrorContext };
 }
 
 // Usage in error handlers
 export async function handleServerError(error: unknown, request?: Request) {
-  let enrichedError: DeesseError & { context?: ErrorContext }
+  let enrichedError: DeesseError & { context?: ErrorContext };
 
   if (error instanceof DeesseError) {
-    enrichedError = await enrichError(error, request)
+    enrichedError = await enrichError(error, request);
   } else {
     enrichedError = await enrichError(
-      ErrorFactory.server_error('Unknown error occurred', error instanceof Error ? error : undefined),
+      ErrorFactory.server_error(
+        'Unknown error occurred',
+        error instanceof Error ? error : undefined
+      ),
       request
-    )
+    );
   }
 
   // Log enriched error
-  console.error('Enriched error:', JSON.stringify(enrichedError, null, 2))
+  console.error('Enriched error:', JSON.stringify(enrichedError, null, 2));
 
-  return enrichedError
+  return enrichedError;
 }
 ```
 
@@ -539,44 +533,44 @@ Comprehensive error reporting:
 
 ```typescript
 // lib/errors/reporting.ts
-import { DeesseError } from './classification'
-import { alertManager } from './alerts'
+import { DeesseError } from './classification';
+import { alertManager } from './alerts';
 
 export interface ErrorReport {
-  error: DeesseError & { context?: any }
-  fingerprint: string
-  severity: 'low' | 'medium' | 'high' | 'critical'
-  environment: string
-  shouldAlert: boolean
+  error: DeesseError & { context?: any };
+  fingerprint: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  environment: string;
+  shouldAlert: boolean;
 }
 
 export class ErrorReporter {
-  private sentryEnabled: boolean
-  private sentryDSN?: string
+  private sentryEnabled: boolean;
+  private sentryDSN?: string;
 
   constructor() {
-    this.sentryEnabled = !!process.env.SENTRY_DSN
-    this.sentryDSN = process.env.SENTRY_DSN
+    this.sentryEnabled = !!process.env.SENTRY_DSN;
+    this.sentryDSN = process.env.SENTRY_DSN;
   }
 
   async report(error: DeesseError & { context?: any }): Promise<void> {
-    const report = this.createReport(error)
+    const report = this.createReport(error);
 
     if (report.shouldAlert) {
-      await this.sendAlert(report)
+      await this.sendAlert(report);
     }
 
     if (this.sentryEnabled) {
-      await this.sendToSentry(report)
+      await this.sendToSentry(report);
     }
 
     // Log internally
-    this.logToConsole(report)
+    this.logToConsole(report);
   }
 
   private createReport(error: DeesseError & { context?: any }): ErrorReport {
-    const fingerprint = this.generateFingerprint(error)
-    const severity = this.determineSeverity(error)
+    const fingerprint = this.generateFingerprint(error);
+    const severity = this.determineSeverity(error);
 
     return {
       error,
@@ -584,48 +578,47 @@ export class ErrorReporter {
       severity,
       environment: process.env.NODE_ENV || 'development',
       shouldAlert: this.shouldAlert(error, severity),
-    }
+    };
   }
 
   private generateFingerprint(error: DeesseError): string {
     // Create a stable fingerprint for the error
-    const parts = [
-      error.context.category,
-      error.context.code || 'unknown',
-      error.message,
-    ]
+    const parts = [error.context.category, error.context.code || 'unknown', error.message];
 
     // Simple hash (use a proper hash function in production)
-    return parts.join(':').replace(/[^a-zA-Z0-9:]/g, '-').toLowerCase()
+    return parts
+      .join(':')
+      .replace(/[^a-zA-Z0-9:]/g, '-')
+      .toLowerCase();
   }
 
   private determineSeverity(error: DeesseError): 'low' | 'medium' | 'high' | 'critical' {
     switch (error.context.severity) {
       case 'critical':
-        return 'critical'
+        return 'critical';
       case 'high':
-        return 'high'
+        return 'high';
       case 'medium':
-        return 'medium'
+        return 'medium';
       case 'low':
-        return 'low'
+        return 'low';
       default:
-        return 'medium'
+        return 'medium';
     }
   }
 
   private shouldAlert(error: DeesseError, severity: string): boolean {
     // Alert in production for high/critical errors
     if (process.env.NODE_ENV === 'production') {
-      return ['high', 'critical'].includes(severity)
+      return ['high', 'critical'].includes(severity);
     }
 
     // In development, only alert critical errors
-    return severity === 'critical'
+    return severity === 'critical';
   }
 
   private async sendAlert(report: ErrorReport): Promise<void> {
-    await alertManager.sendAlert(report.error)
+    await alertManager.sendAlert(report.error);
   }
 
   private async sendToSentry(report: ErrorReport): Promise<void> {
@@ -634,7 +627,7 @@ export class ErrorReporter {
   }
 
   private logToConsole(report: ErrorReport): void {
-    const logLevel = this.getLogLevel(report.severity)
+    const logLevel = this.getLogLevel(report.severity);
 
     console[logLevel]('[Error Report]', {
       fingerprint: report.fingerprint,
@@ -645,40 +638,40 @@ export class ErrorReporter {
         code: report.error.context.code,
       },
       context: report.error.context,
-    })
+    });
   }
 
   private getLogLevel(severity: string): 'log' | 'warn' | 'error' {
     switch (severity) {
       case 'critical':
       case 'high':
-        return 'error'
+        return 'error';
       case 'medium':
-        return 'warn'
+        return 'warn';
       case 'low':
-        return 'log'
+        return 'log';
       default:
-        return 'log'
+        return 'log';
     }
   }
 }
 
-export const errorReporter = new ErrorReporter()
+export const errorReporter = new ErrorReporter();
 
 // Usage in error handlers
 export async function reportError(error: unknown, request?: Request) {
-  let enrichedError: DeesseError & { context?: any }
+  let enrichedError: DeesseError & { context?: any };
 
   if (error instanceof DeesseError) {
-    enrichedError = await enrichError(error, request)
+    enrichedError = await enrichError(error, request);
   } else {
     enrichedError = await enrichError(
       ErrorFactory.server_error('Unknown error', error instanceof Error ? error : undefined),
       request
-    )
+    );
   }
 
-  await errorReporter.report(enrichedError)
+  await errorReporter.report(enrichedError);
 }
 ```
 
@@ -853,5 +846,5 @@ export const config = defineConfig({
       allowDismiss: true,
     },
   },
-})
+});
 ```

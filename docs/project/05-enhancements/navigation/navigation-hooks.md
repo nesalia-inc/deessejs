@@ -7,10 +7,12 @@ Recommendations for implementing comprehensive Server Actions and cache manageme
 ## Current State Analysis
 
 Based on documentation analysis, DeesseJS has:
+
 - `docs\next\cache-revalidation-enhancements.md` - Basic revalidation strategies
 - `docs\next\auth-integration-enhancements.md` - Server Action auth handling
 
 Current gaps:
+
 - No `updateTag()` integration for read-your-own-writes
 - Limited navigation hooks integration
 - No performance monitoring with Web Vitals
@@ -24,18 +26,18 @@ Implement instant UI updates for user actions:
 
 ```typescript
 // lib/actions/collection-actions.ts
-'use server'
+'use server';
 
-import { updateTag, refresh } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { db } from '@deessejs/db'
-import { requireAuth } from '@/lib/auth/hooks'
+import { updateTag, refresh } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { db } from '@deessejs/db';
+import { requireAuth } from '@/lib/auth/hooks';
 
 export async function createPost(formData: FormData) {
-  const user = await requireAuth()
+  const user = await requireAuth();
 
-  const title = formData.get('title') as string
-  const content = formData.get('content') as string
+  const title = formData.get('title') as string;
+  const content = formData.get('content') as string;
 
   // Create post
   const post = await db.posts.create({
@@ -44,53 +46,53 @@ export async function createPost(formData: FormData) {
       content,
       authorId: user.id,
     },
-  })
+  });
 
   // Update tags so user immediately sees their changes
   // This is read-your-own-writes - user should see their new post immediately
-  updateTag('posts') // Invalidate list pages
-  updateTag(`post-${post.id}`) // Invalidate detail page
+  updateTag('posts'); // Invalidate list pages
+  updateTag(`post-${post.id}`); // Invalidate detail page
 
   // Redirect to the new post
-  redirect(`/posts/${post.id}`)
+  redirect(`/posts/${post.id}`);
 }
 
 export async function updatePost(id: string, formData: FormData) {
-  const user = await requireAuth()
+  const user = await requireAuth();
 
-  const title = formData.get('title') as string
-  const content = formData.get('content') as string
+  const title = formData.get('title') as string;
+  const content = formData.get('content') as string;
 
   // Update post
   const post = await db.posts.update({
     where: { id },
     data: { title, content },
-  })
+  });
 
   // Update tags for immediate UI refresh
-  updateTag('posts')
-  updateTag(`post-${id}`)
+  updateTag('posts');
+  updateTag(`post-${id}`);
 
   // Refresh the router to show updated data
-  refresh()
+  refresh();
 
-  return post
+  return post;
 }
 
 export async function deletePost(id: string) {
-  const user = await requireAuth()
+  const user = await requireAuth();
 
   // Delete post
   await db.posts.delete({
     where: { id },
-  })
+  });
 
   // Update tags to remove from UI
-  updateTag('posts')
-  updateTag(`post-${id}`)
+  updateTag('posts');
+  updateTag(`post-${id}`);
 
   // Redirect to posts list
-  redirect('/posts')
+  redirect('/posts');
 }
 ```
 
@@ -100,79 +102,79 @@ Standardized Server Action patterns for DeesseJS:
 
 ```typescript
 // lib/actions/server-action-patterns.ts
-'use server'
+'use server';
 
-import { updateTag, refresh, revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { revalidateTag } from 'next/cache'
-import { DeesseError } from '@/lib/errors/classification'
-import { ErrorFactory } from '@/lib/errors/classification'
-import { requireAuth, requirePermission } from '@/lib/auth/hooks'
+import { updateTag, refresh, revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { revalidateTag } from 'next/cache';
+import { DeesseError } from '@/lib/errors/classification';
+import { ErrorFactory } from '@/lib/errors/classification';
+import { requireAuth, requirePermission } from '@/lib/auth/hooks';
 
 export interface ServerActionResult<T = void> {
-  success: boolean
-  data?: T
-  error?: string
-  code?: string
+  success: boolean;
+  data?: T;
+  error?: string;
+  code?: string;
 }
 
 export async function withErrorHandling<T>(
   action: () => Promise<T>,
   options?: {
-    revalidateTags?: string[]
-    revalidatePaths?: string[]
-    redirect?: string
-    refresh?: boolean
+    revalidateTags?: string[];
+    revalidatePaths?: string[];
+    redirect?: string;
+    refresh?: boolean;
   }
 ): Promise<ServerActionResult<T>> {
   try {
-    const result = await action()
+    const result = await action();
 
     // Handle revalidation if specified
     if (options?.revalidateTags) {
       for (const tag of options.revalidateTags) {
-        updateTag(tag)
+        updateTag(tag);
       }
     }
 
     if (options?.revalidatePaths) {
       for (const path of options.revalidatePaths) {
-        revalidatePath(path)
+        revalidatePath(path);
       }
     }
 
     if (options?.refresh) {
-      refresh()
+      refresh();
     }
 
     if (options?.redirect) {
-      redirect(options.redirect)
+      redirect(options.redirect);
     }
 
     return {
       success: true,
       data: result,
-    }
+    };
   } catch (error) {
     if (error instanceof DeesseError) {
       return {
         success: false,
         error: error.context.userMessage || error.message,
         code: error.context.code,
-      }
+      };
     }
 
     if (error instanceof Error) {
       return {
         success: false,
         error: error.message,
-      }
+      };
     }
 
     return {
       success: false,
       error: 'An unknown error occurred',
-    }
+    };
   }
 }
 
@@ -180,17 +182,17 @@ export async function withErrorHandling<T>(
 export async function createProduct(formData: FormData) {
   return withErrorHandling(
     async () => {
-      const user = await requireAuth()
-      await requirePermission('products', 'write')
+      const user = await requireAuth();
+      await requirePermission('products', 'write');
 
       const product = await db.products.create({
         data: {
           name: formData.get('name') as string,
           price: Number(formData.get('price')),
         },
-      })
+      });
 
-      return product
+      return product;
     },
     {
       revalidateTags: ['products'],
@@ -198,7 +200,7 @@ export async function createProduct(formData: FormData) {
       redirect: `/admin/products/${product.id}`,
       refresh: true,
     }
-  )
+  );
 }
 ```
 
@@ -208,92 +210,89 @@ Comprehensive navigation utilities for DeesseJS:
 
 ```typescript
 // lib/navigation/hooks.ts
-'use client'
+'use client';
 
-import { useRouter, usePathname, useParams, useSearchParams } from 'next/navigation'
-import { useLinkStatus } from 'next/link'
-import { useEffect, useState } from 'react'
+import { useRouter, usePathname, useParams, useSearchParams } from 'next/navigation';
+import { useLinkStatus } from 'next/link';
+import { useEffect, useState } from 'react';
 
 export function useDeesseNavigation() {
-  const router = useRouter()
-  const pathname = usePathname()
-  const params = useParams()
-  const searchParams = useSearchParams()
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useParams();
+  const searchParams = useSearchParams();
 
   return {
     router,
     pathname,
     params,
     searchParams,
-  }
+  };
 }
 
 // Smart navigation with loading states
 export function useSmartNavigation() {
-  const { router, pathname } = useDeesseNavigation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [currentPath, setCurrentPath] = useState(pathname)
+  const { router, pathname } = useDeesseNavigation();
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentPath, setCurrentPath] = useState(pathname);
 
   useEffect(() => {
     if (pathname !== currentPath) {
-      setIsLoading(true)
-      setCurrentPath(pathname)
+      setIsLoading(true);
+      setCurrentPath(pathname);
 
       // Reset loading after navigation
-      const timer = setTimeout(() => setIsLoading(false), 500)
-      return () => clearTimeout(timer)
+      const timer = setTimeout(() => setIsLoading(false), 500);
+      return () => clearTimeout(timer);
     }
-  }, [pathname, currentPath])
+  }, [pathname, currentPath]);
 
-  const navigate = async (
-    href: string,
-    options?: { scroll?: boolean; prefetch?: boolean }
-  ) => {
-    setIsLoading(true)
+  const navigate = async (href: string, options?: { scroll?: boolean; prefetch?: boolean }) => {
+    setIsLoading(true);
 
     if (options?.prefetch) {
-      router.prefetch(href)
+      router.prefetch(href);
     }
 
-    router.push(href, { scroll: options?.scroll ?? true })
-  }
+    router.push(href, { scroll: options?.scroll ?? true });
+  };
 
   return {
     navigate,
     isLoading,
     router,
     pathname,
-  }
+  };
 }
 
 // Collection-aware navigation
 export function useCollectionNavigation(collection: string) {
-  const { router, pathname } = useDeesseNavigation()
-  const [isNavigating, setIsNavigating] = useState(false)
+  const { router, pathname } = useDeesseNavigation();
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const navigateToList = () => {
-    setIsNavigating(true)
-    router.push(`/${collection}`)
-    setTimeout(() => setIsNavigating(false), 300)
-  }
+    setIsNavigating(true);
+    router.push(`/${collection}`);
+    setTimeout(() => setIsNavigating(false), 300);
+  };
 
   const navigateToItem = (slugOrId: string) => {
-    setIsNavigating(true)
-    router.push(`/${collection}/${slugOrId}`)
-    setTimeout(() => setIsNavigating(false), 300)
-  }
+    setIsNavigating(true);
+    router.push(`/${collection}/${slugOrId}`);
+    setTimeout(() => setIsNavigating(false), 300);
+  };
 
   const navigateToEdit = (slugOrId: string) => {
-    setIsNavigating(true)
-    router.push(`/${collection}/${slugOrId}/edit`)
-    setTimeout(() => setIsNavigating(false), 300)
-  }
+    setIsNavigating(true);
+    router.push(`/${collection}/${slugOrId}/edit`);
+    setTimeout(() => setIsNavigating(false), 300);
+  };
 
   const navigateToCreate = () => {
-    setIsNavigating(true)
-    router.push(`/${collection}/new`)
-    setTimeout(() => setIsNavigating(false), 300)
-  }
+    setIsNavigating(true);
+    router.push(`/${collection}/new`);
+    setTimeout(() => setIsNavigating(false), 300);
+  };
 
   return {
     navigateToList,
@@ -301,7 +300,7 @@ export function useCollectionNavigation(collection: string) {
     navigateToEdit,
     navigateToCreate,
     isNavigating,
-  }
+  };
 }
 ```
 
@@ -603,17 +602,17 @@ Performance tracking integration:
 
 ```typescript
 // lib/performance/web-vitals.tsx
-'use client'
+'use client';
 
-import { useReportWebVitals } from 'next/web-vitals'
+import { useReportWebVitals } from 'next/web-vitals';
 
 export function WebVitals() {
   useReportWebVitals((metric) => {
     // Send to analytics service
-    sendToAnalytics(metric)
-  })
+    sendToAnalytics(metric);
+  });
 
-  return null
+  return null;
 }
 
 // Custom hook for Web Vitals tracking
@@ -625,7 +624,7 @@ export function useWebVitals() {
         name: 'navigation',
         value: 0,
         label: url,
-      })
+      });
     },
     trackAction: (action: string, properties?: Record<string, any>) => {
       // Track user actions
@@ -634,9 +633,9 @@ export function useWebVitals() {
         value: 0,
         label: action,
         properties,
-      })
+      });
     },
-  }
+  };
 }
 
 // Analytics integration
@@ -650,7 +649,7 @@ function sendToAnalytics(metric: any) {
       label: metric.id,
       // Only include non-interactive events to avoid affecting bounce rate
       non_interaction: metric.name !== 'CLS' || metric.value < 0.1,
-    })
+    });
   }
 
   // Or send to custom endpoint
@@ -659,33 +658,34 @@ function sendToAnalytics(metric: any) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(metric),
     keepalive: true,
-  }).catch(console.error)
+  }).catch(console.error);
 }
 
 // Performance budget checker
 export interface PerformanceBudget {
-  fcp: number // First Contentful Paint
-  lcp: number // Largest Contentful Paint
-  fid: number // First Input Delay
-  cls: number // Cumulative Layout Shift
-  inp: number // Interaction to Next Paint
+  fcp: number; // First Contentful Paint
+  lcp: number; // Largest Contentful Paint
+  fid: number; // First Input Delay
+  cls: number; // Cumulative Layout Shift
+  inp: number; // Interaction to Next Paint
 }
 
-export function checkPerformanceBudget(
-  budget: PerformanceBudget
-): { withinBudget: boolean; violations: string[] } {
-  const violations: string[] = []
+export function checkPerformanceBudget(budget: PerformanceBudget): {
+  withinBudget: boolean;
+  violations: string[];
+} {
+  const violations: string[] = [];
 
-  if (budget.fcp > 2000) violations.push('FCP exceeded 2s')
-  if (budget.lcp > 2500) violations.push('LCP exceeded 2.5s')
-  if (budget.fid > 100) violations.push('FID exceeded 100ms')
-  if (budget.cls > 0.1) violations.push('CLS exceeded 0.1')
-  if (budget.inp > 200) violations.push('INP exceeded 200ms')
+  if (budget.fcp > 2000) violations.push('FCP exceeded 2s');
+  if (budget.lcp > 2500) violations.push('LCP exceeded 2.5s');
+  if (budget.fid > 100) violations.push('FID exceeded 100ms');
+  if (budget.cls > 0.1) violations.push('CLS exceeded 0.1');
+  if (budget.inp > 200) violations.push('INP exceeded 200ms');
 
   return {
     withinBudget: violations.length === 0,
     violations,
-  }
+  };
 }
 ```
 
@@ -695,13 +695,13 @@ Enhanced router utilities for DeesseJS:
 
 ```typescript
 // lib/navigation/router-utils.ts
-'use client'
+'use client';
 
-import { useRouter } from 'next/navigation'
-import { useDeesseNavigation } from '@/lib/navigation/hooks'
+import { useRouter } from 'next/navigation';
+import { useDeesseNavigation } from '@/lib/navigation/hooks';
 
 export function useDeesseRouter() {
-  const { router } = useDeesseNavigation()
+  const { router } = useDeesseNavigation();
 
   return {
     ...router,
@@ -713,51 +713,51 @@ export function useDeesseRouter() {
         detail: `/${collection}/[slug]`,
         create: `/${collection}/new`,
         edit: `/${collection}/[slug]/edit`,
-      }
+      };
 
       switch (action) {
         case 'list':
-          router.push(pathMap.list)
-          break
+          router.push(pathMap.list);
+          break;
         case 'create':
-          router.push(pathMap.create)
-          break
+          router.push(pathMap.create);
+          break;
         default:
           // For detail/edit, you'll need to provide the slug
-          console.warn('Please provide a slug for detail/edit navigation')
+          console.warn('Please provide a slug for detail/edit navigation');
       }
     },
 
     // Navigation with automatic loading state
     navigateWithLoading: (href: string, options?: { scroll?: boolean }) => {
-      router.push(href, { scroll: options?.scroll ?? true })
+      router.push(href, { scroll: options?.scroll ?? true });
     },
 
     // Navigate back with confirmation
     navigateBackWithConfirmation: (message?: string) => {
       if (message && !confirm(message)) {
-        return false
+        return false;
       }
-      router.back()
-      return true
+      router.back();
+      return true;
     },
 
     // Navigate and refresh
     navigateAndRefresh: (href: string) => {
-      router.push(href)
-      router.refresh()
+      router.push(href);
+      router.refresh();
     },
 
     // Navigate with state preservation
     navigateWithState: <T>(href: string, state: T) => {
-      router.push(href, { state })
+      router.push(href, { state });
     },
-  }
+  };
 }
 
 // Safe navigation wrapper with error handling
 export function useSafeNavigation() {
-  const { navigateWithLoading, navigateBackWithConfirmation } = useDeesseRouter()
+  const { navigateWithLoading, navigateBackWithConfirmation } = useDeesseRouter();
 
   return {
     navigateWithLoading,
@@ -766,14 +766,14 @@ export function useSafeNavigation() {
     // Safe navigate with error handling
     safeNavigate: async (href: string) => {
       try {
-        navigateWithLoading(href)
-        return true
+        navigateWithLoading(href);
+        return true;
       } catch (error) {
-        console.error('Navigation failed:', error)
-        return false
+        console.error('Navigation failed:', error);
+        return false;
       }
     },
-  }
+  };
 }
 ```
 
@@ -822,5 +822,5 @@ export const config = defineConfig({
       },
     },
   },
-})
+});
 ```

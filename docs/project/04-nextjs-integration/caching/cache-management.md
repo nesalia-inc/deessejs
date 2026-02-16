@@ -7,6 +7,7 @@ Advanced cache management with `cacheLife`, `cacheTag`, and preset profiles for 
 ## Features
 
 ### Preset Cache Profiles
+
 - seconds: Real-time data
 - minutes: Frequently updated
 - hours: Multiple daily updates
@@ -15,12 +16,14 @@ Advanced cache management with `cacheLife`, `cacheTag`, and preset profiles for 
 - max: Rarely changes
 
 ### Cache Tags
+
 - Tag cached data for invalidation
 - On-demand revalidation
 - Multiple tags per entry
 - Collection-based tagging
 
 ### Cache Life Profiles
+
 - stale: Client cache duration
 - revalidate: Background refresh interval
 - expire: Maximum cache lifetime
@@ -28,18 +31,20 @@ Advanced cache management with `cacheLife`, `cacheTag`, and preset profiles for 
 ## Basic Usage
 
 ### Enable Cache Components
+
 ```typescript
 // next.config.ts
-import type { NextConfig } from 'next'
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
-}
+};
 
-export default nextConfig
+export default nextConfig;
 ```
 
 ### Using Preset Profiles
+
 ```typescript
 // app/blog/page.tsx
 import { cacheLife } from 'next/cache'
@@ -57,6 +62,7 @@ export default async function BlogPage() {
 ## Collection-Based Caching
 
 ### Per-Collection Cache Profile
+
 ```typescript
 // app/posts/[slug]/page.tsx
 import { cacheLife } from 'next/cache'
@@ -74,6 +80,7 @@ export default async function PostPage(props: PageProps<'/posts/[slug]'>) {
 ```
 
 ### Product Caching
+
 ```typescript
 // app/products/[id]/page.tsx
 import { cacheLife } from 'next/cache'
@@ -91,6 +98,7 @@ export default async function ProductPage(props: PageProps<'/products/[id]'>) {
 ```
 
 ### Real-Time Data
+
 ```typescript
 // app/stocks/page.tsx
 import { cacheLife } from 'next/cache'
@@ -108,20 +116,22 @@ export default async function StocksPage() {
 ## Cache Tagging
 
 ### Basic Tagging
+
 ```typescript
 // app/lib/posts.ts
-import { cacheTag } from 'next/cache'
+import { cacheTag } from 'next/cache';
 
 export async function getPosts() {
-  'use cache'
+  'use cache';
 
-  cacheTag('posts')
+  cacheTag('posts');
 
-  return db.posts.findMany()
+  return db.posts.findMany();
 }
 ```
 
 ### Dynamic Tagging
+
 ```typescript
 // app/posts/[slug]/page.tsx
 import { cacheTag } from 'next/cache'
@@ -138,78 +148,83 @@ export default async function PostPage(props: PageProps<'/posts/[slug]'>) {
 ```
 
 ### Multiple Tags
+
 ```typescript
 export async function getData() {
-  'use cache'
+  'use cache';
 
-  cacheTag('posts', 'blog', 'content')
+  cacheTag('posts', 'blog', 'content');
 
-  return fetchData()
+  return fetchData();
 }
 ```
 
 ### Conditional Tagging
+
 ```typescript
 async function getPost(slug: string) {
-  'use cache'
+  'use cache';
 
-  const post = await fetchPost(slug)
+  const post = await fetchPost(slug);
 
   if (!post) {
-    cacheLife('minutes') // Short cache for missing posts
-    return null
+    cacheLife('minutes'); // Short cache for missing posts
+    return null;
   }
 
-  cacheTag(`post-${slug}`)
-  cacheLife('days') // Long cache for published posts
+  cacheTag(`post-${slug}`);
+  cacheLife('days'); // Long cache for published posts
 
-  return post
+  return post;
 }
 ```
 
 ## On-Demand Invalidation
 
 ### Revalidate Tag
+
 ```typescript
 // app/actions.ts
-'use server'
+'use server';
 
-import { revalidateTag } from 'next/cache'
-import { db } from '@deessejs/db'
+import { revalidateTag } from 'next/cache';
+import { db } from '@deessejs/db';
 
 export async function updatePost(data: any) {
   const post = await db.posts.update({
     where: { id: data.id },
-    data: data.updates
-  })
+    data: data.updates,
+  });
 
   // Invalidate cache for this post
-  revalidateTag(`post-${post.slug}`)
+  revalidateTag(`post-${post.slug}`);
 
-  return post
+  return post;
 }
 ```
 
 ### Revalidate Collection
+
 ```typescript
 // app/actions.ts
-'use server'
+'use server';
 
-import { revalidateTag } from 'next/cache'
+import { revalidateTag } from 'next/cache';
 
 export async function publishPost(id: string) {
-  await db.posts.publish({ id })
+  await db.posts.publish({ id });
 
   // Invalidate entire posts collection
-  revalidateTag('posts')
+  revalidateTag('posts');
 
-  revalidatePath('/blog')
+  revalidatePath('/blog');
 }
 ```
 
 ## Configuration
 
 ### Cache Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -229,37 +244,39 @@ export const config = defineConfig({
       settings: {
         profile: 'max',
         tagging: false,
-      }
-    }
-  }
-})
+      },
+    },
+  },
+});
 ```
 
 ### Custom Cache Profiles
+
 ```typescript
 // next.config.ts
-import type { NextConfig } from 'next'
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
   cacheLife: {
     editorial: {
-      stale: 600,      // 10 minutes
+      stale: 600, // 10 minutes
       revalidate: 3600, // 1 hour
-      expire: 86400,    // 1 day
+      expire: 86400, // 1 day
     },
     marketing: {
-      stale: 300,       // 5 minutes
+      stale: 300, // 5 minutes
       revalidate: 1800, // 30 minutes
-      expire: 43200,    // 12 hours
+      expire: 43200, // 12 hours
     },
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;
 ```
 
 ### Use Custom Profile
+
 ```typescript
 // app/editorial/page.tsx
 import { cacheLife } from 'next/cache'
@@ -275,41 +292,44 @@ export default async function EditorialPage() {
 ## Inline Cache Profiles
 
 ### One-Off Configuration
+
 ```typescript
 export async function getLimitedOffer() {
-  'use cache'
+  'use cache';
 
   cacheLife({
-    stale: 60,        // 1 minute
-    revalidate: 300,  // 5 minutes
-    expire: 3600,     // 1 hour
-  })
+    stale: 60, // 1 minute
+    revalidate: 300, // 5 minutes
+    expire: 3600, // 1 hour
+  });
 
-  const offer = await getOffer()
-  return offer
+  const offer = await getOffer();
+  return offer;
 }
 ```
 
 ### Dynamic Cache Lifetime
+
 ```typescript
 async function getPost(slug: string) {
-  'use cache'
+  'use cache';
 
-  const post = await fetchPost(slug)
-  cacheTag(`post-${slug}`)
+  const post = await fetchPost(slug);
+  cacheTag(`post-${slug}`);
 
   // Use cache timing from CMS data
   cacheLife({
     revalidate: post.revalidateSeconds ?? 3600,
-  })
+  });
 
-  return post
+  return post;
 }
 ```
 
 ## Nested Caching
 
 ### Outer Cache Life
+
 ```typescript
 // app/dashboard/page.tsx
 import { cacheLife } from 'next/cache'
@@ -330,6 +350,7 @@ export default async function Dashboard() {
 ```
 
 ### Without Explicit Outer
+
 ```typescript
 export default async function Dashboard() {
   'use cache'
@@ -344,33 +365,37 @@ export default async function Dashboard() {
 ## Auto-Generated Cache Tags
 
 ### Collection Tags
+
 ```typescript
 // Auto-generated from config
 export async function getPost(slug: string) {
-  'use cache'
+  'use cache';
 
-  const post = await db.posts.findBySlug(slug)
+  const post = await db.posts.findBySlug(slug);
 
   // Auto-generated tags
-  cacheTag('posts', `post-${post.slug}`, `post-${post.id}`)
+  cacheTag('posts', `post-${post.slug}`, `post-${post.id}`);
 
-  return post
+  return post;
 }
 ```
 
 ## Best Practices
 
 ### Always Use Explicit cacheLife
+
 - Makes behavior clear
 - Independent of nested caches
 - Easier to reason about
 
 ### Tag Consistently
+
 - Tag at collection level
 - Tag at individual item level
 - Use consistent tag patterns
 
 ### Choose Right Profile
+
 - seconds: Real-time
 - minutes: Social feeds, news
 - hours: Inventory, weather

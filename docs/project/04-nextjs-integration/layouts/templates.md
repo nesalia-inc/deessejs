@@ -7,18 +7,21 @@ Using template.js to reset Client Component state on navigation and resynchroniz
 ## Features
 
 ### State Reset on Navigation
+
 - Templates reset Client Component state
 - Unique key per route segment
 - Remounts on segment change
 - Effects re-synchronize
 
 ### Difference from Layouts
+
 - Layouts maintain state across navigation
 - Templates reset state on navigation
 - Templates receive unique key
 - Layouts don't remount, templates do
 
 ### Suspense Behavior
+
 - Layouts: Suspense fallback only on first load
 - Templates: Suspense fallback on every navigation
 - Better UX for data-heavy pages
@@ -26,6 +29,7 @@ Using template.js to reset Client Component state on navigation and resynchroniz
 ## Template vs Layout
 
 ### Layout (Persists State)
+
 ```typescript
 // app/blog/layout.tsx
 export default function BlogLayout({
@@ -44,6 +48,7 @@ export default function BlogLayout({
 ```
 
 ### Template (Resets State)
+
 ```typescript
 // app/blog/template.tsx
 export default function BlogTemplate({
@@ -64,6 +69,7 @@ export default function BlogTemplate({
 ## Use Cases
 
 ### Reset Form State
+
 ```typescript
 // app/contact/template.tsx
 export default function ContactTemplate({
@@ -82,6 +88,7 @@ export default function ContactTemplate({
 ```
 
 ### Resynchronize Effects
+
 ```typescript
 // app/analytics/template.tsx
 'use client'
@@ -107,6 +114,7 @@ export default function AnalyticsTemplate({
 ```
 
 ### Reset Scroll Position
+
 ```typescript
 // app/template.tsx
 'use client'
@@ -129,6 +137,7 @@ export default function RootTemplate({
 ## Template Nesting
 
 ### Root + Collection Template
+
 ```
 app/
   template.tsx              # Root template
@@ -139,6 +148,7 @@ app/
 ```
 
 ### Multiple Templates
+
 ```typescript
 // Root template
 // app/template.tsx
@@ -177,12 +187,15 @@ export default function BlogTemplate({
 ## Template Behavior
 
 ### Mounting Behavior
+
 Templates remount when:
+
 - Their segment level changes
 - Dynamic params change
 - Query params don't trigger remount
 
 ### Navigation Examples
+
 ```
 Starting at /:
 <RootTemplate key="/">
@@ -212,6 +225,7 @@ Navigate to /blog/second-post:
 ## Collection Templates
 
 ### Per-Collection Template
+
 ```typescript
 // app/(posts)/template.tsx
 export default function PostsTemplate({
@@ -230,18 +244,22 @@ export default function PostsTemplate({
 ```
 
 ### Configuration
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    template: true, // Generate template.tsx
-    resetStateOnNavigation: true,
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      template: true, // Generate template.tsx
+      resetStateOnNavigation: true,
+    },
+  ],
+});
 ```
 
 ### Auto-Generated Template
+
 ```typescript
 // app/posts/template.tsx - Auto-generated
 export default function PostsTemplate({
@@ -263,6 +281,7 @@ export default function PostsTemplate({
 ## Practical Examples
 
 ### Search Page Reset
+
 ```typescript
 // app/search/template.tsx
 'use client'
@@ -290,6 +309,7 @@ export default function SearchTemplate({
 ```
 
 ### Wizard/Multi-Step Form
+
 ```typescript
 // app/wizard/template.tsx
 'use client'
@@ -311,6 +331,7 @@ export default function WizardTemplate({
 ```
 
 ### Dashboard Reset
+
 ```typescript
 // app/dashboard/template.tsx
 'use client'
@@ -338,12 +359,14 @@ export default function DashboardTemplate({
 ## Template vs Layout Decision Tree
 
 ### Use Template When:
+
 - Need to reset form inputs
 - Effects need to re-run on navigation
 - Want fresh data on each visit
 - Suspense should show on every navigation
 
 ### Use Layout When:
+
 - Need to preserve state
 - Expensive computations
 - Persistent navigation
@@ -352,6 +375,7 @@ export default function DashboardTemplate({
 ## Configuration
 
 ### Global Template Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -360,23 +384,26 @@ export const config = defineConfig({
     collections: true,
     resetStateOnNavigation: true,
     showSuspenseOnNavigation: true,
-  }
-})
+  },
+});
 ```
 
 ### Per-Collection Template
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    template: {
-      enabled: true,
-      resetState: true,
-      suspense: true,
-    }
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      template: {
+        enabled: true,
+        resetState: true,
+        suspense: true,
+      },
+    },
+  ],
+});
 ```
 
 ## Benefits

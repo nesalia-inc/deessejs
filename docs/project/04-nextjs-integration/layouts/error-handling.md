@@ -7,6 +7,7 @@ Comprehensive error handling system with Next.js error.js, forbidden.js, and dig
 ## Features
 
 ### Error Digest Tracking
+
 - Automatic `error.digest` generation and tracking
 - Correlate client and server errors
 - Match client error reports to server logs
@@ -14,6 +15,7 @@ Comprehensive error handling system with Next.js error.js, forbidden.js, and dig
 - Secure error reporting (no sensitive data in production)
 
 ### Auto-Generated Error Files
+
 - `error.tsx` per route segment
 - `global-error.tsx` for root errors
 - `forbidden.tsx` for 403 errors
@@ -21,18 +23,21 @@ Comprehensive error handling system with Next.js error.js, forbidden.js, and dig
 - Styled error pages by default
 
 ### Error Boundaries per Collection
+
 - Isolated error handling per collection route
 - Custom error UI per collection
 - Error recovery with `reset()` function
 - Contextual error messages
 
 ### Graceful Degradation
+
 - Show last successful SSR HTML on error
 - Preserved state hydration
 - Notification bar on error
 - Better UX than blank error page
 
 ### Integration with Instrumentation
+
 - `onRequestError` automatic reporting
 - Error context (route type, render source)
 - Error aggregation
@@ -41,6 +46,7 @@ Comprehensive error handling system with Next.js error.js, forbidden.js, and dig
 ## Error Types
 
 ### 403 Forbidden
+
 Auto-generated `forbidden.tsx` for authentication errors:
 
 ```typescript
@@ -56,6 +62,7 @@ export default function Forbidden() {
 ```
 
 ### 404 Not Found
+
 Auto-generated `not-found.tsx` per collection:
 
 ```typescript
@@ -71,6 +78,7 @@ export default function NotFound() {
 ```
 
 ### 500 Error
+
 Auto-generated `error.tsx` with digest tracking:
 
 ```typescript
@@ -106,13 +114,10 @@ export default function Error({
 ## Error Context
 
 ### onRequestError Integration
+
 ```typescript
 // instrumentation.ts
-export const onRequestError: Instrumentation.onRequestError = async (
-  err,
-  request,
-  context
-) => {
+export const onRequestError: Instrumentation.onRequestError = async (err, request, context) => {
   // Send to error tracking service
   await errorTracking.report({
     error: err,
@@ -121,8 +126,8 @@ export const onRequestError: Instrumentation.onRequestError = async (
     method: request.method,
     routeType: context.routeType,
     renderSource: context.renderSource,
-  })
-}
+  });
+};
 ```
 
 ## Configuration
@@ -138,9 +143,9 @@ export const config = defineConfig({
       service: 'sentry',
       includeDigest: true,
       includeContext: true,
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ## Benefits

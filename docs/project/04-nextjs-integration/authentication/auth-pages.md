@@ -1,21 +1,25 @@
 # Auth Status Pages
 
 ## Overview
+
 Authentication status pages (forbidden.js, unauthorized.js) for handling auth errors with custom UI.
 
 ## Features
 
 ### 403 Forbidden
+
 - Custom UI for forbidden access
 - Auto 403 status code
 - Integration with permission checks
 
 ### 401 Unauthorized
+
 - Custom UI for unauthenticated access
 - Auto 401 status code
 - Integration with auth checks
 
 ### Auto-Generated Status Pages
+
 - Collection-based permission errors
 - Role-based access denied
 - Auth provider integration
@@ -23,6 +27,7 @@ Authentication status pages (forbidden.js, unauthorized.js) for handling auth er
 ## Forbidden (403)
 
 ### Forbidden Page
+
 ```typescript
 // app/forbidden.tsx
 import Link from 'next/link'
@@ -49,6 +54,7 @@ export default function Forbidden() {
 ```
 
 ### Triggering Forbidden
+
 ```typescript
 // app/admin/page.tsx
 import { verifyPermission } from '@deessejs/auth'
@@ -66,6 +72,7 @@ export default async function AdminPage() {
 ```
 
 ### Collection-Based Forbidden
+
 ```typescript
 // app/@admin/posts/page.tsx
 import { verifyCollectionPermission } from '@deessejs/auth'
@@ -86,6 +93,7 @@ export default async function PostsPage() {
 ## Unauthorized (401)
 
 ### Unauthorized Page
+
 ```typescript
 // app/unauthorized.tsx
 import Login from '@/components/login'
@@ -116,6 +124,7 @@ export default function Unauthorized() {
 ```
 
 ### Triggering Unauthorized
+
 ```typescript
 // app/dashboard/page.tsx
 import { verifySession } from '@deessejs/auth'
@@ -133,30 +142,29 @@ export default async function DashboardPage() {
 ```
 
 ### API Route Unauthorized
+
 ```typescript
 // app/api/posts/route.ts
-import { verifySession } from '@deessejs/auth'
-import { NextRequest, NextResponse } from 'next/server'
+import { verifySession } from '@deessejs/auth';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const session = await verifySession()
+  const session = await verifySession();
 
   if (!session) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    )
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await request.json()
-  const post = await db.posts.create({ data: body })
-  return NextResponse.json(post)
+  const body = await request.json();
+  const post = await db.posts.create({ data: body });
+  return NextResponse.json(post);
 }
 ```
 
 ## Role-Based Access
 
 ### Forbidden by Role
+
 ```typescript
 // app/admin/page.tsx
 import { getUserRole } from '@deessejs/auth'
@@ -174,6 +182,7 @@ export default async function AdminPage() {
 ```
 
 ### Configuration
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -186,15 +195,16 @@ export const config = defineConfig({
       unauthorized: {
         enabled: true,
         component: 'UnauthorizedPage',
-      }
-    }
-  }
-})
+      },
+    },
+  },
+});
 ```
 
 ## Collection Permissions
 
 ### Permission Checks
+
 ```typescript
 // app/@admin/users/page.tsx
 import { checkPermission } from '@deessejs/auth'
@@ -213,23 +223,27 @@ export default async function UsersPage() {
 ```
 
 ### Collection-Level Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'users',
-    permissions: {
-      read: 'admin',
-      write: 'admin',
-      delete: 'superadmin',
-    }
-  }]
-})
+  collections: [
+    {
+      name: 'users',
+      permissions: {
+        read: 'admin',
+        write: 'admin',
+        delete: 'superadmin',
+      },
+    },
+  ],
+});
 ```
 
 ## Custom Auth Error Pages
 
 ### Custom Forbidden with Context
+
 ```typescript
 // app/forbidden.tsx
 import Link from 'next/link'
@@ -257,6 +271,7 @@ export default async function Forbidden() {
 ```
 
 ### Custom Unauthorized with Login
+
 ```typescript
 // app/unauthorized.tsx
 import { LoginForm } from '@/components/auth'
@@ -286,51 +301,51 @@ export default function Unauthorized() {
 ## Status Code Handling
 
 ### Proxy-Level Auth Check
+
 ```typescript
 // proxy.ts
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export async function proxy(request: NextRequest) {
   // Check auth for protected routes
   if (request.nextUrl.pathname.startsWith('/admin')) {
-    const session = await auth()
+    const session = await auth();
 
     if (!session) {
       // Let unauthorized.js handle it
-      return NextResponse.next()
+      return NextResponse.next();
     }
 
     if (session.user.role !== 'admin') {
       // Let forbidden.js handle it
-      return NextResponse.next()
+      return NextResponse.next();
     }
   }
 
-  return NextResponse.next()
+  return NextResponse.next();
 }
 ```
 
 ### API Status Codes
+
 ```typescript
 // Route handler returns 401
 export async function GET() {
-  const session = await auth()
+  const session = await auth();
 
   if (!session) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    )
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  return NextResponse.json({ data: 'secret' })
+  return NextResponse.json({ data: 'secret' });
 }
 ```
 
 ## Configuration
 
 ### Auth Status Pages Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -347,25 +362,28 @@ export const config = defineConfig({
         component: '@/components/errors/Unauthorized',
         showLoginForm: true,
         showHomeLink: true,
-      }
-    }
-  }
-})
+      },
+    },
+  },
+});
 ```
 
 ## Best Practices
 
 ### User-Friendly Messages
+
 - Explain why access was denied
 - Provide helpful next steps
 - Link to relevant pages
 
 ### Branding
+
 - Match your app's design
 - Use consistent styling
 - Include navigation
 
 ### Logging
+
 - Log unauthorized attempts
 - Track forbidden access
 - Monitor for abuse

@@ -7,18 +7,21 @@ Automatic loading UI generation with React Suspense for instant loading states a
 ## Features
 
 ### Auto-Generated loading.js Files
+
 - Instant loading UI on navigation
 - Skeleton components based on collection structure
 - Streaming HTML with fallbacks
 - Automatic Suspense boundaries
 
 ### Collection-Based Skeletons
+
 - Generate skeleton UI from collection schema
 - Realistic content placeholders
 - Shimmer animations
 - Configurable skeleton styles
 
 ### Instant Loading States
+
 - Prefetched fallback UI
 - Immediate navigation response
 - Interruptible navigation
@@ -27,6 +30,7 @@ Automatic loading UI generation with React Suspense for instant loading states a
 ## Loading Patterns
 
 ### Basic Loading Component
+
 ```typescript
 // app/dashboard/loading.tsx
 export default function Loading() {
@@ -35,6 +39,7 @@ export default function Loading() {
 ```
 
 ### Collection List Skeleton
+
 ```typescript
 // app/blog/loading.tsx
 export default function Loading() {
@@ -52,6 +57,7 @@ export default function Loading() {
 ```
 
 ### Single Item Skeleton
+
 ```typescript
 // app/blog/[slug]/loading.tsx
 export default function Loading() {
@@ -70,6 +76,7 @@ export default function Loading() {
 ```
 
 ### Table Skeleton
+
 ```typescript
 // app/@admin/posts/loading.tsx
 export default function Loading() {
@@ -99,6 +106,7 @@ export default function Loading() {
 ## Streaming Architecture
 
 ### Progressive Rendering
+
 1. User clicks link
 2. Prefetched loading UI shows immediately
 3. Server streams HTML chunks
@@ -106,6 +114,7 @@ export default function Loading() {
 5. Page becomes interactive incrementally
 
 ### Suspense Boundaries
+
 ```typescript
 // app/dashboard/page.tsx
 import { Suspense } from 'react'
@@ -128,23 +137,27 @@ export default function DashboardPage() {
 ## Configuration
 
 ### Per-Collection Loading UI
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    ui: {
-      loading: {
-        type: 'skeleton',
-        animation: 'shimmer',
-        showCount: 5,
-      }
-    }
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      ui: {
+        loading: {
+          type: 'skeleton',
+          animation: 'shimmer',
+          showCount: 5,
+        },
+      },
+    },
+  ],
+});
 ```
 
 ### Global Loading Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -153,13 +166,14 @@ export const config = defineConfig({
     animation: 'shimmer',
     color: 'gray-200',
     streaming: true,
-  }
-})
+  },
+});
 ```
 
 ## Loading Variants
 
 ### Spinner
+
 ```typescript
 export default function Loading() {
   return (
@@ -171,6 +185,7 @@ export default function Loading() {
 ```
 
 ### Skeleton with Shimmer
+
 ```typescript
 export default function Loading() {
   return (
@@ -182,6 +197,7 @@ export default function Loading() {
 ```
 
 ### Dots Loader
+
 ```typescript
 export default function Loading() {
   return (
@@ -195,6 +211,7 @@ export default function Loading() {
 ```
 
 ### Progress Bar
+
 ```typescript
 'use client'
 
@@ -224,16 +241,19 @@ export default function Loading() {
 ## SEO Considerations
 
 ### Metadata Before Streaming
+
 - generateMetadata resolves before streaming
 - Metadata placed in initial HTML
 - Crawlers get proper SEO tags
 
 ### Bot Detection
+
 - Twitterbot, Googlebot get static HTML
 - JavaScript-disabled browsers get blocking behavior
 - Streaming doesn't impact SEO
 
 ### Soft 404 Handling
+
 - Streamed 404 pages get `<meta name="robots" content="noindex" />`
 - Prevents indexing of soft 404s
 - Proper 404 status when possible
@@ -241,6 +261,7 @@ export default function Loading() {
 ## Platform Support
 
 ### Supported Platforms
+
 - **Node.js**: Full streaming support
 - **Docker**: Full streaming support
 - **Static Export**: No streaming support

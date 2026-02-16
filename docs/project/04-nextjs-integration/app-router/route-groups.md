@@ -7,17 +7,20 @@ Route groups for organizing DeesseJS routes by feature, team, or concern without
 ## Features
 
 ### Organizational Structure
+
 - Organize by team, feature, or concern
 - No impact on URL paths
 - Multiple root layouts
 - Opt-in layout sharing
 
 ### Team-Based Organization
+
 - Separate code by team ownership
 - Independent layouts per team
 - Shared components within groups
 
 ### Feature-Based Organization
+
 - Group related features together
 - Isolated layouts per feature
 - Easy feature extraction
@@ -25,6 +28,7 @@ Route groups for organizing DeesseJS routes by feature, team, or concern without
 ## Route Group Patterns
 
 ### Team-Based Organization
+
 ```
 app/
   (marketing)/
@@ -43,6 +47,7 @@ app/
 ```
 
 ### Collection-Based Groups
+
 ```
 app/
   (blog)/
@@ -60,6 +65,7 @@ app/
 ```
 
 ### Admin Groups
+
 ```
 app/
   (admin)/
@@ -82,6 +88,7 @@ app/
 ## Multiple Root Layouts
 
 ### Separate App Sections
+
 ```typescript
 // app/(marketing)/layout.tsx
 export default function MarketingLayout({
@@ -121,6 +128,7 @@ export default function AppLayout({
 ```
 
 ### Configuration
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -136,14 +144,15 @@ export const config = defineConfig({
     admin: {
       layout: 'AdminLayout',
       collections: ['all'], // Admin access to all
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ## Collection Route Groups
 
 ### Auto-Generated Groups
+
 ```
 app/
   (collection-posts)/
@@ -157,24 +166,29 @@ app/
 ```
 
 ### Configuration
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    routeGroup: '(posts)',
-    layout: 'BlogLayout',
-  }, {
-    name: 'products',
-    routeGroup: '(products)',
-    layout: 'ShopLayout',
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      routeGroup: '(posts)',
+      layout: 'BlogLayout',
+    },
+    {
+      name: 'products',
+      routeGroup: '(products)',
+      layout: 'ShopLayout',
+    },
+  ],
+});
 ```
 
 ## Shared Layouts
 
 ### Opt-in Layout Sharing
+
 ```
 app/
   (common)/
@@ -191,6 +205,7 @@ app/
 ```
 
 ### Layout Nesting
+
 ```typescript
 // app/(common)/layout.tsx
 export default function CommonLayout({
@@ -225,6 +240,7 @@ export default function WithSidebarLayout({
 ## Conditional Routes with Groups
 
 ### Auth-Based Groups
+
 ```
 app/
   (auth)/
@@ -240,6 +256,7 @@ app/
 ```
 
 ### Role-Based Groups
+
 ```
 app/
   (admin)/
@@ -258,6 +275,7 @@ app/
 ## File Organization
 
 ### With src Folder
+
 ```
 src/
   app/
@@ -272,6 +290,7 @@ src/
 ```
 
 ### Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -284,31 +303,35 @@ export const config = defineConfig({
     app: {
       path: '(app)',
       layout: 'AppLayout',
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ## Best Practices
 
 ### Naming Conventions
+
 - `(marketing)` - Feature-based
 - `(team-name)` - Team-based
 - `(collection-slug)` - Collection-based
 - `(auth)` - Access-level based
 
 ### Avoid Conflicts
+
 - Don't have same paths in different groups
 - Example: `(marketing)/about` and `(shop)/about` ❌
 - Result: Both resolve to `/about` causing error
 
 ### Home Route
+
 - With multiple root layouts, define home in a group
 - Example: `app/(marketing)/page.tsx`
 
 ## Configuration
 
 ### Full Config
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
@@ -331,28 +354,32 @@ export const config = defineConfig({
         layout: 'AdminLayout',
         collections: ['all'],
         requiresRole: 'admin',
-      }
-    }
-  }
-})
+      },
+    },
+  },
+});
 ```
 
 ### Collection Group Assignment
+
 ```typescript
 // deesse.config.ts
 export const config = defineConfig({
-  collections: [{
-    name: 'posts',
-    routeGroup: '(public)',
-  }, {
-    name: 'users',
-    routeGroup: '(admin)',
-    permissions: {
-      read: 'admin',
-      write: 'admin',
-    }
-  }]
-})
+  collections: [
+    {
+      name: 'posts',
+      routeGroup: '(public)',
+    },
+    {
+      name: 'users',
+      routeGroup: '(admin)',
+      permissions: {
+        read: 'admin',
+        write: 'admin',
+      },
+    },
+  ],
+});
 ```
 
 ## Benefits
