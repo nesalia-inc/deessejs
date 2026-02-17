@@ -1,5 +1,11 @@
 # @deessejs/create-app
 
+## 0.2.3
+
+### Patch Changes
+
+- Fix template download failing with 302 redirect error by using fetch instead of https.get.
+
 ## 0.2.2
 
 ### Patch Changes
