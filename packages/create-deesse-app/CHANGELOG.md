@@ -1,5 +1,11 @@
 # @deessejs/create-app
 
+## 0.3.0
+
+### Minor Changes
+
+- Add --force/-f flag to allow overwriting files in non-empty directories.
+
 ## 0.2.3
 
 ### Patch Changes
