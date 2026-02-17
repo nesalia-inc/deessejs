@@ -2,9 +2,15 @@
 
 import * as p from '@clack/prompts';
 import path from 'node:path';
+import { readFileSync } from 'node:fs';
 import { copyTemplate } from './copy.js';
 
-const getVersion = () => '0.1.0';
+const getVersion = () => {
+  const packageJson = JSON.parse(
+    readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
+  );
+  return packageJson.version;
+};
 
 async function main() {
   console.clear();
