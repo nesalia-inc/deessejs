@@ -17,9 +17,10 @@ async function main() {
 
   p.intro(`create-deesse-app v${getVersion()}`);
 
-  // Get project name from CLI args or prompt
+  // Parse CLI args
   const args = process.argv.slice(2);
   const cliProjectName = args[0];
+  const forceFlag = args.includes('--force') || args.includes('-f');
 
   let projectName: string | symbol;
 
@@ -77,7 +78,13 @@ Location: ${location}`,
 
   try {
     const targetDir = isCurrentDir ? process.cwd() : path.join(process.cwd(), projectName);
-    const createdFiles = await copyTemplate(template as 'minimal' | 'default', projectName, targetDir, isCurrentDir);
+    const createdFiles = await copyTemplate(
+      template as 'minimal' | 'default',
+      projectName,
+      targetDir,
+      isCurrentDir,
+      forceFlag
+    );
 
     s.stop(`Project created with ${createdFiles.length} files`);
 

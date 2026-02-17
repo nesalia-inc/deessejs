@@ -70,7 +70,8 @@ export async function copyTemplate(
   template: Template,
   projectName: string,
   targetDir: string,
-  isCurrentDir = false
+  isCurrentDir = false,
+  force = false
 ): Promise<string[]> {
   // Download template from GitHub
   const templateDir = await downloadTemplate(template);
@@ -79,20 +80,24 @@ export async function copyTemplate(
   if (!isCurrentDir) {
     await fs.mkdir(targetDir, { recursive: true });
 
-    // Check if target directory is empty
-    const files = await fs.readdir(targetDir);
-    if (files.length > 0) {
-      throw new Error(
-        `Target directory "${targetDir}" is not empty. Please choose an empty directory.`
-      );
+    // Check if target directory is empty (skip if --force)
+    if (!force) {
+      const files = await fs.readdir(targetDir);
+      if (files.length > 0) {
+        throw new Error(
+          `Target directory "${targetDir}" is not empty. Please choose an empty directory or use --force to overwrite.`
+        );
+      }
     }
   } else {
-    // For current directory, check if it's empty
-    const files = await fs.readdir(targetDir);
-    if (files.length > 0) {
-      throw new Error(
-        `Current directory is not empty. Please choose an empty directory or use a subdirectory.`
-      );
+    // For current directory, check if it's empty (skip if --force)
+    if (!force) {
+      const files = await fs.readdir(targetDir);
+      if (files.length > 0) {
+        throw new Error(
+          `Current directory is not empty. Please choose an empty directory or use a subdirectory. Use --force to overwrite.`
+        );
+      }
     }
   }
 
