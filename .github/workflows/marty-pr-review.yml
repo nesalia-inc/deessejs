@@ -1,0 +1,97 @@
+name: Marty PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Generate Marty token
+        id: marty-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.MARTY_APP_ID }}
+          private-key: ${{ secrets.MARTY_APP_PRIVATE_KEY }}
+
+      - name: Run Marty PR Review
+        uses: nesalia-inc/marty-action@1.0.0
+        with:
+          github_token: ${{ steps.marty-token.outputs.token }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+            AUTHOR: ${{ github.event.pull_request.user.login }}
+            TITLE: ${{ github.event.pull_request.title }}
+
+            Please review this pull request comprehensively:
+
+            ## Review Focus Areas
+
+            ### Code Quality
+            - Code follows best practices and design patterns
+            - Proper error handling and edge cases
+            - No code duplication (DRY principle)
+            - Clear and maintainable code structure
+
+            ### Security
+            - No hardcoded secrets or credentials
+            - Proper input validation and sanitization
+            - SQL injection and XSS vulnerabilities
+            - Authentication and authorization checks
+            - Sensitive data handling
+
+            ### Performance
+            - Potential performance bottlenecks
+            - Efficient database queries
+            - Proper caching strategies
+            - Resource cleanup and memory leaks
+
+            ### Testing
+            - Adequate test coverage for changes
+            - Edge cases covered
+            - Test quality and assertions
+
+            ### Documentation
+            - README updated if needed
+            - Inline comments for complex logic
+            - API documentation updated
+            - Breaking changes documented
+
+            ## Review Output Format
+
+            Use inline comments for specific code issues (highlight exact lines).
+            Use top-level PR comments for general observations and summary.
+
+            Structure your top-level comment as:
+            - **Summary**: Brief overview
+            - **Critical Issues**: Must-fix items
+            - **Recommendations**: Suggestions for improvement
+            - **Positive Notes**: Good practices observed
+
+            Note: The PR branch is already checked out in the current working directory.
+
+            Only post GitHub comments - don't submit review text as messages.
+
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+            --max-turns 25
+
+        env:
+          # Z.ai Configuration
+          ANTHROPIC_BASE_URL: https://api.z.ai/api/anthropic
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.ZAI_API_KEY }}
+          ANTHROPIC_DEFAULT_SONNET_MODEL: glm-4.7
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: glm-4.5-air
+          ANTHROPIC_DEFAULT_OPUS_MODEL: glm-4.7
