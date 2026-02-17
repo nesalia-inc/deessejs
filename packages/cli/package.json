@@ -1,0 +1,38 @@
+{
+  "name": "@deessejs/cli",
+  "version": "0.0.1",
+  "description": "DeesseJS CLI for managing DeesseJS projects",
+  "type": "module",
+  "bin": {
+    "deesse": "./bin/deesse.js"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "cli",
+    "deessejs",
+    "deesse"
+  ],
+  "author": "DeesseJS",
+  "license": "MIT",
+  "dependencies": {
+    "@clack/prompts": "^0.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.6",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
