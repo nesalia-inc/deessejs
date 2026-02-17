@@ -1,5 +1,11 @@
 # @deessejs/create-app
 
+## 0.2.2
+
+### Patch Changes
+
+- Fix incorrect path to package.json when reading version dynamically.
+
 ## 0.2.1
 
 ### Patch Changes
