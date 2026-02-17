@@ -1,5 +1,11 @@
 # @deessejs/create-app
 
+## 0.2.1
+
+### Patch Changes
+
+- Fix CLI version display to read dynamically from package.json instead of hardcoded value.
+
 ## 0.2.0
 
 ### Minor Changes
