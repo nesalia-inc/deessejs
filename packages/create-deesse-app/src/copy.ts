@@ -1,12 +1,74 @@
 import copy from 'copy-template-dir';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { promises as fs } from 'node:fs';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { homedir } from 'node:os';
+import https from 'node:https';
+import { createWriteStream, existsSync } from 'node:fs';
+import { pipeline } from 'node:stream/promises';
+import extract from 'extract-zip';
+import { rm } from 'node:fs/promises';
 
 export type Template = 'minimal' | 'default';
+
+const TEMPLATES_VERSION = 'main';
+const TEMPLATES_REPO = 'nesalia-inc/deessejs';
+const CACHE_DIR = path.join(homedir(), '.deessejs', 'templates');
+
+async function downloadTemplate(template: Template): Promise<string> {
+  const cacheKey = `${template}-${TEMPLATES_VERSION}`;
+  const cachedPath = path.join(CACHE_DIR, cacheKey);
+
+  // Check if template is already cached
+  if (existsSync(cachedPath)) {
+    return cachedPath;
+  }
+
+  // Download template from GitHub (main branch)
+  const url = `https://github.com/${TEMPLATES_REPO}/archive/refs/heads/${TEMPLATES_VERSION}.zip`;
+
+  // Create cache directory
+  await fs.mkdir(CACHE_DIR, { recursive: true });
+
+  // Download zip file
+  const zipPath = path.join(CACHE_DIR, `${cacheKey}.zip`);
+  const tempDir = path.join(CACHE_DIR, `temp-${cacheKey}`);
+
+  await fs.mkdir(tempDir, { recursive: true });
+
+  await new Promise<void>((resolve, reject) => {
+    const file = createWriteStream(zipPath);
+    https.get(url, (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`Failed to download template: ${response.statusCode}`));
+        return;
+      }
+      pipeline(response, file)
+        .then(() => resolve())
+        .catch(reject);
+    }).on('error', reject);
+  });
+
+  // Extract zip
+  await extract(zipPath, { dir: tempDir });
+
+  // Move template to cache (templates are in root of repo)
+  const extractedPath = path.join(tempDir, `deessejs-${TEMPLATES_VERSION}`, 'templates', template);
+  await fs.mkdir(cachedPath, { recursive: true });
+
+  const files = await fs.readdir(extractedPath);
+  for (const file of files) {
+    await fs.rename(
+      path.join(extractedPath, file),
+      path.join(cachedPath, file)
+    );
+  }
+
+  // Cleanup
+  await rm(zipPath, { force: true });
+  await rm(tempDir, { force: true, recursive: true });
+
+  return cachedPath;
+}
 
 export async function copyTemplate(
   template: Template,
@@ -14,14 +76,8 @@ export async function copyTemplate(
   targetDir: string,
   isCurrentDir = false
 ): Promise<string[]> {
-  const templateDir = path.join(__dirname, '../templates', template);
-
-  // Verify template exists
-  try {
-    await fs.access(templateDir);
-  } catch {
-    throw new Error(`Template "${template}" not found at ${templateDir}`);
-  }
+  // Download template from GitHub
+  const templateDir = await downloadTemplate(template);
 
   // Create target directory if it doesn't exist (skip for current directory)
   if (!isCurrentDir) {

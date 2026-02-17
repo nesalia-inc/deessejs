@@ -8,8 +8,7 @@
   },
   "files": [
     "bin",
-    "dist",
-    "templates"
+    "dist"
   ],
   "scripts": {
     "dev": "tsc --watch",
@@ -30,7 +29,8 @@
   "license": "MIT",
   "dependencies": {
     "@clack/prompts": "^0.8.2",
-    "copy-template-dir": "^1.4.0"
+    "copy-template-dir": "^1.4.0",
+    "extract-zip": "^2.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.6",
