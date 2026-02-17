@@ -1,5 +1,11 @@
 # @deessejs/create-app
 
+## 0.2.0
+
+### Minor Changes
+
+- Download templates from GitHub at runtime instead of bundling them. Templates are cached locally for faster subsequent uses.
+
 ## 0.1.2
 
 ### Patch Changes

@@ -8,7 +8,9 @@
       "Bash(pnpm build)",
       "Bash(node:*)",
       "Bash(ls:*)",
-      "Bash(git ls-tree:*)"
+      "Bash(git ls-tree:*)",
+      "Bash(pnpm changeset publish:*)",
+      "Bash(pnpm changeset version:*)"
     ]
   }
 }
