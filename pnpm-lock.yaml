@@ -42,6 +42,19 @@ importers:
         specifier: ^8.18.2
         version: 8.55.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
 
+  packages/cli:
+    dependencies:
+      '@clack/prompts':
+        specifier: ^0.8.2
+        version: 0.8.2
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.6
+        version: 22.19.11
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   packages/create-deesse-app:
     dependencies:
       '@clack/prompts':
