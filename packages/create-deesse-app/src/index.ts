@@ -7,7 +7,7 @@ import { copyTemplate } from './copy.js';
 
 const getVersion = () => {
   const packageJson = JSON.parse(
-    readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
+    readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')
   );
   return packageJson.version;
 };
