@@ -4,25 +4,35 @@ import * as p from '@clack/prompts';
 import path from 'node:path';
 import { copyTemplate } from './copy.js';
 
-const getVersion = () => '0.0.1';
+const getVersion = () => '0.1.0';
 
 async function main() {
   console.clear();
 
   p.intro(`create-deesse-app v${getVersion()}`);
 
-  // Get project name
-  const projectName = await p.text({
-    message: 'What is your project named?',
-    placeholder: 'my-deesse-app',
-    validate: (value) => {
-      if (!value) return 'Project name is required';
-      if (!/^[a-z0-9-]+$/.test(value)) {
-        return 'Project name must be lowercase and contain only letters, numbers, and hyphens';
-      }
-      return undefined;
-    },
-  });
+  // Get project name from CLI args or prompt
+  const args = process.argv.slice(2);
+  const cliProjectName = args[0];
+
+  let projectName: string | symbol;
+
+  if (cliProjectName) {
+    projectName = cliProjectName;
+  } else {
+    projectName = await p.text({
+      message: 'What is your project named?',
+      placeholder: 'my-deesse-app',
+      validate: (value) => {
+        if (!value) return 'Project name is required';
+        // Allow "." for current directory
+        if (value !== '.' && !/^[a-z0-9-]+$/.test(value)) {
+          return 'Project name must be lowercase and contain only letters, numbers, and hyphens (or use "." for current directory)';
+        }
+        return undefined;
+      },
+    });
+  }
 
   if (p.isCancel(projectName)) {
     p.cancel('Operation cancelled.');
@@ -45,10 +55,13 @@ async function main() {
   }
 
   // Show summary
+  const isCurrentDir = projectName === '.';
+  const location = isCurrentDir ? 'Current directory' : `./${projectName}`;
+
   p.note(
     `Project: ${projectName}
 Template: ${template}
-Location: ./${projectName}`,
+Location: ${location}`,
     'Configuration'
   );
 
@@ -57,17 +70,15 @@ Location: ./${projectName}`,
   s.start('Creating project...');
 
   try {
-    const targetDir = path.join(process.cwd(), projectName);
-    const createdFiles = await copyTemplate(template as 'minimal' | 'default', projectName, targetDir);
+    const targetDir = isCurrentDir ? process.cwd() : path.join(process.cwd(), projectName);
+    const createdFiles = await copyTemplate(template as 'minimal' | 'default', projectName, targetDir, isCurrentDir);
 
     s.stop(`Project created with ${createdFiles.length} files`);
 
     // Next steps
-    const nextSteps = [
-      `cd ${projectName}`,
-      'pnpm install',
-      'pnpm dev',
-    ];
+    const nextSteps = isCurrentDir
+      ? ['pnpm install', 'pnpm dev']
+      : [`cd ${projectName}`, 'pnpm install', 'pnpm dev'];
 
     p.note(nextSteps.join('\n'), 'Next steps');
 

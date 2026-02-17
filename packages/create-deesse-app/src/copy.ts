@@ -7,7 +7,8 @@ export type Template = 'minimal' | 'default';
 export async function copyTemplate(
   template: Template,
   projectName: string,
-  targetDir: string
+  targetDir: string,
+  isCurrentDir = false
 ): Promise<string[]> {
   const templateDir = path.join(__dirname, '../templates', template);
 
@@ -18,15 +19,25 @@ export async function copyTemplate(
     throw new Error(`Template "${template}" not found at ${templateDir}`);
   }
 
-  // Create target directory if it doesn't exist
-  await fs.mkdir(targetDir, { recursive: true });
+  // Create target directory if it doesn't exist (skip for current directory)
+  if (!isCurrentDir) {
+    await fs.mkdir(targetDir, { recursive: true });
 
-  // Check if target directory is empty
-  const files = await fs.readdir(targetDir);
-  if (files.length > 0) {
-    throw new Error(
-      `Target directory "${targetDir}" is not empty. Please choose an empty directory.`
-    );
+    // Check if target directory is empty
+    const files = await fs.readdir(targetDir);
+    if (files.length > 0) {
+      throw new Error(
+        `Target directory "${targetDir}" is not empty. Please choose an empty directory.`
+      );
+    }
+  } else {
+    // For current directory, check if it's empty
+    const files = await fs.readdir(targetDir);
+    if (files.length > 0) {
+      throw new Error(
+        `Current directory is not empty. Please choose an empty directory or use a subdirectory.`
+      );
+    }
   }
 
   // Variables to replace in template files
