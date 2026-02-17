@@ -1,6 +1,6 @@
 {
   "name": "create-deesse-app",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Create a new DeesseJS project",
   "type": "module",
   "bin": {

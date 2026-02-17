@@ -1,5 +1,11 @@
 # @deessejs/create-app
 
+## 0.1.1
+
+### Patch Changes
+
+- Add support for "." to create project in current directory. Parse CLI arguments and allow current directory initialization.
+
 ## 0.1.0
 
 ### Minor Changes
