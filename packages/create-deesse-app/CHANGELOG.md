@@ -1,5 +1,11 @@
 # @deessejs/create-app
 
+## 0.1.2
+
+### Patch Changes
+
+- Fix \_\_dirname not defined error in ES modules by adding proper polyfill.
+
 ## 0.1.1
 
 ### Patch Changes

@@ -40,9 +40,8 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # Changesets
-.changeset/*.md
-!/.changeset/config.json
-!/.changeset/README.md
+# Changeset files are committed, then deleted when consumed
+
 
 # Temporary files
 *.tmp

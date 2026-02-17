@@ -6,7 +6,9 @@
       "Bash(git push:*)",
       "WebSearch",
       "Bash(pnpm build)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(ls:*)",
+      "Bash(git ls-tree:*)"
     ]
   }
 }
