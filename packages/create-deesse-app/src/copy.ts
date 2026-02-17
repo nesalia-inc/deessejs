@@ -2,9 +2,7 @@ import copy from 'copy-template-dir';
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import { homedir } from 'node:os';
-import https from 'node:https';
-import { createWriteStream, existsSync } from 'node:fs';
-import { pipeline } from 'node:stream/promises';
+import { existsSync } from 'node:fs';
 import extract from 'extract-zip';
 import { rm } from 'node:fs/promises';
 
@@ -35,18 +33,16 @@ async function downloadTemplate(template: Template): Promise<string> {
 
   await fs.mkdir(tempDir, { recursive: true });
 
-  await new Promise<void>((resolve, reject) => {
-    const file = createWriteStream(zipPath);
-    https.get(url, (response) => {
-      if (response.statusCode !== 200) {
-        reject(new Error(`Failed to download template: ${response.statusCode}`));
-        return;
-      }
-      pipeline(response, file)
-        .then(() => resolve())
-        .catch(reject);
-    }).on('error', reject);
-  });
+  // Download zip file using fetch (follows redirects automatically)
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to download template: ${response.statusText}`);
+  }
+
+  // Write to file
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  await fs.writeFile(zipPath, buffer);
 
   // Extract zip
   await extract(zipPath, { dir: tempDir });
