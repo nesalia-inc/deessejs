@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+if [ -n "$HUSKY" ]; then
+  . "$(dirname "$0")/_/husky.sh"
+fi
+
+# Run lint-staged for ESLint on staged files
+pnpm lint-staged
+
+# Run TypeScript type-check
+pnpm type-check
