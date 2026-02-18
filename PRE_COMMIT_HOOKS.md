@@ -5,7 +5,7 @@ This branch implements pre-commit hooks using Husky and lint-staged for the Dees
 ## What was added
 
 ### 1. Dependencies
-- `lint-staged@^16.2.7` - Run linting on staged files only
+- `lint-staged@^16.2.7` - Run linting on staged files only (updated via pre-commit hook)
 
 ### 2. Configuration
 - **lint-staged** in `package.json` - Configured to run ESLint on TypeScript/JavaScript files
