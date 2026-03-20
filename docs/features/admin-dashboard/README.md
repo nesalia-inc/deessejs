@@ -13,6 +13,25 @@ DeesseJS is a CMS for developers. The admin dashboard provides a WordPress-like 
 
 This architecture enables developers to extend the admin dashboard through the plugin system while maintaining a solid core of native functionality.
 
+## Implementation
+
+The admin dashboard is implemented at `/app/(deesse)/admin/[[...slug]]/page.tsx`. This route renders the `RootPage` component from `@deessejs/next`.
+
+The `RootPage` component receives:
+- **`params`**: Route parameters
+- **`searchParams`**: URL search parameters
+- **`config`**: The configuration imported from `@deesse-config` (an alias for `deesse.config.ts`)
+
+```typescript
+// /app/(deesse)/admin/[[...slug]]/page.tsx
+import { RootPage } from '@deessejs/next';
+import { config } from '@deesse-config';
+
+export default function AdminPage({ params, searchParams }: PageProps) {
+  return <RootPage config={config} params={params} searchParams={searchParams} />;
+}
+```
+
 ## Internal DSL
 
 The dashboard is built using an internal DSL that allows developers to programmatically define the dashboard structure. This provides a clean, declarative way to build admin interfaces.
