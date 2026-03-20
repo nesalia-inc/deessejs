@@ -19,6 +19,30 @@ The CLI will prompt you for:
 
 Then it will initialize the project with the chosen configuration.
 
+The CLI generates a basic `deesse.config.ts`:
+
+```typescript
+import { defineConfig } from '@deessejs/core';
+
+export const config = defineConfig({
+  auth: {
+    // better-auth configuration
+  },
+});
+```
+
+And sets up the admin dashboard route:
+
+```typescript
+// app/(deesse)/admin/[[...slug]]/page.tsx
+import { RootPage } from '@deessejs/next';
+import { config } from '@deesse-config';
+
+export default function AdminPage({ params, searchParams }: PageProps) {
+  return <RootPage config={config} params={params} searchParams={searchParams} />;
+}
+```
+
 ## Overview
 
 DeesseJS is a CMS for developers with the following core features:
