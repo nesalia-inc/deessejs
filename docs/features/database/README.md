@@ -4,77 +4,24 @@ This is an internal document outlining the database system for DeesseJS.
 
 ## Overview
 
-DeesseJS uses a database adapter architecture similar to Better-Auth. This allows developers to use any database provider while maintaining a consistent interface.
+DeesseJS uses the same database adapter system as Better-Auth. This means DeesseJS directly uses Better-Auth's adapters, so you only need one database connection for both authentication and plugin settings.
 
-## Architecture: Database Adapter
+## Why Better-Auth Adapters?
 
-DeesseJS uses `createAdapterFactory` to create database adapters. This approach allows you to focus on writing database logic without worrying about how the adapter works with the framework.
-
-## Creating a Custom Adapter
-
-Import `createAdapterFactory` and create your adapter:
-
-```typescript
-import { createAdapterFactory } from '@deessejs/adapter';
-
-// Your custom adapter config options
-interface CustomAdapterConfig {
-  debugLogs?: boolean;
-  usePlural?: boolean;
-}
-
-export const myAdapter = (config: CustomAdapterConfig = {}) =>
-  createAdapterFactory({
-    config: {
-      adapterId: 'custom-adapter',
-      adapterName: 'Custom Adapter',
-      usePlural: config.usePlural ?? false,
-      debugLogs: config.debugLogs ?? false,
-      supportsJSON: false,
-      supportsDates: true,
-      supportsBooleans: true,
-      supportsNumericIds: true,
-    },
-    adapter: ({}) => {
-      return {
-        create: async ({ data, model, select }) => {
-          // Insert data into database
-        },
-        update: async ({ data, model, where }) => {
-          // Update data in database
-        },
-        updateMany: async ({ data, model, where }) => {
-          // Update multiple records
-        },
-        delete: async ({ model, where }) => {
-          // Delete record from database
-        },
-        deleteMany: async ({ model, where }) => {
-          // Delete multiple records
-        },
-        findOne: async ({ model, where, select }) => {
-          // Find single record
-        },
-        findMany: async ({ model, where, limit, sortBy, offset }) => {
-          // Find multiple records
-        },
-        count: async ({ model, where }) => {
-          // Count records
-        },
-      };
-    },
-  });
-```
+- Single database for auth + plugin settings
+- Proven adapter system with many supported databases
+- No need to maintain a separate adapter layer
+- Seamless integration with Better-Auth
 
 ## Supported Providers
 
 - **Drizzle** - Lightweight and type-safe ORM
 - **Prisma** - Popular ORM with great developer experience
-- **Custom** - Implement your own database adapter
+- **Custom** - Implement your own adapter using Better-Auth's `createAdapterFactory`
 
 ## Configuration
 
-Configure your database provider in `deesse.config.ts`:
+Configure your database provider in `deesse.config.ts`. The same database is used for both authentication and plugin settings:
 
 ```typescript
 import { defineConfig } from '@deessejs/core';
@@ -84,17 +31,10 @@ export const config = defineConfig({
   database: drizzle({
     // drizzle configuration
   }),
+  auth: {
+    // better-auth configuration
+  },
 });
 ```
 
-## Adapter Config Options
-
-- **`adapterId`** - Unique identifier for the adapter
-- **`adapterName`** - Human-readable name
-- **`supportsJSON`** - Whether the database supports JSON natively
-- **`supportsDates`** - Whether the database supports date types
-- **`supportsBooleans`** - Whether the database supports boolean types
-- **`supportsNumericIds`** - Whether the database supports auto-incrementing numeric IDs
-- **`usePlural`** - Whether table names are plural
-- **`debugLogs`** - Enable debug logging
-- **`transaction`** - Whether transactions are supported
+The `database` config is passed directly to Better-Auth's adapter system.
