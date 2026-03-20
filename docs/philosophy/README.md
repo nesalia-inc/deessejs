@@ -43,6 +43,16 @@ The initial focus is on building a **controllable admin dashboard** that develop
 
 This dashboard serves as the foundation for content management while remaining flexible enough to handle various use cases.
 
+## Defaults
+
+The only defaults in DeesseJS are:
+
+1. **Admin Dashboard** - A basic admin interface at `/admin`
+2. **Authentication** - Built on better-auth for user management
+3. **Plugin System** - The ability to extend via plugins
+
+Everything else (database, API routes, content types, etc.) is opt-in and configured by the developer.
+
 ## Summary
 
 DeesseJS = A configurable, extensible CMS that puts developers in control. Start with the admin dashboard, add plugins as needed, connect your preferred database, and build your perfect content management system.
