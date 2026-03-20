@@ -4,7 +4,15 @@ This directory contains internal documentation for DeesseJS features.
 
 ## Quick Start
 
-Create a `deesse.config.ts` file in your project root:
+Create a new DeesseJS project:
+
+```bash
+npx create-deesse-app@latest
+# or
+npm create deesse-app
+```
+
+Then create a `deesse.config.ts` file in your project root:
 
 ```typescript
 import { defineConfig, authProvider } from '@deessejs/core';
