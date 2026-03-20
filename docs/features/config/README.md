@@ -13,3 +13,29 @@ export const config = defineConfig({
 ```
 
 The `defineConfig()` function is the main entry point for configuring DeesseJS. It accepts an object that defines various aspects of the CMS behavior.
+
+## Options
+
+### `pages`
+
+Defines the admin pages and sections structure using the internal DSL (see [Admin Dashboard](../admin-dashboard/README.md)).
+
+```typescript
+export const config = defineConfig({
+  pages: [
+    page({
+      name: 'Home',
+      content: () => <DashboardHome />,
+    }),
+    section({
+      name: 'Settings',
+      children: [
+        page({
+          name: 'General',
+          content: () => <GeneralSettings />,
+        }),
+      ],
+    }),
+  ],
+});
+```
