@@ -15,7 +15,7 @@ import { defineConfig, plugin, page, section } from '@deessejs/core';
 import { z } from 'zod';
 
 const myPlugin = plugin({
-  schema: z.object({
+  settings: z.object({
     apiKey: z.string(),
     enabled: z.boolean().default(true),
   }),
@@ -50,33 +50,11 @@ A plugin can define a Zod schema that represents the settings users can configur
 A plugin can:
 - **Add pages**: Register new admin pages that appear in the dashboard navigation
 - **Add sections**: Group pages under sections in the navigation
-- **Provide methods**: Export functions that can be used throughout the application
+- **Settings**: Define configurable settings persisted in the database
 - Extend core functionality
 - Add new features to the CMS
 
 Plugins provide a way to modularize and share functionality across different DeesseJS projects.
-
-## Plugin Methods
-
-When a plugin is distributed as a package, it can export methods that the application can use:
-
-```typescript
-// In the plugin package
-export function useSeoAnalysis(pageUrl: string) {
-  // SEO analysis logic
-  return {
-    score: 85,
-    issues: ['Missing meta description'],
-  };
-}
-```
-
-```typescript
-// In the application
-import { useSeoAnalysis } from '@my-org/deessejs-plugin-seo';
-
-const result = useSeoAnalysis('/blog/my-post');
-```
 
 ## Example: SEO Plugin
 
@@ -87,7 +65,7 @@ import { defineConfig, plugin, page, section } from '@deessejs/core';
 import { z } from 'zod';
 
 const seoPlugin = plugin({
-  schema: z.object({
+  settings: z.object({
     apiKey: z.string(),
     enabled: z.boolean().default(true),
   }),
@@ -106,15 +84,22 @@ const seoPlugin = plugin({
       ],
     }),
   ],
-  methods: {
-    analyzePage: async (url: string) => {
-      // SEO analysis implementation
-    },
-    generateSitemap: async () => {
-      // Sitemap generation
-    },
-  },
 });
 ```
 
-This plugin adds an "SEO" section with two pages (Overview and Sitemap) to the admin dashboard, and provides methods that can be used elsewhere in the application.
+This plugin adds an "SEO" section with two pages (Overview and Sitemap) to the admin dashboard. The settings are persisted in the database.
+
+### Using Settings
+
+Plugin settings can be accessed at runtime:
+
+```typescript
+// Get settings
+const settings = await plugin.getSettings();
+
+// Update settings
+await plugin.updateSettings({
+  apiKey: 'new-key',
+  enabled: true,
+});
+```
