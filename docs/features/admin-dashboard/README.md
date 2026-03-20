@@ -15,7 +15,18 @@ This architecture enables developers to extend the admin dashboard through the p
 
 ## Implementation
 
-The admin dashboard is implemented at `/app/(deesse)/admin/[[...slug]]/page.tsx`. This route renders the `RootPage` component from `@deessejs/next`.
+The admin dashboard is implemented at:
+
+```
+app/
+└── (deesse)/
+    └── admin/
+        ├── layout.tsx           # Admin layout
+        └── [[...slug]]/
+            └── page.tsx         # Catch-all admin page
+```
+
+The page renders the `RootPage` component from `@deessejs/next`.
 
 The `RootPage` component receives:
 - **`params`**: Route parameters
