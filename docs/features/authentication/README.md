@@ -4,33 +4,32 @@ This is an internal document outlining the authentication system for DeesseJS.
 
 ## Overview
 
-DeesseJS provides an authentication system that is provider-agnostic. It defines a standard interface that any authentication provider must implement, allowing flexibility in choosing the authentication solution.
+DeesseJS uses [better-auth](https://www.better-auth.com/) as its authentication solution. better-auth provides a comprehensive set of features including:
 
-## Interface
-
-The authentication system defines an interface that providers must implement. This ensures compatibility with the DeesseJS admin dashboard and API.
-
-```typescript
-interface AuthProvider {
-  // Methods to implement
-}
-```
+- Admin functionality
+- Organization support
+- SSO integration
+- Last login tracking
+- Multi-session management
+- First-class Stripe support
 
 ## Usage
 
-To use authentication in DeesseJS, use the `authProvider()` wrapper function in `deesse.config.ts`:
+To configure authentication in DeesseJS, use the `authProvider()` function in `deesse.config.ts`:
 
 ```typescript
 import { defineConfig, authProvider } from '@deessejs/core';
-import { supabaseAuth } from '@deessejs/auth-supabase';
+import { betterAuth } from '@deessejs/auth-better-auth';
 
 export const config = defineConfig({
-  auth: supabaseAuth({
-    // provider options
+  auth: betterAuth({
+    // better-auth configuration
   }),
 });
 ```
 
-Each auth provider (Supabase, NextAuth, Clerk, etc.) exports its own `authProvider()` function that can be configured with provider-specific options.
+## Why better-auth?
 
-This approach allows you to use any authentication provider (NextAuth.js, Clerk, custom solution, etc.) while maintaining a consistent interface across the application.
+- Actively maintained
+- Rich feature set needed for plugins (organizations, SSO, multi-session, etc.)
+- If needed in the future, the system can be forked to support additional providers
