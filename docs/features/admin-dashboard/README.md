@@ -6,6 +6,32 @@ This is an internal document outlining the architecture of the admin dashboard f
 
 DeesseJS is a CMS for developers. The admin dashboard provides a WordPress-like interface for content management, accessible at `/admin/[...slug]/page.tsx`.
 
+## shadcn Compatibility
+
+The admin dashboard is **100% shadcn compatible**. All components and pages use shadcn CSS theme variables. This ensures:
+
+- **Theme consistency**: Uses shadcn variables (`--primary`, `--ring`, `--radius`, etc.)
+- **Dark mode support**: Built-in light/dark theme support
+- **Custom styling**: All components can be customized via CSS variables
+
+When creating custom pages or components, always use theme variables:
+
+```typescript
+// Correct - use theme variables
+const MyComponent = () => (
+  <div className="bg-background text-foreground p-4 rounded-lg">
+    Content
+  </div>
+);
+
+// Avoid - hardcoded colors
+const MyComponent = () => (
+  <div className="bg-white text-black p-4">
+    Content
+  </div>
+);
+```
+
 ## Routing
 
 - **Native routes**: Core admin functionality is provided by built-in routes
