@@ -24,6 +24,20 @@ The dashboard is built using an internal DSL that allows developers to programma
   - **`children`**: Can be nested under a `section()`
   - **`content`**: A React component that renders the page content
 
+```typescript
+const MyPage = page({
+  name: 'My Page',
+  content: () => <div>Hello World</div>,
+});
+```
+
 - **`section()`**: Creates a section within a page
+
+```typescript
+const MySection = section({
+  name: 'Settings',
+  children: [MyPage],
+});
+```
 
 These functions will be explored in detail to define the dashboard structure.
