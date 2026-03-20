@@ -10,7 +10,7 @@ DeesseJS comes with a built-in CLI to help you manage database schemas, initiali
 
 ### Generate
 
-The `generate` command creates the schema required by DeesseJS. If you're using a database adapter like Prisma or Drizzle, this command will generate the right schema for your ORM.
+The `generate` command creates the database schema for **plugin settings**. Each plugin can define settings via a Zod schema, and this command generates the corresponding database schema (Prisma, Drizzle, etc.).
 
 ```bash
 npx deesse@latest generate
