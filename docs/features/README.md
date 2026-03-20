@@ -1,0 +1,25 @@
+# Features
+
+This directory contains internal documentation for DeesseJS features.
+
+## Overview
+
+DeesseJS is a CMS for developers with the following core features:
+
+- **[Admin Dashboard](./admin-dashboard/README.md)** - WordPress-like admin interface with DSL for pages and sections
+- **[Authentication](./authentication/README.md)** - Built on better-auth for user management
+- **[API](./api/README.md)** - Auto-generated REST API routes
+- **[Configuration](./config/README.md)** - Centralized configuration via `deesse.config.ts`
+- **[Plugins](./plugins/README.md)** - Extensible plugin system with pages, sections, and methods
+- **[UI](./ui/README.md)** - UI system with widgets for dashboard customization
+
+## Feature List
+
+| Feature | Description |
+|---------|-------------|
+| Admin Dashboard | WordPress-like admin interface accessible at `/admin` |
+| Authentication | User management using better-auth |
+| API | Auto-generated REST API at `/api` |
+| Configuration | Centralized config in `deesse.config.ts` |
+| Plugins | Extensible plugin system |
+| UI | Widget-based dashboard customization |
