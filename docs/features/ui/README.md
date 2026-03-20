@@ -6,6 +6,14 @@ This is an internal document outlining the UI system for DeesseJS.
 
 DeesseJS provides a UI system that developers can use to build consistent admin interfaces. The system includes conventions for building UI components and a widget system for extending the dashboard home page.
 
+## Tailwind CSS
+
+All components use **Tailwind CSS** for styling. This provides:
+
+- Utility-first approach
+- Consistent spacing and sizing
+- Easy customization
+
 ## shadcn Compatibility
 
 The UI system is **100% shadcn compatible**. All components follow shadcn/ui patterns and use CSS variables for theming. This ensures:
