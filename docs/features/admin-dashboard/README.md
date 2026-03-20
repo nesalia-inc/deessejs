@@ -41,3 +41,12 @@ const MySection = section({
 ```
 
 These functions will be explored in detail to define the dashboard structure.
+
+## Default Pages
+
+The admin dashboard comes with the following native pages:
+
+- **Home**: The dashboard landing page
+- **Settings**: A section containing general settings
+- **Plugins**: Page to manage plugins
+- **Appearance** (optional): Page to manage the dashboard appearance
