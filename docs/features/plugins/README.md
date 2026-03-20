@@ -35,6 +35,7 @@ A plugin can define a Zod schema that represents the parameters users can pass w
 
 A plugin can:
 - **Add pages**: Register new admin pages that appear in the dashboard navigation
+- **Add sections**: Group pages under sections in the navigation
 - Extend core functionality
 - Add new features to the CMS
 
