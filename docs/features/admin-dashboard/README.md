@@ -12,3 +12,14 @@ DeesseJS is a CMS for developers. The admin dashboard provides a WordPress-like 
 - **Plugin routes**: The majority of admin routes are dynamically loaded from plugins, allowing extensibility
 
 This architecture enables developers to extend the admin dashboard through the plugin system while maintaining a solid core of native functionality.
+
+## Internal DSL
+
+The dashboard is built using an internal DSL that allows developers to programmatically define the dashboard structure. This provides a clean, declarative way to build admin interfaces.
+
+### Core Functions
+
+- **`page()`**: Defines a new admin page
+- **`section()`**: Creates a section within a page
+
+These functions will be explored in detail to define the dashboard structure.
