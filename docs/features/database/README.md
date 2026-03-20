@@ -78,7 +78,7 @@ Configure your database provider in `deesse.config.ts`:
 
 ```typescript
 import { defineConfig } from '@deessejs/core';
-import { drizzle } from '@deessejs/adapter-drizzle';
+import { drizzle } from '@deessejs/drizzle';
 
 export const config = defineConfig({
   database: drizzle({
