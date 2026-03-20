@@ -15,7 +15,6 @@ The main API route is defined at `app/(deesse)/api/[[...route]]/route.ts`. This 
 /* DO NOT MODIFY IT BECAUSE IT COULD BE REWRITTEN AT ANY TIME. */
 
 import config from '@deesse-config';
-import '@deessejs/next/css';
 import {
   REST_DELETE,
   REST_GET,
