@@ -14,6 +14,7 @@ Plugins are created using the `plugin()` function and added to the configuration
 import { defineConfig, plugin, page, section } from '@deessejs/core';
 import { z } from 'zod';
 
+// plugin() returns a function that accepts parameters defined by the plugin
 const myPlugin = plugin({
   settings: z.object({
     apiKey: z.string(),
@@ -36,8 +37,9 @@ const myPlugin = plugin({
   ],
 });
 
+// Pass plugin parameters when registering
 export const config = defineConfig({
-  plugins: [myPlugin],
+  plugins: [myPlugin({ /* plugin parameters */ })],
 });
 ```
 
@@ -84,6 +86,11 @@ const seoPlugin = plugin({
       ],
     }),
   ],
+});
+
+// When registering, pass the plugin's custom parameters
+export const config = defineConfig({
+  plugins: [seoPlugin({ trackedDomains: ['example.com'] })],
 });
 ```
 
