@@ -15,16 +15,15 @@ DeesseJS uses [better-auth](https://www.better-auth.com/) as its authentication 
 
 ## Usage
 
-To configure authentication in DeesseJS, use the `authProvider()` function in `deesse.config.ts`:
+To configure authentication in DeesseJS, pass the better-auth configuration directly in `deesse.config.ts`:
 
 ```typescript
-import { defineConfig, authProvider } from '@deessejs/core';
-import { betterAuth } from '@deessejs/auth-better-auth';
+import { defineConfig } from '@deessejs/core';
 
 export const config = defineConfig({
-  auth: betterAuth({
+  auth: {
     // better-auth configuration
-  }),
+  },
 });
 ```
 
