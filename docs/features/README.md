@@ -2,6 +2,32 @@
 
 This directory contains internal documentation for DeesseJS features.
 
+## Quick Start
+
+Create a `deesse.config.ts` file in your project root:
+
+```typescript
+import { defineConfig, authProvider } from '@deessejs/core';
+
+export const config = defineConfig({
+  auth: {
+    // better-auth configuration
+  },
+});
+```
+
+Then add the admin dashboard to your Next.js app:
+
+```typescript
+// app/(deesse)/admin/[[...slug]]/page.tsx
+import { RootPage } from '@deessejs/next';
+import { config } from '@deesse-config';
+
+export default function AdminPage({ params, searchParams }: PageProps) {
+  return <RootPage config={config} params={params} searchParams={searchParams} />;
+}
+```
+
 ## Overview
 
 DeesseJS is a CMS for developers with the following core features:
