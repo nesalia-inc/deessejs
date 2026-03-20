@@ -14,6 +14,10 @@ This document lists the official plugins planned for DeesseJS.
 | **Logging** | Application logging |
 | **AI Management** | AI/ML integration management |
 | **LMS** | Learning Management System |
+| **Email** | Email management and sending |
+| **Workflows** | Visual workflow automation builder |
+| **Sales Funnel** | Sales funnel management |
+| **A/B Testing** | A/B testing for experiments |
 
 ## Coming Soon
 
