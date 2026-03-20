@@ -20,6 +20,10 @@ The dashboard is built using an internal DSL that allows developers to programma
 ### Core Functions
 
 - **`page()`**: Defines a new admin page
+  - **`name`**: The page display name
+  - **`children`**: Can be nested under a `section()`
+  - **`content`**: A React component that renders the page content
+
 - **`section()`**: Creates a section within a page
 
 These functions will be explored in detail to define the dashboard structure.
