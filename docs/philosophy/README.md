@@ -60,3 +60,15 @@ A database provider is required because **plugin settings need to be persisted**
 ## Summary
 
 DeesseJS = A configurable, extensible CMS that puts developers in control. Start with the admin dashboard, add plugins as needed, connect your preferred database, and build your perfect content management system.
+
+## Multi-Platform Support (Future)
+
+DeesseJS aims to be a **multi-platform framework** that supports:
+
+- **Web** - Next.js based admin dashboard
+- **Mobile** - Expo/React Native integration
+- **Desktop** - Electron integration
+
+This will be managed through a **monorepo** structure, allowing shared code between platforms. This is a future consideration that requires careful planning to ensure proper architecture.
+
+*Note: Multi-platform support is planned but requires deeper exploration to ensure proper implementation.*
