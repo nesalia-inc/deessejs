@@ -50,9 +50,22 @@ The UI system follows certain conventions to ensure consistency across the dashb
 
 ## Widgets
 
-The home page of the admin dashboard is extensible through a widget system. Developers can:
+The admin dashboard UI is **100% customizable** through a drag-and-drop widget system.
 
-- **Define custom widgets**: Create reusable widget components
-- **Modify the homepage layout**: Arrange widgets on the home page to create a personalized dashboard
+### Drag-and-Drop
 
-Widgets allow developers to display relevant information and functionality directly on the dashboard landing page.
+Widgets can be:
+- **Moved anywhere**: Drag and drop widgets to any position on the page
+- **Resized**: Adjust widget sizes
+- **Reordered**: Change the order of widgets
+- **Added/Removed**: Enable or disable widgets as needed
+
+### Widget Types
+
+- **Built-in widgets**: Default widgets provided by DeesseJS
+- **Custom widgets**: Developers can create their own widgets
+- **Plugin widgets**: Plugins can provide widgets that appear in the dashboard
+
+### Customization
+
+The dashboard layout is fully customizable. Users can arrange widgets to match their workflow and preferences.
