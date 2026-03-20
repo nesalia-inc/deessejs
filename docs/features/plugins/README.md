@@ -41,9 +41,9 @@ export const config = defineConfig({
 });
 ```
 
-### Schema
+### Settings
 
-A plugin can define a Zod schema that represents the parameters users can pass when configuring the plugin. This provides type-safe configuration and validation.
+A plugin can define a Zod schema that represents the settings users can configure. These settings are persisted in the database and can be accessed by the plugin at runtime. This provides type-safe configuration and validation.
 
 ## Plugin Capabilities
 

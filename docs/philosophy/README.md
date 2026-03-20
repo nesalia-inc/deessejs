@@ -53,6 +53,10 @@ The only defaults in DeesseJS are:
 
 Everything else (database, API routes, content types, etc.) is opt-in and configured by the developer.
 
+## Database Requirement
+
+A database provider is required because **plugin settings need to be persisted**. Each plugin can define its own settings (via the Zod schema), and these need to be stored somewhere. DeesseJS supports multiple database providers (Drizzle, Prisma, or custom) to give developers flexibility.
+
 ## Summary
 
 DeesseJS = A configurable, extensible CMS that puts developers in control. Start with the admin dashboard, add plugins as needed, connect your preferred database, and build your perfect content management system.
