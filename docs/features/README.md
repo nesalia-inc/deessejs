@@ -25,6 +25,9 @@ The CLI generates a basic `deesse.config.ts`:
 import { defineConfig } from '@deessejs/core';
 
 export const config = defineConfig({
+  database: {
+    // database provider configuration
+  },
   auth: {
     // better-auth configuration
   },
