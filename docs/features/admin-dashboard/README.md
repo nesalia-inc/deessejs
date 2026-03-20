@@ -103,7 +103,8 @@ These functions will be explored in detail to define the dashboard structure.
 The admin dashboard comes with the following native pages:
 
 - **Home**: The dashboard landing page (extensible with widgets)
-- **Collections**: View and manage all available data tables
+- **Collections**: Full CMS-like view for managing content
+- **Tables**: Raw data table view for direct database access
 - **Users**: View and manage user data
 - **Settings**: A section containing general settings
 - **Plugins**: Page to manage plugins
