@@ -11,7 +11,7 @@ DeesseJS supports a plugin system that allows developers to extend the functiona
 Plugins are created using the `plugin()` function and added to the configuration:
 
 ```typescript
-import { defineConfig, plugin } from '@deessejs/core';
+import { defineConfig, plugin, page, section } from '@deessejs/core';
 import { z } from 'zod';
 
 const myPlugin = plugin({
@@ -19,7 +19,21 @@ const myPlugin = plugin({
     apiKey: z.string(),
     enabled: z.boolean().default(true),
   }),
-  // plugin configuration
+  pages: [
+    section({
+      name: 'My Plugin',
+      children: [
+        page({
+          name: 'Dashboard',
+          content: () => <div>Plugin Dashboard</div>,
+        }),
+        page({
+          name: 'Settings',
+          content: () => <div>Plugin Settings</div>,
+        }),
+      ],
+    }),
+  ],
 });
 
 export const config = defineConfig({
