@@ -8,16 +8,17 @@ DeesseJS supports a plugin system that allows developers to extend the functiona
 
 ## Adding Plugins
 
-Plugins are added to the configuration using the `plugin()` function in `deesse.config.ts`:
+Plugins are created using the `plugin()` function and added to the configuration:
 
 ```typescript
-import { defineConfig } from '@deessejs/core';
-import myPlugin from './plugins/my-plugin';
+import { defineConfig, plugin } from '@deessejs/core';
+
+const myPlugin = plugin({
+  // plugin configuration
+});
 
 export const config = defineConfig({
-  plugins: [
-    plugin(myPlugin),
-  ],
+  plugins: [myPlugin],
 });
 ```
 
