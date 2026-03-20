@@ -12,29 +12,12 @@ npx create-deesse-app@latest
 npm create deesse-app
 ```
 
-Then create a `deesse.config.ts` file in your project root:
+The CLI will prompt you for:
+1. **Project name** - Name of your project
+2. **Template** - Choose a template (blank, with example pages, etc.)
+3. **Database provider** - Choose your database (Drizzle, Prisma, or custom)
 
-```typescript
-import { defineConfig, authProvider } from '@deessejs/core';
-
-export const config = defineConfig({
-  auth: {
-    // better-auth configuration
-  },
-});
-```
-
-Then add the admin dashboard to your Next.js app:
-
-```typescript
-// app/(deesse)/admin/[[...slug]]/page.tsx
-import { RootPage } from '@deessejs/next';
-import { config } from '@deesse-config';
-
-export default function AdminPage({ params, searchParams }: PageProps) {
-  return <RootPage config={config} params={params} searchParams={searchParams} />;
-}
-```
+Then it will initialize the project with the chosen configuration.
 
 ## Overview
 
