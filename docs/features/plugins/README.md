@@ -12,8 +12,13 @@ Plugins are created using the `plugin()` function and added to the configuration
 
 ```typescript
 import { defineConfig, plugin } from '@deessejs/core';
+import { z } from 'zod';
 
 const myPlugin = plugin({
+  schema: z.object({
+    apiKey: z.string(),
+    enabled: z.boolean().default(true),
+  }),
   // plugin configuration
 });
 
@@ -21,6 +26,10 @@ export const config = defineConfig({
   plugins: [myPlugin],
 });
 ```
+
+### Schema
+
+A plugin can define a Zod schema that represents the parameters users can pass when configuring the plugin. This provides type-safe configuration and validation.
 
 ## Plugin Capabilities
 
