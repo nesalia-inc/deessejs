@@ -18,15 +18,19 @@ interface AuthProvider {
 
 ## Usage
 
-To use authentication in DeesseJS, implement the `AuthProvider` interface and configure it in `deesse.config.ts`:
+To use authentication in DeesseJS, use the `authProvider()` wrapper function in `deesse.config.ts`:
 
 ```typescript
-import { defineConfig } from '@deessejs/core';
-import { MyAuthProvider } from './auth/my-provider';
+import { defineConfig, authProvider } from '@deessejs/core';
+import { supabaseAuth } from '@deessejs/auth-supabase';
 
 export const config = defineConfig({
-  auth: MyAuthProvider,
+  auth: supabaseAuth({
+    // provider options
+  }),
 });
 ```
+
+Each auth provider (Supabase, NextAuth, Clerk, etc.) exports its own `authProvider()` function that can be configured with provider-specific options.
 
 This approach allows you to use any authentication provider (NextAuth.js, Clerk, custom solution, etc.) while maintaining a consistent interface across the application.
