@@ -18,6 +18,9 @@ This document lists the official plugins planned for DeesseJS.
 | **Workflows** | Visual workflow automation builder |
 | **Sales Funnel** | Sales funnel management |
 | **A/B Testing** | A/B testing for experiments |
+| **Cookies** | Cookie consent and management |
+| **Feature Flags** | Feature flag management |
+| **Releases** | Release management with canary deployments |
 
 ## Coming Soon
 
