@@ -65,7 +65,9 @@ These functions will be explored in detail to define the dashboard structure.
 
 The admin dashboard comes with the following native pages:
 
-- **Home**: The dashboard landing page
+- **Home**: The dashboard landing page (extensible with widgets)
 - **Settings**: A section containing general settings
 - **Plugins**: Page to manage plugins
 - **Appearance** (optional): Page to manage the dashboard appearance
+
+The Home page can be customized with widgets. See [UI System](../ui/README.md) for more details.
