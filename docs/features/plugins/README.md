@@ -101,6 +101,65 @@ export const config = defineConfig({
 
 This plugin adds an "SEO" section with two pages (Overview and Sitemap) to the admin dashboard. The settings are persisted in the database.
 
+## Database Schema (Provider-Agnostic)
+
+Plugins can define database tables using **Standard Schema**. This allows the schema to work with any database provider (Drizzle, Prisma, SQL, etc.) without requiring provider-specific implementations.
+
+### Why Standard Schema?
+
+[Standard Schema](https://standard-schema.io/) is a set of interfaces that standardize schema definition across the TypeScript ecosystem. Libraries like **Zod**, **Valibot**, and **ArkType** implement `StandardSchemaV1`, making schemas portable across tools.
+
+### Defining Schema
+
+```typescript
+import { plugin } from '@deessejs/core';
+import { z } from 'zod';
+
+const seoPlugin = plugin({
+  settings: z.object({
+    apiKey: z.string(),
+  }),
+
+  // Schema using Zod (implements StandardSchemaV1)
+  schema: {
+    seo_pages: z.object({
+      id: z.string().uuid(),
+      url: z.string().url(),
+      score: z.number().min(0).max(100),
+      createdAt: z.date(),
+    }),
+    seo_issues: z.object({
+      id: z.string().uuid(),
+      pageId: z.string(),
+      issue: z.string(),
+      severity: z.enum(['low', 'medium', 'high']),
+    }),
+  },
+});
+```
+
+### Generating Database Schema
+
+Run the CLI to generate the schema for your chosen provider:
+
+```bash
+npx deesse generate --provider drizzle
+# or
+npx deesse generate --provider prisma
+```
+
+The CLI reads Standard Schema definitions and generates:
+- **Drizzle**: `schema.ts`
+- **Prisma**: `schema.prisma`
+- **SQL**: `schema.sql`
+
+### Supported Libraries
+
+Any library implementing `StandardSchemaV1` works:
+- **Zod** (recommended)
+- **Valibot**
+- **ArkType**
+
 ### Using Settings
 
 Plugin settings can be accessed at runtime:
