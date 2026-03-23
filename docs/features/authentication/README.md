@@ -241,30 +241,12 @@ When you first connect to the admin dashboard, you arrive on a signup screen to 
 
 ## Admin Plugin
 
-DeesseJS uses the better-auth Admin plugin for user management. Configure it in your auth config:
+The Admin plugin is **always enabled** internally in DeesseJS. It's automatically configured by default.
 
-```typescript
-import { defineConfig } from '@deessejs/core';
-import { admin } from 'better-auth/plugins';
-
-export const config = defineConfig({
-  auth: {
-    api: {
-      database: /* database adapter */,
-      emailAndPassword: { enabled: true },
-      plugins: [
-        admin(),
-      ],
-    },
-    client: {
-      baseURL: 'http://localhost:3000',
-      plugins: [
-        adminClient(),
-      ],
-    },
-  },
-});
-```
+A user with the role `"admin"` has access to administrative features:
+- Users have a `role` field in the database
+- Role can be `"admin"` or `"user"` (default)
+- Custom roles are also supported
 
 ### Admin Features
 
@@ -277,15 +259,6 @@ export const config = defineConfig({
 - **List User Sessions**: View user's active sessions
 - **Revoke Sessions**: Revoke specific or all sessions
 - **Impersonate User**: Act as another user (for debugging)
-
-### Access Control
-
-The admin plugin provides role-based access control:
-
-- **admin**: Full control over users
-- **user**: No control over other users
-
-You can also create custom roles with specific permissions.
 
 ## Why better-auth?
 
