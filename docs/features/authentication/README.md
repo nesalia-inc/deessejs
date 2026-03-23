@@ -233,6 +233,60 @@ export const config = defineConfig({
 - `auth.api` - Better-auth server config (database, emailAndPassword, socialProviders, etc.)
 - `auth.client` - Client-side auth (ready-to-use hooks and methods)
 
+## First-Time Setup
+
+When you first connect to the admin dashboard, you arrive on a signup screen to create the initial admin account.
+
+**Important**: This signup screen can never be displayed in production. You cannot deploy to production without having at least one admin user already created.
+
+## Admin Plugin
+
+DeesseJS uses the better-auth Admin plugin for user management. Configure it in your auth config:
+
+```typescript
+import { defineConfig } from '@deessejs/core';
+import { admin } from 'better-auth/plugins';
+
+export const config = defineConfig({
+  auth: {
+    api: {
+      database: /* database adapter */,
+      emailAndPassword: { enabled: true },
+      plugins: [
+        admin(),
+      ],
+    },
+    client: {
+      baseURL: 'http://localhost:3000',
+      plugins: [
+        adminClient(),
+      ],
+    },
+  },
+});
+```
+
+### Admin Features
+
+- **Create User**: Create new users
+- **List Users**: View all users with filtering and pagination
+- **Get User**: Fetch user details
+- **Set User Role**: Assign roles to users
+- **Update User**: Modify user information
+- **Ban/Unban User**: Ban users with optional expiration
+- **List User Sessions**: View user's active sessions
+- **Revoke Sessions**: Revoke specific or all sessions
+- **Impersonate User**: Act as another user (for debugging)
+
+### Access Control
+
+The admin plugin provides role-based access control:
+
+- **admin**: Full control over users
+- **user**: No control over other users
+
+You can also create custom roles with specific permissions.
+
 ## Why better-auth?
 
 - Actively maintained
