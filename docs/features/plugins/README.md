@@ -138,15 +138,37 @@ const seoPlugin = plugin({
 });
 ```
 
-### Generating Database Schema
+### Configuration
 
-Run the CLI to generate the schema for your chosen provider:
+Configure your database provider in `deesse.config.ts`:
+
+```typescript
+import { defineConfig } from '@deessejs/core';
+import { drizzle } from '@deessejs/drizzle';
+
+export const config = defineConfig({
+  database: drizzle({
+    // Drizzle configuration
+  }),
+});
+```
+
+### CLI Commands
+
+Run database commands with the DeesseJS CLI:
 
 ```bash
-npx deesse generate --provider drizzle
-# or
-npx deesse generate --provider prisma
+# Generate schema from Standard Schema definitions
+npx deesse generate
+
+# Push schema to database
+npx deesse db push
+
+# Run migrations
+npx deesse migrate
 ```
+
+The CLI automatically reads the provider from your config and generates the appropriate schema.
 
 The CLI reads Standard Schema definitions and generates:
 - **Drizzle**: `schema.ts`
