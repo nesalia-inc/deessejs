@@ -15,14 +15,21 @@ DeesseJS uses [better-auth](https://www.better-auth.com/) as its authentication 
 
 ## Usage
 
-To configure authentication in DeesseJS, pass the better-auth configuration directly in `deesse.config.ts`:
+To configure authentication in DeesseJS, use `auth.api` and `auth.client` in `deesse.config.ts`:
 
 ```typescript
 import { defineConfig } from '@deessejs/core';
 
 export const config = defineConfig({
   auth: {
-    // better-auth configuration
+    api: {
+      // Server-side API configuration
+    },
+    client: {
+      // Client-side configuration (baseURL, plugins, etc.)
+      baseURL: 'http://localhost:3000',
+    },
+    // Other better-auth options
     database: /* database adapter */,
     emailAndPassword: { enabled: true },
     socialProviders: {
@@ -35,7 +42,7 @@ export const config = defineConfig({
 });
 ```
 
-The `config.auth` object exposes both `api` (server-side) and `client` (client-side) directly.
+The `config.auth.api` and `config.auth.client` are created internally by DeesseJS based on your configuration.
 
 ## API (Server-Side)
 
@@ -51,7 +58,7 @@ const { session, user } = await config.auth.api.getSession({
 });
 
 // Sign in with email
-await auth.api.signIn.email({
+await config.auth.api.signIn.email({
   body: {
     email: 'john@doe.com',
     password: 'password',
@@ -60,7 +67,7 @@ await auth.api.signIn.email({
 });
 
 // Sign up with email
-await auth.api.signUp.email({
+await config.auth.api.signUp.email({
   body: {
     email: 'john@doe.com',
     password: 'password',
@@ -70,17 +77,17 @@ await auth.api.signUp.email({
 });
 
 // Sign out
-await auth.api.signOut({
+await config.auth.api.signOut({
   headers: await headers(),
 });
 
 // Get user
-const user = await auth.api.getUser({
+const user = await config.auth.api.getUser({
   params: { userId: 'user-id' },
 });
 
 // Update user
-await auth.api.updateUser({
+await config.auth.api.updateUser({
   params: { userId: 'user-id' },
   body: { name: 'New Name' },
 });
@@ -92,17 +99,17 @@ Unlike the client, server-side endpoints require explicit parameter passing:
 
 ```typescript
 // Body parameters
-await auth.api.signIn.email({
+await config.auth.api.signIn.email({
   body: { email, password },
 });
 
 // Query parameters (e.g., email verification)
-await auth.api.verifyEmail({
+await config.auth.api.verifyEmail({
   query: { token: 'verification-token' },
 });
 
 // Headers
-await auth.api.getSession({
+await config.auth.api.getSession({
   headers: await headers(),
 });
 ```
@@ -113,7 +120,7 @@ await auth.api.getSession({
 import { isAPIError } from 'better-auth/api';
 
 try {
-  await auth.api.signIn.email({
+  await config.auth.api.signIn.email({
     body: { email: 'test@test.com', password: 'wrong' },
   });
 } catch (error) {
@@ -126,22 +133,23 @@ try {
 
 ## Client (Client-Side)
 
-The `config.auth.client` provides client-side authentication:
+The `config.auth.client` is already the ready-to-use client:
 
 ```typescript
 import { config } from '@deesse-config';
-import { createAuthClient } from '@deessejs/auth-client';
 
-export const authClient = createAuthClient(config.auth.client);
+const { useSession, signIn, signOut, signUp } = config.auth.client;
 ```
 
 ### Usage
 
 ```typescript
-import { authClient } from '@/lib/auth-client';
+import { config } from '@deesse-config';
+
+const { signIn, signOut, signUp } = config.auth.client;
 
 // Sign in
-const { data, error } = await authClient.signIn.email({
+const { data, error } = await signIn.email({
   email: 'test@user.com',
   password: 'password1234',
 });
@@ -151,22 +159,22 @@ if (error) {
 }
 
 // Sign up
-await authClient.signUp.email({
+await signUp.email({
   email: 'test@user.com',
   password: 'password1234',
   name: 'Test User',
 });
 
 // Sign out
-await authClient.signOut();
+await signOut();
 ```
 
 ### Using Hooks (React)
 
 ```typescript
-import { createAuthClient } from '@deessejs/auth-client';
+import { config } from '@deesse-config';
 
-const { useSession, signIn, signOut } = createAuthClient();
+const { useSession, signIn, signOut } = config.auth.client;
 
 function UserProfile() {
   const { data: session, isPending, error, refetch } = useSession();
@@ -183,29 +191,51 @@ function UserProfile() {
 }
 ```
 
-### Client Options
+### Client Configuration
+
+Configure client options in `deesse.config.ts`:
 
 ```typescript
-// With custom fetch options
-const authClient = createAuthClient({
-  baseURL: 'http://localhost:3000',
-  fetchOptions: {
-    // custom fetch options
+export const config = defineConfig({
+  auth: {
+    client: {
+      baseURL: 'http://localhost:3000',
+      fetchOptions: {
+        // custom fetch options
+      },
+      disableDefaultFetchPlugins: true, // For React Native/Expo
+    },
   },
-  disableDefaultFetchPlugins: true, // For React Native/Expo
 });
 ```
 
 ## Configuration Structure
 
-The `auth` config in `deesse.config.ts` provides:
+The `auth` config in `deesse.config.ts`:
 
-- `auth.api` - Server-side API methods
-- `auth.client` - Client-side configuration
-- `auth.database` - Database adapter (required)
+```typescript
+export const config = defineConfig({
+  auth: {
+    api: {
+      // Server-side API config (optional)
+    },
+    client: {
+      // Client-side config (baseURL, plugins, etc.)
+      baseURL: 'http://localhost:3000',
+    },
+    // Other better-auth options
+    database: /* database adapter */,
+    emailAndPassword: { enabled: true },
+    socialProviders: { /* ... */ },
+  },
+});
+```
+
+- `auth.api` - Server-side API methods (auto-created)
+- `auth.client` - Client-side auth (auto-created)
+- `auth.database` - Database adapter
 - `auth.emailAndPassword` - Email/password authentication
-- `auth.socialProviders` - OAuth providers (GitHub, Google, etc.)
-- And all other better-auth options
+- `auth.socialProviders` - OAuth providers
 
 ## Why better-auth?
 
