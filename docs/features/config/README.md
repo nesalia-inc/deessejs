@@ -27,8 +27,7 @@ export const config = defineConfig({
   database: /* database adapter */,
   auth: {
     api: {
-      // Better-auth server configuration
-      database: /* database adapter */,
+      // Better-auth server configuration (database is auto-configured)
       emailAndPassword: { enabled: true },
       socialProviders: { /* ... */ },
     },
@@ -67,8 +66,8 @@ type ConfigInput = {
 
   /** Authentication configuration */
   auth?: {
-    /** Server-side Better-Auth configuration */
-    api: BetterAuthConfig;
+    /** Server-side Better-Auth configuration (database is auto-configured) */
+    api: Omit<BetterAuthConfig, 'database'>;
 
     /** Client-side auth configuration */
     client?: AuthClientConfig;
@@ -116,7 +115,7 @@ import { defineConfig } from '@deessejs/deesse';
 export const config = defineConfig({
   auth: {
     api: {
-      database: /* database adapter */,
+      // database is auto-configured from the main database config
       emailAndPassword: { enabled: true },
       socialProviders: {
         github: {
