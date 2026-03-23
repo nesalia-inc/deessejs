@@ -4,13 +4,13 @@ This is an internal document outlining the collections system for DeesseJS.
 
 ## Overview
 
-DeesseJS uses `@deessejs/collections` as its data modeling layer. This is a separate package that can be used standalone, but is deeply integrated into DeesseJS for managing content collections.
+DeesseJS uses `@deessejs/collections` as its data modeling layer. This is a separate package that can be used standalone, but is deeply integrated into DeesseJS as a database adapter.
 
 ## Relationship
 
 `@deessejs/collections` is:
 - **Independent** - Can be used without DeesseJS
-- **Integrated** - Natively supported in DeesseJS admin
+- **Integrated** - Used as a database adapter in DeesseJS
 
 ## Usage
 
@@ -23,7 +23,7 @@ pnpm add @deessejs/collections
 Define collections:
 
 ```typescript
-import { defineConfig, collection, field, f } from '@deessejs/collections';
+import { collection, field, f } from '@deessejs/collections';
 
 const posts = collection({
   slug: 'posts',
@@ -45,9 +45,26 @@ const users = collection({
     email: field({ fieldType: f.email() }),
   },
 });
+```
+
+## Database Adapter
+
+In DeesseJS, collections is used as a **database adapter**:
+
+```typescript
+import { defineConfig, collectionsAdapter } from '@deessejs/core';
+import { collection, field, f } from '@deessejs/collections';
+
+const posts = collection({ /* ... */ });
+const users = collection({ /* ... */ });
 
 export const config = defineConfig({
-  collections: [posts, users],
+  database: collectionsAdapter({
+    collections: [posts, users],
+    extensions: {
+      // Optional: cache, email, storage
+    },
+  }),
 });
 ```
 
@@ -80,25 +97,49 @@ Collections automatically generate REST endpoints:
 ## Integration with DeesseJS
 
 In DeesseJS admin:
-- The **Collections** page displays all defined collections
+- The **Collections** page displays all defined collections (only if collections are configured)
 - Users can manage content through the admin interface
 - The API routes are automatically generated
 
-## Database Provider
+If no collections are configured, the Collections page does not appear.
 
-Collections work with any database provider:
+## Extensions
+
+Collections support optional extensions:
 
 ```typescript
-import { defineConfig, collection, pgAdapter } from '@deessejs/collections';
+import { defineConfig, collectionsAdapter, redisCache, sendGridEmail, s3Storage } from '@deessejs/core';
 
 export const config = defineConfig({
-  database: pgAdapter({ url: process.env.DATABASE_URL! }),
-  collections: [/* collections */],
+  database: collectionsAdapter({
+    collections: [posts, users],
+    extensions: {
+      cache: redisCache({ url: process.env.REDIS_URL! }),
+      email: sendGridEmail({ apiKey: process.env.SENDGRID_API_KEY! }),
+      storage: s3Storage({ bucket: process.env.AWS_BUCKET! }),
+    },
+  }),
 });
 ```
 
-Supported providers:
-- PostgreSQL (`pgAdapter`)
-- MySQL (`mysqlAdapter`)
-- SQLite (`sqliteAdapter`)
-- Custom adapters
+## Database Provider
+
+Collections use the database adapter internally:
+
+```typescript
+// collectionsAdapter handles database internally
+// Supported: PostgreSQL, MySQL, SQLite
+```
+
+## Collections without DeesseJS
+
+`@deessejs/collections` can be used standalone:
+
+```typescript
+import { defineConfig, collection, field, f, pgAdapter } from '@deessejs/collections';
+
+export const config = defineConfig({
+  database: pgAdapter({ url: process.env.DATABASE_URL! }),
+  collections: [posts, users],
+});
+```
