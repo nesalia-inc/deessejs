@@ -61,7 +61,7 @@ config.pages.forEach(page => { /* ... */ });
 
 ```typescript
 // Input type
-interface ConfigInput {
+type ConfigInput = {
   /** Database adapter configuration */
   database?: DatabaseAdapter;
 
@@ -79,10 +79,10 @@ interface ConfigInput {
 
   /** Plugins to register */
   plugins?: Plugin[];
-}
+};
 
 // Output type (enriched)
-interface Config extends ConfigInput {
+type Config = ConfigInput & {
   /** Server-side auth API methods */
   auth: {
     api: AuthAPI;
@@ -91,7 +91,7 @@ interface Config extends ConfigInput {
 
   /** Enriched page tree with slugs */
   pages: PageNode[];
-}
+};
 ```
 
 ### Database Adapter
