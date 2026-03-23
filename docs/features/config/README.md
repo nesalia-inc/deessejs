@@ -14,6 +14,124 @@ export const config = defineConfig({
 
 The `defineConfig()` function is the main entry point for configuring DeesseJS. It accepts an object that defines various aspects of the CMS behavior.
 
+## Types
+
+### Input Parameter
+
+The input to `defineConfig()` is a `ConfigInput` object:
+
+```typescript
+import { defineConfig } from '@deessejs/deesse';
+
+export const config = defineConfig({
+  database: /* database adapter */,
+  auth: {
+    api: {
+      // Better-auth server configuration
+      database: /* database adapter */,
+      emailAndPassword: { enabled: true },
+      socialProviders: { /* ... */ },
+    },
+    client: {
+      // Client-side configuration
+      baseURL: 'http://localhost:3000',
+    },
+  },
+  pages: [/* DSL pages and sections */],
+  plugins: [/* plugins */],
+});
+```
+
+### Return Type
+
+The return type `Config` enriches the input with computed properties:
+
+```typescript
+// config.auth.api - Server-side auth methods
+const { getSession, signIn, signUp, signOut } = config.auth.api;
+
+// config.auth.client - Client-side auth (React hooks)
+const { useSession, signIn, signOut } = config.auth.client;
+
+// config.pages - Enriched page tree
+config.pages.forEach(page => { /* ... */ });
+```
+
+### Type Definitions
+
+```typescript
+// Input type
+interface ConfigInput {
+  /** Database adapter configuration */
+  database?: DatabaseAdapter;
+
+  /** Authentication configuration */
+  auth?: {
+    /** Server-side Better-Auth configuration */
+    api: BetterAuthConfig;
+
+    /** Client-side auth configuration */
+    client?: AuthClientConfig;
+  };
+
+  /** Custom pages and sections (DSL) */
+  pages?: (Page | Section)[];
+
+  /** Plugins to register */
+  plugins?: Plugin[];
+}
+
+// Output type (enriched)
+interface Config extends ConfigInput {
+  /** Server-side auth API methods */
+  auth: {
+    api: AuthAPI;
+    client: AuthClient;
+  };
+
+  /** Enriched page tree with slugs */
+  pages: PageNode[];
+}
+```
+
+### Database Adapter
+
+```typescript
+// Drizzle adapter example
+import { defineConfig, drizzleAdapter } from '@deessejs/deesse';
+
+export const config = defineConfig({
+  database: drizzleAdapter({
+    provider: 'sqlite',
+    url: './data.db',
+  }),
+});
+```
+
+### Auth Configuration
+
+```typescript
+import { defineConfig } from '@deessejs/deesse';
+
+export const config = defineConfig({
+  auth: {
+    api: {
+      database: /* database adapter */,
+      emailAndPassword: { enabled: true },
+      socialProviders: {
+        github: {
+          clientId: process.env.GITHUB_CLIENT_ID,
+          clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        },
+      },
+    },
+    client: {
+      baseURL: 'http://localhost:3000',
+    },
+  },
+});
+```
+
 ## Options
 
 ### `pages`
