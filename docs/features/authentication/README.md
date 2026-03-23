@@ -35,16 +35,18 @@ export const config = defineConfig({
 });
 ```
 
+The `config.auth` object exposes both `api` (server-side) and `client` (client-side) directly.
+
 ## API (Server-Side)
 
-On the server, you can use the `auth.api` object to call authentication endpoints directly:
+The `config.auth.api` object provides server-side authentication methods:
 
 ```typescript
-import { auth } from '@deessejs/auth-server';
+import { config } from '@deesse-config';
 import { headers } from 'next/headers';
 
 // Get current session
-const { session, user } = await auth.api.getSession({
+const { session, user } = await config.auth.api.getSession({
   headers: await headers(),
 });
 
@@ -124,15 +126,13 @@ try {
 
 ## Client (Client-Side)
 
-Create a client instance to interact with auth on the client:
+The `config.auth.client` provides client-side authentication:
 
 ```typescript
-// lib/auth-client.ts
+import { config } from '@deesse-config';
 import { createAuthClient } from '@deessejs/auth-client';
 
-export const authClient = createAuthClient({
-  baseURL: 'http://localhost:3000', // Your auth server URL
-});
+export const authClient = createAuthClient(config.auth.client);
 ```
 
 ### Usage
@@ -198,13 +198,13 @@ const authClient = createAuthClient({
 
 ## Configuration Structure
 
-The `auth` config in `deesse.config.ts` supports:
+The `auth` config in `deesse.config.ts` provides:
 
-- `database` - Database adapter (required)
-- `emailAndPassword` - Email/password authentication
-- `socialProviders` - OAuth providers (GitHub, Google, etc.)
-- `trustedOrigins` - Allowed origins for requests
-- `sessionExpiresIn` - Session duration
+- `auth.api` - Server-side API methods
+- `auth.client` - Client-side configuration
+- `auth.database` - Database adapter (required)
+- `auth.emailAndPassword` - Email/password authentication
+- `auth.socialProviders` - OAuth providers (GitHub, Google, etc.)
 - And all other better-auth options
 
 ## Why better-auth?
