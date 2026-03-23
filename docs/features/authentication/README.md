@@ -15,7 +15,7 @@ DeesseJS uses [better-auth](https://www.better-auth.com/) as its authentication 
 
 ## Usage
 
-To configure authentication in DeesseJS, use `auth.api` and `auth.client` in `deesse.config.ts`:
+Configure authentication in `deesse.config.ts`:
 
 ```typescript
 import { defineConfig } from '@deessejs/core';
@@ -23,26 +23,26 @@ import { defineConfig } from '@deessejs/core';
 export const config = defineConfig({
   auth: {
     api: {
-      // Server-side API configuration
+      // Better-auth configuration
+      database: /* database adapter */,
+      emailAndPassword: { enabled: true },
+      socialProviders: {
+        github: {
+          clientId: process.env.GITHUB_CLIENT_ID,
+          clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        },
+      },
     },
     client: {
-      // Client-side configuration (baseURL, plugins, etc.)
+      // Client-side configuration
       baseURL: 'http://localhost:3000',
-    },
-    // Other better-auth options
-    database: /* database adapter */,
-    emailAndPassword: { enabled: true },
-    socialProviders: {
-      github: {
-        clientId: process.env.GITHUB_CLIENT_ID,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      },
     },
   },
 });
 ```
 
-The `config.auth.api` and `config.auth.client` are created internally by DeesseJS based on your configuration.
+- `auth.api` - Better-auth server configuration (creates the API methods)
+- `auth.client` - Client-side auth (hooks and methods)
 
 ## API (Server-Side)
 
@@ -217,25 +217,21 @@ The `auth` config in `deesse.config.ts`:
 export const config = defineConfig({
   auth: {
     api: {
-      // Server-side API config (optional)
+      // Better-auth configuration
+      database: /* database adapter */,
+      emailAndPassword: { enabled: true },
+      socialProviders: { /* ... */ },
     },
     client: {
-      // Client-side config (baseURL, plugins, etc.)
+      // Client-side configuration
       baseURL: 'http://localhost:3000',
     },
-    // Other better-auth options
-    database: /* database adapter */,
-    emailAndPassword: { enabled: true },
-    socialProviders: { /* ... */ },
   },
 });
 ```
 
-- `auth.api` - Server-side API methods (auto-created)
-- `auth.client` - Client-side auth (auto-created)
-- `auth.database` - Database adapter
-- `auth.emailAndPassword` - Email/password authentication
-- `auth.socialProviders` - OAuth providers
+- `auth.api` - Better-auth server config (database, emailAndPassword, socialProviders, etc.)
+- `auth.client` - Client-side auth (ready-to-use hooks and methods)
 
 ## Why better-auth?
 
