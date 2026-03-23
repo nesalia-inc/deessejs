@@ -140,18 +140,25 @@ const seoPlugin = plugin({
 
 ### Configuration
 
-Configure your database provider in `deesse.config.ts`:
+Configure your database provider in `deesse.config.ts`, following the better-auth adapter pattern:
 
 ```typescript
 import { defineConfig } from '@deessejs/core';
-import { drizzle } from '@deessejs/drizzle';
+import { drizzleAdapter } from '@deessejs/drizzle';
+import { db } from './database';
 
 export const config = defineConfig({
-  database: drizzle({
-    // Drizzle configuration
-  }),
+  auth: {
+    api: {
+      database: drizzleAdapter(db, {
+        provider: 'sqlite', // or 'pg', 'mysql'
+      }),
+    },
+  },
 });
 ```
+
+The database adapter is passed directly to better-auth, following the same pattern as better-auth's own adapters.
 
 ### CLI Commands
 
