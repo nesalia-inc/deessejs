@@ -18,7 +18,11 @@
     "lint": "eslint src --ext .ts,.tsx",
     "clean": "rm -rf dist"
   },
+  "dependencies": {
+    "deesse": "workspace:*"
+  },
   "devDependencies": {
+    "@types/react": "^19.0.0",
     "typescript": "^5.0.0"
   }
 }
