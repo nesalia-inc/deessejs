@@ -1,3 +1,3 @@
 // @deessejs/deesse core package
 
-export {};
+export { defineConfig } from "./config/index.js";
