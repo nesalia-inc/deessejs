@@ -1,6 +1,8 @@
 # Dependencies
 node_modules/
 .pnpm-store/
+templates/*/node_modules/
+templates/*/package-lock.json
 
 # Build outputs
 dist/
