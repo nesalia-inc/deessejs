@@ -23,8 +23,6 @@ To learn more about DeesseJS, take a look at the following resources:
 - [DeesseJS Documentation](https://deessejs.com) - learn about DeesseJS features and API.
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features (DeesseJS is built on Next.js).
 
-## Deploy on Nesalia
-
-The easiest way to deploy your DeesseJS app is to use the [Nesalia Platform](https://nesalia.io).
+## Deploy
 
 Check out our [DeesseJS deployment documentation](https://deessejs.com) for more details.
