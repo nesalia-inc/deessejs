@@ -32,7 +32,6 @@ Examples:
   npx deesse init
   npx deesse db:generate
   npx deesse db:push --force
-  npx deesse db:studio
 
 For more information, visit: https://github.com/nesalia-inc/deessejs
   `);
