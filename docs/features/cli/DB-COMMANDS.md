@@ -160,18 +160,3 @@ await generate({
 3. **Temp config cleanup**: Should we delete `drizzle.config.ts` after execution?
 4. **Existing drizzle.config.ts**: How to handle if user already has one?
 5. **Drizzle Kit API**: Does drizzle-kit expose a programmatic API?
-
-## File Structure
-
-```
-packages/cli/
-├── src/
-│   ├── index.ts          # Main CLI entry
-│   ├── commands/
-│   │   ├── db.ts        # DB commands wrapper
-│   │   └── utils.ts     # Config loading, dialect inference
-│   └── bin/
-│       └── deesse.js
-├── package.json
-└── DB-COMMANDS.md       # This document
-```
