@@ -59,26 +59,15 @@ npm install drizzle-orm better-auth @better-auth/drizzle-adapter
 npm install postgres  # for PostgreSQL
 ```
 
-### 2. Create Database Instance
-
-```typescript
-// database.ts
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-
-const queryClient = postgres(process.env.DATABASE_URL!);
-export const db = drizzle({ client: queryClient });
-```
-
-### 3. Configure Deesse
+### 2. Configure Deesse
 
 ```typescript
 // deesse.config.ts
-import { defineConfig } from '@deessejs/deesse';
-import { db } from './database';
+import { defineConfig } from 'deesse';
+import { pgsql } from 'deesse/database';
 
 export const config = defineConfig({
-  database: { db },
+  database: pgsql(process.env.DATABASE_URL!),
   auth: {
     api: {
       emailAndPassword: { enabled: true },
@@ -90,56 +79,113 @@ export const config = defineConfig({
 });
 ```
 
+That's it. No separate `database.ts` file needed.
+
+### 3. Access the Database
+
+You can query the database directly from `config.db`:
+
+```typescript
+import { config } from './deesse.config';
+import { eq } from 'drizzle-orm';
+import { users } from './schema';
+
+// Query
+const [user] = await config.db
+  .select()
+  .from(users)
+  .where(eq(users.email, "user@example.com"))
+  .limit(1);
+
+// Insert
+await config.db.insert(users).values({
+  id: crypto.randomUUID(),
+  email: "new@example.com",
+});
+
+// Transaction
+await config.db.transaction(async (trx) => {
+  await trx.insert(users).values({ /* ... */ });
+});
+```
+
+---
+
+## Database Helpers
+
+The `deesse/database` package provides database client factories:
+
+| Function | Database | Package |
+|----------|----------|---------|
+| `pgsql(url)` | PostgreSQL | `postgres` |
+| `mysql(url)` | MySQL | `mysql2` |
+| `sqlite(url)` | SQLite | `better-sqlite3` |
+
+### PostgreSQL (Recommended)
+
+```typescript
+import { pgsql } from 'deesse/database';
+
+database: pgsql(process.env.DATABASE_URL!)
+```
+
+### MySQL
+
+```typescript
+import { mysql } from 'deesse/database';
+
+database: mysql(process.env.DATABASE_URL!)
+```
+
+### SQLite
+
+```typescript
+import { sqlite } from 'deesse/database';
+
+database: sqlite('./data.db')
+```
+
 ---
 
 ## Config Type
 
-The `database` field expects a `DatabaseConfig` object:
-
 ```typescript
-// In @deessejs/deesse
+// In deesse
 type DatabaseConfig = {
-  db: PostgresJsDatabase;  // Drizzle database instance
+  db: PostgresJsDatabase;  // or MySqlDatabase, SqliteDatabase
 };
 ```
 
-### How It Works Internally
+The `pgsql()`, `mysql()`, and `sqlite()` functions create and return a Drizzle database instance internally, along with the proper adapter for better-auth.
 
-The `drizzleAdapter` is created **internally** by DeesseJS:
+### How It Works Internally
 
 ```typescript
 // Simplified internal implementation
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 
-function initBetterAuth(config: Config) {
-  const auth = betterAuth({
-    database: drizzleAdapter(config.database.db, {
-      provider: 'pg',  // inferred from db client
+function createDatabase(config: DatabaseConfig) {
+  const { db } = config;
+
+  return {
+    db,  // Drizzle instance for direct queries
+    adapter: drizzleAdapter(db, {
+      provider: inferProvider(db),  // 'pg', 'mysql', or 'sqlite'
     }),
-    // ... rest of config
-  });
+  };
 }
 ```
-
-**User only passes the Drizzle instance.** DeesseJS handles the adapter creation.
-
-### Why This Design?
-
-1. **Simpler for users** - No need to know about `drizzleAdapter` or better-auth internals
-2. **Type safety** - `db` must be a valid Drizzle instance
-3. **We control the adapter** - If better-auth changes adapter API, we update in one place
 
 ### TypeScript Types
 
 ```typescript
 // packages/deesse/src/config/types.ts
 
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { BetterAuthConfig } from 'better-auth';
 
 export type DatabaseConfig = {
-  /** Drizzle ORM database instance */
-  db: PostgresJsDatabase;
+  /** Drizzle database instance (PostgreSQL, MySQL, or SQLite) */
+  db: PostgresJsDatabase | MySqlDatabase | SqliteDatabase;
 };
 
 export type Config = {
@@ -152,8 +198,6 @@ export type Config = {
   plugins?: Plugin[];
 };
 ```
-
-For **MySQL** or **SQLite**, the `db` type would be `MySqlDatabase` or `SqliteDatabase` respectively, but the `DatabaseConfig` shape is the same.
 
 ### 4. Generate Auth Schema
 
