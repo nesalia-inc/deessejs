@@ -119,13 +119,13 @@ Pass a Drizzle instance to `database`. No wrapper packages needed.
 
 ```typescript
 import { defineConfig } from '@deessejs/deesse';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
 import { schema } from './schema';
 
 export const config = defineConfig({
   database: drizzle({
-    client: postgres(process.env.DATABASE_URL!),
+    client: new Pool({ connectionString: process.env.DATABASE_URL }),
     schema,
   }),
 });
