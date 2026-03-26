@@ -7,7 +7,7 @@
  */
 
 import * as path from 'node:path';
-import * as url from 'node:url';
+import { createRequire } from 'node:module';
 
 const SCHEMA_PATH = './src/db/schema.ts';
 export { SCHEMA_PATH };
@@ -20,10 +20,10 @@ export interface SchemaLoaderResult {
 export async function loadSchema(): Promise<SchemaLoaderResult> {
   const schemaPath = path.resolve(process.cwd(), SCHEMA_PATH);
 
-  // Dynamic import of the schema file
-  // This works because the user's tsconfig.json has @deesse-config alias
-  // and schema is at ./src/db/schema.ts
-  const schemaModule = await import(url.pathToFileURL(schemaPath).href);
+  // Use createRequire to load the schema file
+  // This handles both ESM and CJS modules correctly
+  const require = createRequire(import.meta.url);
+  const schemaModule = require(schemaPath);
 
   // Extract all exports that are schema objects (tables, etc.)
   const schema: Record<string, unknown> = {};
@@ -38,7 +38,7 @@ export async function loadSchema(): Promise<SchemaLoaderResult> {
 
   if (Object.keys(schema).length === 0) {
     throw new Error(
-      `No schema objects found in ${SCHEMA_PATH}. ` +
+      `No schema objects found in ${SCHEMA_PATH}.\n` +
       `Please export your Drizzle tables from this file.`
     );
   }
