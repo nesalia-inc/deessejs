@@ -111,36 +111,51 @@ await config.db.transaction(async (trx) => {
 
 ---
 
-## Database Packages
+## Database Config
 
-| Package | Database | Underlying Driver |
-|--------|----------|-------------------|
-| `@deessejs/postgres` | PostgreSQL | `postgres` |
-| `@deessejs/mysql` | MySQL | `mysql2` |
-| `@deessejs/sqlite` | SQLite | `better-sqlite3` |
+Pass a Drizzle instance to `database`. No wrapper packages needed.
 
-### PostgreSQL (Recommended)
+### PostgreSQL
 
 ```typescript
-import { postgres } from '@deessejs/postgres';
+import { defineConfig } from '@deessejs/deesse';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { schema } from './schema';
 
-database: postgres(process.env.DATABASE_URL!)
+export const config = defineConfig({
+  database: drizzle({
+    client: postgres(process.env.DATABASE_URL!),
+    schema,
+  }),
+});
 ```
 
 ### MySQL
 
 ```typescript
-import { mysql } from '@deessejs/mysql';
+import { drizzle } from 'drizzle-orm/mysql2';
+import mysql from 'mysql2/promise';
+import { schema } from './schema';
 
-database: mysql(process.env.DATABASE_URL!)
+export const config = defineConfig({
+  database: drizzle({
+    client: mysql.createPool(process.env.DATABASE_URL!),
+    schema,
+  }),
+});
 ```
 
 ### SQLite
 
 ```typescript
-import { sqlite } from '@deessejs/sqlite';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+import Database from 'better-sqlite3';
+import { schema } from './schema';
 
-database: sqlite('./data.db')
+export const config = defineConfig({
+  database: drizzle(new Database('./data.db'), { schema }),
+});
 ```
 
 ---
@@ -149,30 +164,10 @@ database: sqlite('./data.db')
 
 ```typescript
 // In deesse
-type DatabaseConfig = {
-  db: PostgresJsDatabase;  // or MySqlDatabase, SqliteDatabase
-};
+type DatabaseConfig = PostgresJsDatabase | MySqlDatabase | SqliteDatabase;
 ```
 
-The `pgsql()`, `mysql()`, and `sqlite()` functions create and return a Drizzle database instance internally, along with the proper adapter for better-auth.
-
-### How It Works Internally
-
-```typescript
-// Simplified internal implementation
-import { drizzleAdapter } from '@better-auth/drizzle-adapter';
-
-function createDatabase(config: DatabaseConfig) {
-  const { db } = config;
-
-  return {
-    db,  // Drizzle instance for direct queries
-    adapter: drizzleAdapter(db, {
-      provider: inferProvider(db),  // 'pg', 'mysql', or 'sqlite'
-    }),
-  };
-}
-```
+Pass any Drizzle database instance. DeesseJS extracts the adapter internally for better-auth.
 
 ### TypeScript Types
 
@@ -181,10 +176,7 @@ function createDatabase(config: DatabaseConfig) {
 
 import type { BetterAuthConfig } from 'better-auth';
 
-export type DatabaseConfig = {
-  /** Drizzle database instance (PostgreSQL, MySQL, or SQLite) */
-  db: PostgresJsDatabase | MySqlDatabase | SqliteDatabase;
-};
+export type DatabaseConfig = PostgresJsDatabase | MySqlDatabase | SqliteDatabase;
 
 export type Config = {
   database?: DatabaseConfig;
