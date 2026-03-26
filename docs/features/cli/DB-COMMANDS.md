@@ -42,12 +42,12 @@ import {
 import { defineConfig } from 'deesse';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import * as schema from './schema';
+import * as schema from './src/db/schema';
 
 export const config = defineConfig({
   database: drizzle({
     client: new Pool({ connectionString: process.env.DATABASE_URL }),
-    schema, // ← Schema is HERE, not in a separate file
+    schema, // ← Schema imported from ./src/db/schema.ts
   }),
 });
 ```
@@ -56,13 +56,13 @@ export const config = defineConfig({
 
 ## Solution Architecture
 
-### Option A: Require schema.ts file (Convention over Magic)
+### Option A: Require src/db/schema.ts file (Convention over Magic)
 
-User MUST have a `./src/schema.ts` file that exports the schema, AND import it in `deesse.config.ts`.
+User MUST have a `./src/db/schema.ts` file that exports the schema, AND import it in `deesse.config.ts`.
 
 ```typescript
-// ./src/schema.ts (REQUIRED)
-export { users, posts, comments } from './schema/tables';
+// ./src/db/schema.ts (REQUIRED)
+export { users, posts, comments } from './tables';
 ```
 
 ```typescript
@@ -70,7 +70,7 @@ export { users, posts, comments } from './schema/tables';
 import { defineConfig } from 'deesse';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import * as schema from './schema'; // ← imports from schema.ts
+import * as schema from './src/db/schema';
 
 export const config = defineConfig({
   database: drizzle({
@@ -83,25 +83,17 @@ export const config = defineConfig({
 **Pros**: Clean, explicit, works with file-based APIs
 **Cons**: Dual maintenance of schema export
 
-### Option B: Extract schema from config.database at runtime
-
-Use Node.js to dynamically import `deesse.config.ts`, extract `config.database`, and serialize it.
-
-```typescript
-// In CLI, at runtime:
-const config = await import('@deesse-config');
-const db = config.config.database;
-
-// db.schema is an object with table definitions
-// We need to serialize this to JSON for drizzle-kit APIs
-```
-
-**Pros**: Single source of truth
-**Cons**: Complex serialization, may not work for all drizzle-kit APIs
-
 ### Recommended: Option A (schema.ts convention)
 
-User maintains `schema.ts` explicitly. This is standard Drizzle practice anyway.
+User maintains `src/db/schema.ts` explicitly. This is standard Drizzle practice anyway.
+
+## Conventions
+
+```typescript
+const SCHEMA_PATH = './src/db/schema.ts';
+const MIGRATIONS_DIR = './src/db/migrations';
+const SNAPSHOT_DIR = './src/db/meta';
+```
 
 ## Command Implementations
 
@@ -115,9 +107,9 @@ import {
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 
-const SCHEMA_PATH = './src/schema.ts';
-const MIGRATIONS_DIR = './drizzle/migrations';
-const SNAPSHOT_DIR = './drizzle/meta';
+const SCHEMA_PATH = './src/db/schema.ts';
+const MIGRATIONS_DIR = './src/db/migrations';
+const SNAPSHOT_DIR = './src/db/meta';
 
 async function dbGenerate() {
   // 1. Verify schema.ts exists
@@ -173,7 +165,7 @@ async function dbGenerate() {
 import { pushSchema } from 'drizzle-kit/api';
 import * as fs from 'node:fs/promises';
 
-const SCHEMA_PATH = './src/schema.ts';
+const SCHEMA_PATH = './src/db/schema.ts';
 
 async function dbPush(options: { force?: boolean }) {
   // 1. Load config to get database instance
@@ -203,7 +195,7 @@ async function dbPush(options: { force?: boolean }) {
 ```typescript
 import { loadConfig } from '../utils/config';
 
-const MIGRATIONS_DIR = './drizzle/migrations';
+const MIGRATIONS_DIR = './src/db/migrations';
 
 async function dbMigrate() {
   const config = await loadConfig();
@@ -232,6 +224,8 @@ async function dbMigrate() {
 ```typescript
 import { startStudioPostgresServer } from 'drizzle-kit/api';
 import { loadConfig, detectDialect } from '../utils/config';
+
+const SCHEMA_PATH = './src/db/schema.ts';
 
 async function dbStudio() {
   const config = await loadConfig();
@@ -265,7 +259,7 @@ import { fromDatabase } from 'drizzle-kit/api';
 import { loadConfig, detectDialect } from '../utils/config';
 import { generateSchema } from '../utils/schema-generator';
 
-const SCHEMA_PATH = './src/schema.ts';
+const SCHEMA_PATH = './src/db/schema.ts';
 
 async function dbIntrospect() {
   const config = await loadConfig();
@@ -386,7 +380,9 @@ packages/cli/
 
 | Question | Status |
 |----------|--------|
-| Schema file convention `./src/schema.ts` | Accepted |
+| Schema file convention `src/db/schema.ts` | Accepted |
+| Migrations directory `src/db/migrations` | Accepted |
+| Snapshot directory `src/db/meta` | Accepted |
 | How to get credentials from Pool for studio | Use env vars |
 | How to apply migrations (db.execute raw SQL) | Need driver access |
 | How to generate TypeScript from PgSchemaInternal | Need to implement schema-generator |
