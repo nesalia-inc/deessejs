@@ -1,40 +1,54 @@
 # Database
 
-This is an internal document outlining the database system for DeesseJS.
+DeesseJS uses **Drizzle ORM** with better-auth's database adapter.
 
-## Overview
+## Quick Start
 
-DeesseJS uses the same database adapter system as Better-Auth. This means DeesseJS directly uses Better-Auth's adapters, so you only need one database connection for both authentication and plugin settings.
+See [Drizzle ORM Setup](./DRIZZLE.md) for full setup instructions.
 
-## Why Better-Auth Adapters?
-
-- Single database for auth + plugin settings
-- Proven adapter system with many supported databases
-- No need to maintain a separate adapter layer
-- Seamless integration with Better-Auth
-
-## Supported Providers
-
-- **Drizzle** - Lightweight and type-safe ORM
-- **Prisma** - Popular ORM with great developer experience
-- **Custom** - Implement your own adapter using Better-Auth's `createAdapterFactory`
-
-## Configuration
-
-Configure your database provider in `deesse.config.ts`. The same database is used for both authentication and plugin settings:
+## TL;DR
 
 ```typescript
-import { defineConfig } from '@deessejs/core';
-import { drizzle } from '@deessejs/drizzle';
+// database.ts
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+
+export const db = drizzle({ client: postgres(process.env.DATABASE_URL!) });
+```
+
+```typescript
+// deesse.config.ts
+import { defineConfig } from '@deessejs/deesse';
+import { db } from './database';
 
 export const config = defineConfig({
-  database: drizzle({
-    // drizzle configuration
-  }),
+  database: { db },
   auth: {
-    // better-auth configuration
+    api: {
+      emailAndPassword: { enabled: true },
+    },
   },
 });
 ```
 
-The `database` config is passed directly to Better-Auth's adapter system.
+## Supported Databases
+
+| Database | Driver |
+|----------|--------|
+| PostgreSQL | `postgres` (recommended) |
+| MySQL | `mysql2` |
+| SQLite | `better-sqlite3` |
+
+## CLI
+
+```bash
+npx drizzle-kit generate  # Generate migrations
+npx drizzle-kit migrate   # Apply migrations
+npx drizzle-kit studio    # Visual editor
+```
+
+## Why Drizzle?
+
+- Native better-auth integration via `@better-auth/drizzle-adapter`
+- Lightweight, type-safe, SQL-like queries
+- Single database for auth + plugin settings
