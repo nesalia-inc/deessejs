@@ -237,23 +237,23 @@ type Position = {
 
 ### Grid Library Selection
 
-We need a drag-and-drop grid library. Options:
+We use **dnd-kit** for the widget grid system:
 
 | Library | Pros | Cons | License |
 |---------|------|------|---------|
 | **Gridstack** | Mature, many features, good mobile | Larger bundle (~100kb) | MIT |
 | **react-grid-layout** | Popular, React-native, good docs | No built-in touch support | MIT |
-| **dnd-kit** | Lightweight, accessible, modern | Not grid-specific, need custom grid | MIT |
+| **dnd-kit** | Lightweight (~15kb), accessible, modern React ecosystem | Not grid-specific, requires custom grid logic | MIT |
 | **Custom CSS Grid** | Zero bundle impact, pure CSS | Complex DND logic, no collision | None |
 
-**Recommendation**: Use **Gridstack.js**
-- Battle-tested grid library
-- Supports 12-column grid natively
-- Built-in drag-and-drop with collision detection
-- Responsive with breakpoints
-- Has React wrapper (`react-gridstack` or use directly)
+**Why dnd-kit?**
+- **Lightweight**: ~15kb vs Gridstack's ~100kb
+- **Accessible**: Built-in accessibility (keyboard navigation, screen reader support)
+- **Modern**: Uses React primitives and hooks, not DOM manipulation
+- **Composable**: Works seamlessly with other dnd-kit utilities (sortable, draggable)
+- **Framework alignment**: Uses same patterns as Radix UI primitives
 
-**Alternative**: If bundle size is critical, use **dnd-kit** with custom grid layout logic.
+**Trade-off**: We need to implement custom 12-column grid logic with collision detection ourselves. This is manageable given the grid is simple (12 columns, auto-placing rows).
 
 ---
 
@@ -328,17 +328,22 @@ const WidgetContainer = ({
   instance,
   isEditMode,
   onRemove,
+  dragHandleProps,
+  isDragging,
 }: {
   definition: WidgetDefinition;
   instance: WidgetInstance;
   isEditMode: boolean;
-  onRemove: () => void;
+  onRemove?: () => void;
+  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
+  isDragging?: boolean;
 }) => {
   return (
     <div
       className={cn(
-        'relative',
-        isEditMode && 'ring-2 ring-primary ring-offset-2 rounded-lg'
+        'relative h-full',
+        isEditMode && 'ring-2 ring-primary ring-offset-2 rounded-lg',
+        isDragging && 'shadow-lg'
       )}
       data-widget-id={instance.instanceId}
     >
@@ -354,23 +359,23 @@ const WidgetContainer = ({
       {/* Edit Mode Overlays */}
       {isEditMode && (
         <>
-          {/* Drag Handle */}
-          <div className="absolute -top-3 -left-3 cursor-move bg-primary text-primary-foreground rounded p-1">
+          {/* Drag Handle - connects to dnd-kit sortable */}
+          <div
+            className="absolute -top-3 -left-3 cursor-move bg-primary text-primary-foreground rounded p-1"
+            {...dragHandleProps}
+          >
             <GripVertical className="h-4 w-4" />
           </div>
 
-          {/* Resize Handle */}
-          <div className="absolute -bottom-2 -right-2 cursor-se-resize bg-primary text-primary-foreground rounded p-1">
-            <Minimize2 className="h-3 w-3" />
-          </div>
-
           {/* Remove Button */}
-          <button
-            className="absolute -top-3 -right-3 bg-destructive text-destructive-foreground rounded-full p-1"
-            onClick={onRemove}
-          >
-            <X className="h-4 w-4" />
-          </button>
+          {onRemove && (
+            <button
+              className="absolute -top-3 -right-3 bg-destructive text-destructive-foreground rounded-full p-1"
+              onClick={onRemove}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
 
           {/* Size Indicator */}
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full pt-1 text-xs text-muted-foreground">
@@ -408,11 +413,28 @@ type DashboardGridProps = {
 };
 ```
 
-### DashboardGrid Implementation (using Gridstack)
+### DashboardGrid Implementation (using dnd-kit)
 
 ```typescript
-import { GridStack, GridStackNode } from 'gridstack';
-import 'gridstack/dist/gridstack.min.css';
+import {
+  DndContext,
+  DragOverlay,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  KeyboardSensor,
+  closestCenter,
+  DragStartEvent,
+  DragEndEvent,
+  DragOverEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  rectSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const DashboardGrid = ({
   widgetDefinitions,
@@ -420,98 +442,150 @@ const DashboardGrid = ({
   isEditMode,
   onLayoutChange,
   onWidgetRemove,
-  onWidgetConfigChange,
 }: DashboardGridProps) => {
-  const gridRef = useRef<HTMLDivElement>(null);
-  const gridInstance = useRef<GridStack | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [localInstances, setLocalInstances] = useState(instances);
 
-  // Initialize Gridstack
-  useEffect(() => {
-    if (!gridRef.current) return;
-
-    gridInstance.current = GridStack.init(
-      {
-        column: 12,
-        cellHeight: 80,
-        gutter: 16,
-        float: true,
-        disableDrag: !isEditMode,
-        disableResize: !isEditMode,
-        animate: true,
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
       },
-      gridRef.current
-    );
+    }),
+    useSensor(KeyboardSensor)
+  );
 
-    gridInstance.current.on('change', (_event: Event, nodes: GridStackNode[]) => {
-      const newInstances = nodes.map((node) => {
-        const instance = instances.find((i) => i.instanceId === node.id);
-        if (!instance) return null;
-        return {
-          ...instance,
-          position: {
-            x: node.x ?? 0,
-            y: node.y ?? 0,
-            w: node.w ?? 1,
-            h: node.h ?? 1,
-          },
-        };
-      }).filter(Boolean) as WidgetInstance[];
-
-      onLayoutChange(newInstances);
-    });
-
-    return () => {
-      gridInstance.current?.destroy(false);
-    };
-  }, [isEditMode]);
-
-  // Sync instances to DOM
+  // Sync external changes
   useEffect(() => {
-    if (!gridInstance.current) return;
-
-    instances.forEach((instance) => {
-      const el = gridRef.current?.querySelector(
-        `[data-widget-id="${instance.instanceId}"]`
-      );
-      if (el) {
-        gridInstance.current?.makeWidget(el);
-        gridInstance.current?.update(el, {
-          x: instance.position.x,
-          y: instance.position.y,
-          w: instance.position.w,
-          h: instance.position.h,
-        });
-      }
-    });
+    setLocalInstances(instances);
   }, [instances]);
 
-  return (
-    <div ref={gridRef} className="grid-stack">
-      {instances.map((instance) => {
-        const definition = widgetDefinitions.get(instance.definitionId);
-        if (!definition) return null;
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
 
-        return (
-          <div
-            key={instance.instanceId}
-            className="grid-stack-item"
-            gs-id={instance.instanceId}
-            gs-x={instance.position.x}
-            gs-y={instance.position.y}
-            gs-w={instance.position.w}
-            gs-h={instance.position.h}
-          >
-            <div className="grid-stack-item-content">
-              <WidgetContainer
-                definition={definition}
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = localInstances.findIndex((i) => i.instanceId === active.id);
+    const newIndex = localInstances.findIndex((i) => i.instanceId === over.id);
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const newInstances = arrayMove(localInstances, oldIndex, newIndex).map(
+        (instance, index) => ({
+          ...instance,
+          position: {
+            ...instance.position,
+            x: index % 12,
+            y: Math.floor(index / 12),
+          },
+        })
+      );
+      setLocalInstances(newInstances);
+      onLayoutChange(newInstances);
+    }
+  };
+
+  const activeInstance = activeId
+    ? localInstances.find((i) => i.instanceId === activeId)
+    : null;
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        items={localInstances.map((i) => i.instanceId)}
+        strategy={rectSortingStrategy}
+        disabled={!isEditMode}
+      >
+        <div
+          className="grid gap-4"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(12, 1fr)',
+            gridAutoRows: '80px',
+          }}
+        >
+          {localInstances.map((instance) => {
+            const definition = widgetDefinitions.get(instance.definitionId);
+            if (!definition) return null;
+
+            return (
+              <SortableWidgetItem
+                key={instance.instanceId}
                 instance={instance}
+                definition={definition}
                 isEditMode={isEditMode}
                 onRemove={() => onWidgetRemove(instance.instanceId)}
               />
-            </div>
-          </div>
-        );
-      })}
+            );
+          })}
+        </div>
+      </SortableContext>
+
+      <DragOverlay>
+        {activeInstance && (
+          <WidgetContainer
+            definition={widgetDefinitions.get(activeInstance.definitionId)!}
+            instance={activeInstance}
+            isEditMode={isEditMode}
+            isDragging
+          />
+        )}
+      </DragOverlay>
+    </DndContext>
+  );
+};
+
+// Sortable wrapper for each widget
+const SortableWidgetItem = ({
+  instance,
+  definition,
+  isEditMode,
+  onRemove,
+}: {
+  instance: WidgetInstance;
+  definition: WidgetDefinition;
+  isEditMode: boolean;
+  onRemove: () => void;
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: instance.instanceId,
+    disabled: !isEditMode,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    gridColumn: `span ${instance.position.w}`,
+    gridRow: `span ${instance.position.h}`,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : 'auto',
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <WidgetContainer
+        definition={definition}
+        instance={instance}
+        isEditMode={isEditMode}
+        onRemove={onRemove}
+        dragHandleProps={listeners}
+      />
     </div>
   );
 };
@@ -878,12 +952,15 @@ const WidgetBasedPage = ({
     const definition = widgetDefinitions.get(definitionId);
     if (!definition) return;
 
+    // Calculate next available position
+    const maxY = localInstances.reduce((max, i) => Math.max(max, i.position.y + i.position.h), 0);
+
     const newInstance: WidgetInstance = {
       instanceId: generateId(),  // uuid
       definitionId,
       position: {
         x: 0,
-        y: Infinity,  // Gridstack will auto-place
+        y: maxY,  // Auto-place at next row
         w: definition.defaultSize.w,
         h: definition.defaultSize.h,
       },
@@ -1166,7 +1243,7 @@ packages/
 ├── ui/
 │   └── src/
 │       ├── admin/
-│       │   ├── dashboard-grid.tsx  # Gridstack wrapper
+│       │   ├── dashboard-grid.tsx  # dnd-kit wrapper with custom grid logic
 │       │   ├── widget-container.tsx
 │       │   ├── widget-selector.tsx
 │       │   ├── widget-config-panel.tsx
@@ -1189,19 +1266,19 @@ docs/features/ui/
 
 ## Open Questions
 
-1. **Grid Library**: Gridstack vs react-grid-layout vs dnd-kit? What's the priority on bundle size?
+1. **Per-user vs Per-page layouts**: Should each user have their own widget layout, or is it global per page?
 
-2. **Per-user vs Per-page layouts**: Should each user have their own widget layout, or is it global per page?
+2. **Widget Config Storage**: Is the database schema I proposed acceptable? Should configs be stored separately?
 
-3. **Widget Config Storage**: Is the database schema I proposed acceptable? Should configs be stored separately?
+3. **Server Components**: Should widget definitions be server-side and layouts client-side? How does this affect the widget registry?
 
-4. **Server Components**: Should widget definitions be server-side and layouts client-side? How does this affect the widget registry?
+4. **Responsive Behavior**: How should widgets behave on mobile? Stack vertically? Hide? Be scrollable?
 
-5. **Responsive Behavior**: How should widgets behave on mobile? Stack vertically? Hide? Be scrollable?
+5. **Undo/Redo**: Should edit mode support undo/redo for layout changes?
 
-6. **Undo/Redo**: Should edit mode support undo/redo for layout changes?
+6. **Widget Versioning**: If a widget's config schema changes, how do we handle migration of existing configs?
 
-7. **Widget Versioning**: If a widget's config schema changes, how do we handle migration of existing configs?
+7. **Resize Implementation**: dnd-kit doesn't have built-in resize. Should we implement resize using CSS resize, a third-party library, or skip resize for MVP?
 
 ---
 
