@@ -3,6 +3,7 @@
 import * as p from '@clack/prompts';
 import { readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
+import { runDbCommand, showDbHelp } from './commands/db.js';
 
 const getVersion = () => {
   try {
@@ -16,7 +17,7 @@ const getVersion = () => {
 };
 
 const showHelp = () => {
-  console.log(`
+  console.warn(`
 DeesseJS CLI v${getVersion()}
 
 Usage: npx deesse <command>
@@ -24,12 +25,14 @@ Usage: npx deesse <command>
 Commands:
   help     Show this help message
   init     Initialize a new DeesseJS project in current directory
+  db       Database management commands (db:generate, db:push, etc.)
 
 Examples:
   npx deesse help
   npx deesse init
-
-More commands coming soon!
+  npx deesse db:generate
+  npx deesse db:push --force
+  npx deesse db:studio
 
 For more information, visit: https://github.com/nesalia-inc/deessejs
   `);
@@ -66,6 +69,33 @@ async function main() {
   const args = process.argv.slice(2);
   const command = args[0] || 'help';
 
+  // Handle db:* commands
+  if (command.startsWith('db:')) {
+    const subcommand = command.slice(3); // Remove 'db:' prefix
+
+    if (!subcommand) {
+      showDbHelp();
+      return;
+    }
+
+    // Special case: 'db help' or 'db --help'
+    if (subcommand === 'help' || subcommand === '--help' || subcommand === '-h') {
+      showDbHelp();
+      return;
+    }
+
+    try {
+      await runDbCommand({
+        subcommand,
+        args: args.slice(1), // Pass all args including the subcommand
+      });
+    } catch (error) {
+      console.error(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
+    return;
+  }
+
   switch (command) {
     case 'help':
     case '--help':
@@ -78,8 +108,8 @@ async function main() {
       break;
 
     default:
-      console.log(`Unknown command: ${command}`);
-      console.log('Run "npx deesse help" for usage information.');
+      console.error(`Unknown command: ${command}`);
+      console.error('Run "npx deesse help" for usage information.');
       process.exit(1);
   }
 }
