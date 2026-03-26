@@ -1,7 +1,7 @@
 {
-  "name": "deesse",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@deessejs/deesse",
+  "version": "0.1.0",
+  "private": false,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
