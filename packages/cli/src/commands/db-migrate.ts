@@ -1,41 +1,15 @@
 /**
  * db:migrate command
  *
- * Applies pending migrations to the database.
+ * Applies pending migrations by spawning drizzle-kit CLI.
  *
  * Flow:
- * 1. Load config to get database instance
- * 2. Get migration files from ./src/db/migrations
- * 3. Execute each migration in order
+ * 1. Verify schema exists at ./src/db/schema.ts
+ * 2. Spawn drizzle-kit migrate command
  */
 
-import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
-import { loadConfig } from '../utils/config.js';
-
-const MIGRATIONS_DIR = './src/db/migrations';
-
-interface MigrationFile {
-  name: string;
-  path: string;
-}
-
-async function getMigrationFiles(cwd: string): Promise<MigrationFile[]> {
-  const migrationsPath = path.join(cwd, MIGRATIONS_DIR);
-
-  try {
-    const files = await fs.readdir(migrationsPath);
-    return files
-      .filter((file) => file.endsWith('.sql'))
-      .map((name) => ({
-        name,
-        path: path.join(migrationsPath, name),
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  } catch {
-    return [];
-  }
-}
+import { execSync } from 'node:child_process';
+import { verifySchemaPath, SCHEMA_PATH } from '../utils/schema-loader.js';
 
 export interface DbMigrateOptions {
   cwd?: string;
@@ -45,57 +19,34 @@ export interface DbMigrateOptions {
 export async function dbMigrate(options: DbMigrateOptions = {}): Promise<void> {
   const { cwd = process.cwd(), dryRun = false } = options;
 
-  // Load config to get database instance
-  const { config } = await loadConfig();
-  const db = config.database as { execute?: (sql: string) => Promise<unknown> };
-
-  if (!db) {
-    throw new Error('Config does not have a database instance');
+  // Verify schema file exists
+  try {
+    await verifySchemaPath();
+  } catch {
+    throw new Error(
+      `db:migrate requires ${SCHEMA_PATH} to exist.\n` +
+      `Please create this file and export your Drizzle tables.`
+    );
   }
 
-  // Get migration files
-  const files = await getMigrationFiles(cwd);
+  console.warn('Applying migrations using drizzle-kit...');
 
-  if (files.length === 0) {
-    console.warn('No migrations to apply.');
-    return;
-  }
-
-  console.warn(`Found ${files.length} migration(s) to apply.\n`);
+  // Build the command
+  const args = ['drizzle-kit', 'migrate'];
 
   if (dryRun) {
-    console.warn('Dry run - showing migrations that would be applied:');
-    for (const file of files) {
-      console.warn(`  - ${file.name}`);
-    }
-    return;
+    args.push('--dry-run');
   }
 
-  // Apply each migration
-  for (const file of files) {
-    const sql = await fs.readFile(file.path, 'utf-8');
-
-    console.warn(`Applying: ${file.name}`);
-
-    try {
-      // Execute the migration
-      // Note: The actual execution depends on the database driver
-      // For pg, we use db.execute() which returns a query result
-      if (typeof db.execute === 'function') {
-        await db.execute(sql);
-      } else {
-        throw new Error(
-          'Database driver does not support execute(). ' +
-          'Please use a supported driver like drizzle-orm/node-postgres.'
-        );
-      }
-
-      console.warn(`  Applied successfully`);
-    } catch (error) {
-      console.error(`  Failed: ${(error as Error).message}`);
-      throw error;
+  try {
+    execSync(`npx ${args.join(' ')}`, {
+      cwd,
+      stdio: 'inherit',
+    });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      throw new Error('drizzle-kit not found. Please install it: npm install drizzle-kit');
     }
+    throw error;
   }
-
-  console.warn(`\nSuccessfully applied ${files.length} migration(s).`);
 }

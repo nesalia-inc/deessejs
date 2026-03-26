@@ -32,8 +32,7 @@
   "author": "DeesseJS",
   "license": "MIT",
   "dependencies": {
-    "@clack/prompts": "^0.8.2",
-    "drizzle-kit": "^0.30.0"
+    "@clack/prompts": "^0.8.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.6",
