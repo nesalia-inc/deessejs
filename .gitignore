@@ -10,6 +10,8 @@ build/
 .next/
 out/
 .turbo/
+*.tsbuildinfo
+packages/*/dist/
 
 # Testing
 coverage/
