@@ -1,20 +1,31 @@
 /**
  * db:push command
  *
- * Verifies schema setup and provides instructions for pushing schema to database.
+ * Pushes schema changes directly to the database using drizzle-kit's pushSchema.
  *
- * For Drizzle, run:
- *   npx drizzle-kit push
+ * Flow:
+ * 1. Load schema from ./src/db/schema.ts
+ * 2. Load config to get database instance
+ * 3. Call pushSchema with the schema
+ * 4. Show warnings and apply
  */
 
-import { verifySchemaPath, SCHEMA_PATH } from '../utils/schema-loader.js';
+import { createRequire } from 'node:module';
+import { verifySchemaPath, SCHEMA_PATH, loadSchema } from '../utils/schema-loader.js';
+import { loadConfig } from '../utils/config.js';
+import * as p from '@clack/prompts';
+
+const require = createRequire(import.meta.url);
+const { pushSchema } = require('drizzle-kit/api');
 
 export interface DbPushOptions {
   force?: boolean;
   cwd?: string;
 }
 
-export async function dbPush(_options: DbPushOptions = {}): Promise<void> {
+export async function dbPush(options: DbPushOptions = {}): Promise<void> {
+  const { force = false } = options;
+
   // Verify schema file exists
   try {
     await verifySchemaPath();
@@ -25,17 +36,53 @@ export async function dbPush(_options: DbPushOptions = {}): Promise<void> {
     );
   }
 
-  console.warn(`
-Database Schema OK: ${SCHEMA_PATH}
+  // Load config to get database instance
+  const { config } = await loadConfig();
+  const db = config.database;
 
-To push schema changes to your database with Drizzle, run:
+  if (!db) {
+    throw new Error('Config does not have a database instance');
+  }
 
-  npx drizzle-kit push
+  // Load the schema
+  const { schema } = await loadSchema();
 
-Use --force flag to skip confirmation:
+  // Push schema to database
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result = await pushSchema(schema, db as any);
 
-  npx drizzle-kit push --force
+  // Check for data loss
+  if (result.hasDataLoss && !force) {
+    p.note('The following changes may cause data loss:', 'Warning');
+    for (const warning of result.warnings) {
+      console.warn(`  - ${warning}`);
+    }
+    console.warn('');
 
-Note: This command requires a drizzle.config.ts file. See 'deesse db:generate' for setup.
-`);
+    const confirm = await p.confirm({
+      message: 'Do you want to apply these changes anyway?',
+      initialValue: false,
+    });
+
+    if (p.isCancel(confirm) || !confirm) {
+      p.cancel('Push cancelled.');
+      return;
+    }
+  } else if (result.warnings.length > 0) {
+    p.note(result.warnings.join('\n'), 'Warnings');
+  }
+
+  // Show statements that will be executed
+  if (result.statementsToExecute.length > 0) {
+    console.warn('The following SQL will be executed:');
+    for (const stmt of result.statementsToExecute) {
+      console.warn(`  ${stmt}`);
+    }
+    console.warn('');
+  }
+
+  // Apply the changes
+  await result.apply();
+
+  console.warn(`Successfully pushed ${result.statementsToExecute.length} changes to the database.`);
 }

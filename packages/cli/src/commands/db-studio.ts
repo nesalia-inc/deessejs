@@ -60,6 +60,6 @@ Or with custom host/port:
 
   npx drizzle-kit studio --host ${host} --port ${port}
 
-Note: This command requires a drizzle.config.ts file. See 'deesse db:generate' for setup.
+Note: Drizzle Studio requires a drizzle.config.ts file. See 'deesse db:generate' for setup.
 `);
 }

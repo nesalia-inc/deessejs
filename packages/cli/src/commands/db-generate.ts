@@ -1,20 +1,36 @@
 /**
  * db:generate command
  *
- * Verifies schema setup and provides instructions for generating migrations.
+ * Generates migrations from schema changes using drizzle-kit's programmatic API.
  *
- * For Drizzle, run these commands:
- *   npx drizzle-kit generate
- *   npx drizzle-kit push
+ * Flow:
+ * 1. Load schema from ./src/db/schema.ts
+ * 2. Get current schema snapshot using generateDrizzleJson
+ * 3. Get previous snapshot from ./src/db/meta/_snapshot.json (if exists)
+ * 4. Generate migration SQL using generateMigration
+ * 5. Save new snapshot and migration files
  */
 
-import { verifySchemaPath, SCHEMA_PATH } from '../utils/schema-loader.js';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import { createRequire } from 'node:module';
+import { loadSchema, verifySchemaPath } from '../utils/schema-loader.js';
+
+const require = createRequire(import.meta.url);
+const { generateDrizzleJson, generateMigration } = require('drizzle-kit/api');
+
+const SCHEMA_PATH = './src/db/schema.ts';
+const MIGRATIONS_DIR = './src/db/migrations';
+const SNAPSHOT_DIR = './src/db/meta';
+const SNAPSHOT_FILE = '_snapshot.json';
 
 export interface DbGenerateOptions {
   cwd?: string;
 }
 
-export async function dbGenerate(_options: DbGenerateOptions = {}): Promise<void> {
+export async function dbGenerate(options: DbGenerateOptions = {}): Promise<void> {
+  const cwd = options.cwd ?? process.cwd();
+
   // Verify schema file exists
   try {
     await verifySchemaPath();
@@ -25,23 +41,55 @@ export async function dbGenerate(_options: DbGenerateOptions = {}): Promise<void
     );
   }
 
-  console.warn(`
-Database Schema OK: ${SCHEMA_PATH}
+  // Ensure migrations directory exists
+  await fs.mkdir(path.join(cwd, MIGRATIONS_DIR), { recursive: true });
 
-To generate migrations with Drizzle, run these commands:
+  // Ensure snapshot directory exists
+  await fs.mkdir(path.join(cwd, SNAPSHOT_DIR), { recursive: true });
 
-  npx drizzle-kit generate
-  npx drizzle-kit push
+  // Load the schema
+  const { schema } = await loadSchema();
 
-Note: These commands require a drizzle.config.ts file. If you don't have one,
-create it with:
+  // Generate current schema snapshot
+  const currentSchema = generateDrizzleJson(schema);
 
-  import { defineConfig } from 'drizzle-kit';
+  // Load previous snapshot (if exists)
+  let prevSchema = null;
+  const snapshotPath = path.join(cwd, SNAPSHOT_DIR, SNAPSHOT_FILE);
 
-  export default defineConfig({
-    schema: './src/db/schema.ts',
-    out: './src/db/migrations',
-    dialect: 'postgresql',
-  });
-`);
+  try {
+    const snapshotContent = await fs.readFile(snapshotPath, 'utf-8');
+    prevSchema = JSON.parse(snapshotContent);
+  } catch {
+    // No previous snapshot - this is the first migration
+    console.warn('No previous snapshot found. This will be the first migration.');
+  }
+
+  // Generate migration SQL
+  const migrationSql = await generateMigration(
+    prevSchema ?? undefined,
+    currentSchema
+  );
+
+  if (!migrationSql || migrationSql.length === 0) {
+    console.warn('No changes detected. No migration to generate.');
+    return;
+  }
+
+  // Generate migration file name based on timestamp
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const migrationName = `${timestamp}_migration.sql`;
+  const migrationPath = path.join(cwd, MIGRATIONS_DIR, migrationName);
+
+  // Save migration file
+  await fs.writeFile(migrationPath, migrationSql.join('\n\n'));
+
+  // Save new snapshot
+  await fs.writeFile(
+    snapshotPath,
+    JSON.stringify(currentSchema, null, 2)
+  );
+
+  console.warn(`Generated migration: ${migrationName}`);
+  console.warn(`Migration saved to: ${MIGRATIONS_DIR}/${migrationName}`);
 }
