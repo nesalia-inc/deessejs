@@ -63,11 +63,11 @@ npm install postgres  # for PostgreSQL
 
 ```typescript
 // deesse.config.ts
-import { defineConfig } from 'deesse';
-import { pgsql } from 'deesse/database';
+import { defineConfig } from '@deessejs/deesse';
+import { postgres } from '@deessejs/postgres';
 
 export const config = defineConfig({
-  database: pgsql(process.env.DATABASE_URL!),
+  database: postgres(process.env.DATABASE_URL!),
   auth: {
     api: {
       emailAndPassword: { enabled: true },
@@ -86,7 +86,7 @@ That's it. No separate `database.ts` file needed.
 You can query the database directly from `config.db`:
 
 ```typescript
-import { config } from './deesse.config';
+import { config } from '@deesse-config';
 import { eq } from 'drizzle-orm';
 import { users } from './schema';
 
@@ -111,28 +111,26 @@ await config.db.transaction(async (trx) => {
 
 ---
 
-## Database Helpers
+## Database Packages
 
-The `deesse/database` package provides database client factories:
-
-| Function | Database | Package |
-|----------|----------|---------|
-| `pgsql(url)` | PostgreSQL | `postgres` |
-| `mysql(url)` | MySQL | `mysql2` |
-| `sqlite(url)` | SQLite | `better-sqlite3` |
+| Package | Database | Underlying Driver |
+|--------|----------|-------------------|
+| `@deessejs/postgres` | PostgreSQL | `postgres` |
+| `@deessejs/mysql` | MySQL | `mysql2` |
+| `@deessejs/sqlite` | SQLite | `better-sqlite3` |
 
 ### PostgreSQL (Recommended)
 
 ```typescript
-import { pgsql } from 'deesse/database';
+import { postgres } from '@deessejs/postgres';
 
-database: pgsql(process.env.DATABASE_URL!)
+database: postgres(process.env.DATABASE_URL!)
 ```
 
 ### MySQL
 
 ```typescript
-import { mysql } from 'deesse/database';
+import { mysql } from '@deessejs/mysql';
 
 database: mysql(process.env.DATABASE_URL!)
 ```
@@ -140,7 +138,7 @@ database: mysql(process.env.DATABASE_URL!)
 ### SQLite
 
 ```typescript
-import { sqlite } from 'deesse/database';
+import { sqlite } from '@deessejs/sqlite';
 
 database: sqlite('./data.db')
 ```
