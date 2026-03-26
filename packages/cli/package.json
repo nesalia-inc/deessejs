@@ -1,6 +1,6 @@
 {
   "name": "@deessejs/cli",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "DeesseJS CLI for managing DeesseJS projects",
   "type": "module",
   "bin": {

@@ -1,14 +1,12 @@
 /**
  * db:push command
  *
- * Pushes schema changes directly to the database by spawning drizzle-kit CLI.
+ * Verifies schema setup and provides instructions for pushing schema to database.
  *
- * Flow:
- * 1. Verify schema exists at ./src/db/schema.ts
- * 2. Spawn drizzle-kit push command
+ * For Drizzle, run:
+ *   npx drizzle-kit push
  */
 
-import { execSync } from 'node:child_process';
 import { verifySchemaPath, SCHEMA_PATH } from '../utils/schema-loader.js';
 
 export interface DbPushOptions {
@@ -16,9 +14,7 @@ export interface DbPushOptions {
   cwd?: string;
 }
 
-export async function dbPush(options: DbPushOptions = {}): Promise<void> {
-  const { force = false, cwd = process.cwd() } = options;
-
+export async function dbPush(_options: DbPushOptions = {}): Promise<void> {
   // Verify schema file exists
   try {
     await verifySchemaPath();
@@ -29,24 +25,17 @@ export async function dbPush(options: DbPushOptions = {}): Promise<void> {
     );
   }
 
-  console.warn('Pushing schema changes to database using drizzle-kit...');
+  console.warn(`
+Database Schema OK: ${SCHEMA_PATH}
 
-  // Build the command
-  const args = ['drizzle-kit', 'push'];
+To push schema changes to your database with Drizzle, run:
 
-  if (force) {
-    args.push('--force');
-  }
+  npx drizzle-kit push
 
-  try {
-    execSync(`npx ${args.join(' ')}`, {
-      cwd,
-      stdio: 'inherit',
-    });
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      throw new Error('drizzle-kit not found. Please install it: npm install drizzle-kit');
-    }
-    throw error;
-  }
+Use --force flag to skip confirmation:
+
+  npx drizzle-kit push --force
+
+Note: This command requires a drizzle.config.ts file. See 'deesse db:generate' for setup.
+`);
 }

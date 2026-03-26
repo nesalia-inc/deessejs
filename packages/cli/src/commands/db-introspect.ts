@@ -1,29 +1,21 @@
 /**
  * db:introspect command
  *
- * Introspects the database by spawning drizzle-kit CLI.
+ * Verifies schema setup and provides instructions for introspecting database.
  *
- * Flow:
- * 1. Verify schema exists at ./src/db/schema.ts
- * 2. Spawn drizzle-kit introspect command
+ * For Drizzle, run:
+ *   npx drizzle-kit introspect
  */
 
-import { execSync } from 'node:child_process';
-import { SCHEMA_PATH } from '../utils/schema-loader.js';
 import { loadConfig } from '../utils/config.js';
 import { detectDialect } from '../utils/dialect.js';
-import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
-import * as p from '@clack/prompts';
 
 export interface DbIntrospectOptions {
   cwd?: string;
   force?: boolean;
 }
 
-export async function dbIntrospect(options: DbIntrospectOptions = {}): Promise<void> {
-  const { cwd = process.cwd(), force = false } = options;
-
+export async function dbIntrospect(_options: DbIntrospectOptions = {}): Promise<void> {
   // Load config to verify database is configured
   const { config } = await loadConfig();
   const db = config.database;
@@ -35,38 +27,17 @@ export async function dbIntrospect(options: DbIntrospectOptions = {}): Promise<v
   // Detect dialect
   const dialect = detectDialect(db);
 
-  console.warn(`Introspecting ${dialect} database...`);
+  console.warn(`
+Database Config OK
 
-  // Check if schema file exists and warn
-  const schemaPath = path.join(cwd, SCHEMA_PATH);
-  try {
-    await fs.access(schemaPath);
-    if (!force) {
-      const confirm = await p.confirm({
-        message: `Warning: ${SCHEMA_PATH} already exists. Overwrite?`,
-        initialValue: false,
-      });
+Detected dialect: ${dialect}
 
-      if (p.isCancel(confirm) || !confirm) {
-        p.cancel('Introspect cancelled.');
-        return;
-      }
-    }
-  } catch {
-    // File doesn't exist, that's fine
-  }
+To introspect your database and generate a schema file, run:
 
-  console.warn('Introspecting database using drizzle-kit...');
+  npx drizzle-kit introspect
 
-  try {
-    execSync('npx drizzle-kit introspect', {
-      cwd,
-      stdio: 'inherit',
-    });
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      throw new Error('drizzle-kit not found. Please install it: npm install drizzle-kit');
-    }
-    throw error;
-  }
+This will generate/update a schema file based on your database tables.
+
+Note: This command requires a drizzle.config.ts file. See 'deesse db:generate' for setup.
+`);
 }

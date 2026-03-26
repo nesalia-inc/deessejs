@@ -1,23 +1,20 @@
 /**
  * db:generate command
  *
- * Generates migrations from schema changes by spawning drizzle-kit CLI.
+ * Verifies schema setup and provides instructions for generating migrations.
  *
- * Flow:
- * 1. Verify schema exists at ./src/db/schema.ts
- * 2. Spawn drizzle-kit generate command
+ * For Drizzle, run these commands:
+ *   npx drizzle-kit generate
+ *   npx drizzle-kit push
  */
 
-import { execSync } from 'node:child_process';
 import { verifySchemaPath, SCHEMA_PATH } from '../utils/schema-loader.js';
 
 export interface DbGenerateOptions {
   cwd?: string;
 }
 
-export async function dbGenerate(options: DbGenerateOptions = {}): Promise<void> {
-  const cwd = options.cwd ?? process.cwd();
-
+export async function dbGenerate(_options: DbGenerateOptions = {}): Promise<void> {
   // Verify schema file exists
   try {
     await verifySchemaPath();
@@ -28,17 +25,23 @@ export async function dbGenerate(options: DbGenerateOptions = {}): Promise<void>
     );
   }
 
-  console.warn('Generating migrations using drizzle-kit...');
+  console.warn(`
+Database Schema OK: ${SCHEMA_PATH}
 
-  try {
-    execSync('npx drizzle-kit generate', {
-      cwd,
-      stdio: 'inherit',
-    });
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      throw new Error('drizzle-kit not found. Please install it: npm install drizzle-kit');
-    }
-    throw error;
-  }
+To generate migrations with Drizzle, run these commands:
+
+  npx drizzle-kit generate
+  npx drizzle-kit push
+
+Note: These commands require a drizzle.config.ts file. If you don't have one,
+create it with:
+
+  import { defineConfig } from 'drizzle-kit';
+
+  export default defineConfig({
+    schema: './src/db/schema.ts',
+    out: './src/db/migrations',
+    dialect: 'postgresql',
+  });
+`);
 }
