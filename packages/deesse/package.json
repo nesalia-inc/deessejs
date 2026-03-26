@@ -18,7 +18,13 @@
     "lint": "eslint src --ext .ts,.tsx",
     "clean": "rm -rf dist"
   },
+  "dependencies": {
+    "drizzle-orm": "^0.38.0",
+    "pg": "^8.13.0"
+  },
   "devDependencies": {
+    "drizzle-kit": "^0.30.0",
+    "@types/pg": "^8.11.0",
     "typescript": "^5.0.0"
   }
 }
