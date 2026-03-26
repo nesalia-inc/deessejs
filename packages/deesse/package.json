@@ -1,6 +1,6 @@
 {
-  "name": "@deessejs/deesse",
-  "version": "0.1.0",
+  "name": "deesse",
+  "version": "0.2.0",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
