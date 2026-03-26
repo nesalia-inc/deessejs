@@ -90,6 +90,71 @@ export const config = defineConfig({
 });
 ```
 
+---
+
+## Config Type
+
+The `database` field expects a `DatabaseConfig` object:
+
+```typescript
+// In @deessejs/deesse
+type DatabaseConfig = {
+  db: PostgresJsDatabase;  // Drizzle database instance
+};
+```
+
+### How It Works Internally
+
+The `drizzleAdapter` is created **internally** by DeesseJS:
+
+```typescript
+// Simplified internal implementation
+import { drizzleAdapter } from '@better-auth/drizzle-adapter';
+
+function initBetterAuth(config: Config) {
+  const auth = betterAuth({
+    database: drizzleAdapter(config.database.db, {
+      provider: 'pg',  // inferred from db client
+    }),
+    // ... rest of config
+  });
+}
+```
+
+**User only passes the Drizzle instance.** DeesseJS handles the adapter creation.
+
+### Why This Design?
+
+1. **Simpler for users** - No need to know about `drizzleAdapter` or better-auth internals
+2. **Type safety** - `db` must be a valid Drizzle instance
+3. **We control the adapter** - If better-auth changes adapter API, we update in one place
+
+### TypeScript Types
+
+```typescript
+// packages/deesse/src/config/types.ts
+
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import type { BetterAuthConfig } from 'better-auth';
+
+export type DatabaseConfig = {
+  /** Drizzle ORM database instance */
+  db: PostgresJsDatabase;
+};
+
+export type Config = {
+  database?: DatabaseConfig;
+  auth?: {
+    api: Omit<BetterAuthConfig, 'database'>;
+    client?: AuthClientConfig;
+  };
+  pages?: Page[];
+  plugins?: Plugin[];
+};
+```
+
+For **MySQL** or **SQLite**, the `db` type would be `MySqlDatabase` or `SqliteDatabase` respectively, but the `DatabaseConfig` shape is the same.
+
 ### 4. Generate Auth Schema
 
 ```bash
