@@ -1,22 +1,19 @@
 /**
  * db:push command
  *
- * Pushes schema changes directly to the database using drizzle-kit's pushSchema.
+ * Verifies schema and config exist, then delegates to drizzle-kit CLI.
  *
- * Flow:
- * 1. Load schema from ./src/db/schema.ts
- * 2. Load config to get database instance
- * 3. Call pushSchema with the schema
- * 4. Show warnings and apply
+ * Requirements:
+ * - src/db/schema.ts: Your Drizzle tables
+ * - drizzle.config.ts: Standard drizzle-kit config with schema and dbCredentials
  */
 
-import { createRequire } from 'node:module';
-import { verifySchemaPath, SCHEMA_PATH, loadSchema } from '../utils/schema-loader.js';
-import { loadConfig } from '../utils/config.js';
-import * as p from '@clack/prompts';
+import { execSync } from 'node:child_process';
+import { verifySchemaPath, SCHEMA_PATH } from '../utils/schema-loader.js';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
 
-const require = createRequire(import.meta.url);
-const { pushSchema } = require('drizzle-kit/api');
+const DRIZZLE_CONFIG_PATH = './drizzle.config.ts';
 
 export interface DbPushOptions {
   force?: boolean;
@@ -24,7 +21,7 @@ export interface DbPushOptions {
 }
 
 export async function dbPush(options: DbPushOptions = {}): Promise<void> {
-  const { force = false } = options;
+  const { force = false, cwd = process.cwd() } = options;
 
   // Verify schema file exists
   try {
@@ -36,53 +33,42 @@ export async function dbPush(options: DbPushOptions = {}): Promise<void> {
     );
   }
 
-  // Load config to get database instance
-  const { config } = await loadConfig();
-  const db = config.database;
-
-  if (!db) {
-    throw new Error('Config does not have a database instance');
+  // Verify drizzle.config.ts exists
+  const drizzleConfigPath = path.join(cwd, DRIZZLE_CONFIG_PATH);
+  try {
+    await fs.access(drizzleConfigPath);
+  } catch {
+    throw new Error(
+      `db:push requires ${DRIZZLE_CONFIG_PATH} to exist.\n` +
+      `Please create this file with your drizzle-kit configuration.\n\n` +
+      `Example:\n` +
+      `import { defineConfig } from 'drizzle-kit';\n` +
+      `export default defineConfig({\n` +
+      `  schema: './src/db/schema.ts',\n` +
+      `  dialect: 'postgresql',\n` +
+      `  dbCredentials: {\n` +
+      `    url: process.env.DATABASE_URL,\n` +
+      `  },\n` +
+      `});`
+    );
   }
 
-  // Load the schema
-  const { schema } = await loadSchema();
+  console.warn('Pushing schema to database with drizzle-kit...');
 
-  // Push schema to database
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result = await pushSchema(schema, db as any);
+  const args = ['npx drizzle-kit', 'push'];
+  if (force) {
+    args.push('--force');
+  }
 
-  // Check for data loss
-  if (result.hasDataLoss && !force) {
-    p.note('The following changes may cause data loss:', 'Warning');
-    for (const warning of result.warnings) {
-      console.warn(`  - ${warning}`);
-    }
-    console.warn('');
-
-    const confirm = await p.confirm({
-      message: 'Do you want to apply these changes anyway?',
-      initialValue: false,
+  try {
+    execSync(args.join(' '), {
+      cwd,
+      stdio: 'inherit',
     });
-
-    if (p.isCancel(confirm) || !confirm) {
-      p.cancel('Push cancelled.');
-      return;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      throw new Error('drizzle-kit not found. Please install it: npm install drizzle-kit');
     }
-  } else if (result.warnings.length > 0) {
-    p.note(result.warnings.join('\n'), 'Warnings');
+    throw error;
   }
-
-  // Show statements that will be executed
-  if (result.statementsToExecute.length > 0) {
-    console.warn('The following SQL will be executed:');
-    for (const stmt of result.statementsToExecute) {
-      console.warn(`  ${stmt}`);
-    }
-    console.warn('');
-  }
-
-  // Apply the changes
-  await result.apply();
-
-  console.warn(`Successfully pushed ${result.statementsToExecute.length} changes to the database.`);
 }
