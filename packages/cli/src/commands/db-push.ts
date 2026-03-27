@@ -64,6 +64,7 @@ export async function dbPush(options: DbPushOptions = {}): Promise<void> {
     execSync(args.join(' '), {
       cwd,
       stdio: 'inherit',
+      env: process.env,
     });
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
