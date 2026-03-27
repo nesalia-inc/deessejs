@@ -1,6 +1,6 @@
 {
   "name": "@deessejs/cli",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "DeesseJS CLI for managing DeesseJS projects",
   "type": "module",
   "bin": {
@@ -32,7 +32,8 @@
   "author": "DeesseJS",
   "license": "MIT",
   "dependencies": {
-    "@clack/prompts": "^0.8.2"
+    "@clack/prompts": "^0.8.2",
+    "dotenv": "^17.3.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.6",

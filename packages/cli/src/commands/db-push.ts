@@ -6,12 +6,14 @@
  * Requirements:
  * - src/db/schema.ts: Your Drizzle tables
  * - drizzle.config.ts: Standard drizzle-kit config with schema and dbCredentials
+ * - .env: Should contain DATABASE_URL (loaded automatically)
  */
 
 import { execSync } from 'node:child_process';
 import { verifySchemaPath, SCHEMA_PATH } from '../utils/schema-loader.js';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import * as dotenv from 'dotenv';
 
 const DRIZZLE_CONFIG_PATH = './drizzle.config.ts';
 
@@ -54,6 +56,9 @@ export async function dbPush(options: DbPushOptions = {}): Promise<void> {
   }
 
   console.warn('Pushing schema to database with drizzle-kit...');
+
+  // Load .env file if it exists
+  dotenv.config();
 
   const args = ['npx drizzle-kit', 'push'];
   if (force) {
