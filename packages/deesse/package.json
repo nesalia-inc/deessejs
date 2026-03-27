@@ -1,6 +1,6 @@
 {
   "name": "deesse",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
@@ -24,6 +24,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@types/react": "^19.0.0",
     "drizzle-kit": "^0.30.0",
     "@types/pg": "^8.11.0",
     "typescript": "^5.0.0"
