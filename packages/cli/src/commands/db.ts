@@ -4,10 +4,12 @@
  * Handles all db:* subcommands:
  * - db:generate   Generate migrations from schema changes
  * - db:push       Push schema changes directly (dev only)
+ * - db:migrate    Apply pending migrations to database
  */
 
 import { dbGenerate } from './db-generate.js';
 import { dbPush } from './db-push.js';
+import { dbMigrate } from './db-migrate.js';
 
 export interface DbCommandOptions {
   subcommand: string;
@@ -30,10 +32,16 @@ export async function runDbCommand(options: DbCommandOptions): Promise<void> {
       break;
     }
 
+    case 'migrate': {
+      const opts = parseDbMigrateArgs(args);
+      await dbMigrate(opts);
+      break;
+    }
+
     default:
       throw new Error(
         `Unknown db command: ${subcommand}\n` +
-        `Valid commands: generate, push`
+        `Valid commands: generate, push, migrate`
       );
   }
 }
@@ -64,6 +72,20 @@ function parseDbPushArgs(args: string[]): { cwd?: string; force?: boolean } {
   return opts;
 }
 
+function parseDbMigrateArgs(args: string[]): { cwd?: string; dryRun?: boolean } {
+  const opts: { cwd?: string; dryRun?: boolean } = {};
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--cwd' && i + 1 < args.length) {
+      opts.cwd = args[++i];
+    } else if (args[i] === '--dry-run') {
+      opts.dryRun = true;
+    }
+  }
+
+  return opts;
+}
+
 export function showDbHelp(): void {
   console.warn(`
 Deesse DB Commands
@@ -73,6 +95,7 @@ Usage: npx deesse db:<command> [options]
 Commands:
   db:generate    Generate migrations from schema changes
   db:push        Push schema changes directly to database
+  db:migrate     Apply pending migrations to database
 
 Options:
 
@@ -83,9 +106,15 @@ Options:
     --cwd <path>              Set working directory
     --force, -f               Force push without confirmation
 
+  db:migrate
+    --cwd <path>              Set working directory
+    --dry-run                 Show what would be migrated without executing
+
 Examples:
   npx deesse db:generate
   npx deesse db:push
   npx deesse db:push --force
+  npx deesse db:migrate
+  npx deesse db:migrate --dry-run
 `);
 }
