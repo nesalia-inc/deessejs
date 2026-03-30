@@ -118,6 +118,170 @@ The header provides contextual information:
 - **Breadcrumb**: Shows path to current page (e.g., `Settings > General`)
 - **User menu**: Placeholder for future auth integration
 
+## Payload CMS Architecture (Reference)
+
+This section documents how Payload CMS implements their layout system, serving as a reference for DeesseJS architecture.
+
+### Payload's Two-Tier System
+
+Payload separates concerns similarly to DeesseJS:
+
+1. **RootLayout** (`packages/next/src/layouts/Root/index.tsx`):
+   - Wraps the entire HTML document (`<html>`, `<head>`, `<body>`)
+   - Async Server Component that initializes request context
+   - Provides global context via `RootProvider` (theme, locale, i18n, permissions, user)
+   - Renders `ProgressBar` and custom providers
+   - Handles HTML attributes (theme, dir, lang)
+
+2. **RootPage** (`packages/next/src/views/Root/index.tsx`):
+   - Receives `config`, `importMap`, `params`, `searchParams`
+   - Resolves route segments to determine which view to render
+   - Uses `getRouteData()` to determine view type, template, collection/global configs
+   - Renders either `MinimalTemplate` or `DefaultTemplate` based on `templateType`
+
+### Template System
+
+Payload uses a template-based approach with two built-in templates:
+
+#### DefaultTemplate
+
+Full admin layout with sidebar, header, and actions:
+
+```typescript
+// packages/next/src/templates/Default/index.tsx
+<DefaultTemplate>
+  <CustomHeader />           {/* Optional custom header */}
+  <NavHamburger />           {/* Mobile nav toggle */}
+  <Wrapper>
+    <Nav />                  {/* Sidebar navigation */}
+    <div>
+      <AppHeader />          {/* Document header with actions */}
+      {children}             {/* Page content */}
+    </div>
+  </Wrapper>
+</DefaultTemplate>
+```
+
+#### MinimalTemplate
+
+Simple layout without sidebar, used for login/logout/auth pages:
+
+```typescript
+<MinimalTemplate className={className}>
+  {children}
+</MinimalTemplate>
+```
+
+### Request Initialization
+
+Both `RootLayout` and `RootPage` use `initReq()` to initialize the request context:
+
+```typescript
+// packages/next/src/utilities/initReq.ts
+const {
+  cookies,
+  headers,
+  languageCode,
+  permissions,
+  req,
+  req: {
+    payload: { config },
+  },
+} = await initReq({ configPromise, importMap, key: 'RootLayout' });
+```
+
+This provides:
+- **Authentication**: User session and permissions
+- **i18n**: Language settings and translations
+- **Database**: Initialized Payload instance
+- **Preferences**: User-specific preferences (e.g., nav state)
+
+### Server Functions
+
+Payload uses a `serverFunction` wrapper for client↔server communication:
+
+```typescript
+// In layout.tsx
+const serverFunction: ServerFunctionClient = async function (args) {
+  'use server'
+  return handleServerFunctions({
+    ...args,
+    config,
+    importMap,
+  })
+}
+
+// Passed to RootLayout
+<RootLayout
+  config={config}
+  importMap={importMap}
+  serverFunction={serverFunction}
+>
+  {children}
+</RootLayout>
+```
+
+The `serverFunction` is then provided via `RootProvider` to all child components.
+
+### Import Map (Code Splitting)
+
+Payload uses an `importMap` for lazy loading custom components:
+
+```javascript
+// app/(payload)/admin/importMap.js
+import { CustomView } from '../../CustomView/index.js'
+
+export const importMap = {
+  '/CustomView/index.js#CustomView': CustomView,
+}
+```
+
+Custom views are registered in the config and resolved via the import map:
+
+```typescript
+// packages/next/src/views/Root/getCustomViewByRoute.ts
+const customView = getCustomViewByRoute({ config, currentRoute })
+
+// Rendered via RenderServerComponent
+RenderServerComponent({
+  Component: customView.payloadComponent,
+  Fallback: customView.Component,
+  importMap,
+  serverProps,
+})
+```
+
+### View Resolution
+
+Payload uses `getRouteData()` to resolve URL segments to views:
+
+```typescript
+// packages/next/src/views/Root/getRouteData.ts
+switch (segments.length) {
+  case 0: {
+    if (currentRoute === adminRoute) {
+      return { Component: DashboardView, templateType: 'default' }
+    }
+    break
+  }
+  case 1: {
+    // /collections, /globals, /account, /settings, etc.
+    return { Component: ListView, templateType: 'default' }
+  }
+  case 2: {
+    // /collections/:slug, /globals/:slug, etc.
+    return { Component: DocumentView, templateType: 'default' }
+  }
+  // ... deeper nesting for edit, versions, etc.
+}
+```
+
+The function returns:
+- `DefaultView`: The component to render
+- `templateType`: `'default'` | `'minimal'` | `undefined`
+- `collectionConfig` / `globalConfig`: Resolved entity configs
+- `viewType`: Type identifier (e.g., `'list'`, `'document'`, `'dashboard'`)
+
 ## Page Manifest (Planned)
 
 Future versions will support lazy loading via page manifests:
@@ -151,3 +315,15 @@ This enables code splitting, loading only the page component when needed.
 | `packages/next` | `src/root-page.tsx` | Individual page renderer |
 | `templates/default` | `app/(deesse)/admin/layout.tsx` | Layout usage example |
 | `templates/default` | `app/(deesse)/admin/[[...slug]]/page.tsx` | Page usage example |
+
+## Implementation Status
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| RootLayout | Planned | Needs `AdminSidebar`, `AdminHeader` |
+| RootPage | Basic | Currently just renders content |
+| Template System | Planned | Default/Minimal templates |
+| Request Init | Planned | Auth, i18n, permissions |
+| Server Functions | Planned | Client↔server communication |
+| Import Map | Planned | Code splitting |
+| View Resolution | Planned | Route-to-view mapping |
