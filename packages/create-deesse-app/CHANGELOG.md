@@ -1,5 +1,13 @@
 # @deessejs/create-app
 
+## 0.4.0
+
+### Minor Changes
+
+- d3b79e5: bundle templates directly in package
+
+  Templates are now bundled inside the package instead of downloading from GitHub on every run. This follows the Next.js/Vite approach for instant, offline-capable project creation.
+
 ## 0.3.0
 
 ### Minor Changes
