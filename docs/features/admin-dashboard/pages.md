@@ -89,7 +89,6 @@ const SettingsSection = section({
 |----------|------|----------|-------------|
 | `name` | `string` | Yes | Display name in navigation |
 | `slug` | `string` | No | URL slug (auto-generated from name if omitted) |
-| `icon` | `LucideIcon` | No | Lucide icon displayed in sidebar |
 | `children` | `(Page \| Section)[]` | Yes | Array of pages or nested sections |
 
 ### Nested Sections

@@ -13,7 +13,7 @@ export type Section = {
   type: "section";
   name: string;
   slug: string;
-  icon?: LucideIcon;
+  bottom?: boolean;
   children: PageTree[];
 };
 
@@ -41,14 +41,14 @@ export function page(config: {
 export function section(config: {
   name: string;
   slug?: string;
-  icon?: LucideIcon;
+  bottom?: boolean;
   children: PageTree[];
 }): Section {
   return {
     type: "section",
     name: config.name,
     slug: config.slug ?? toSlug(config.name),
-    icon: config.icon,
+    bottom: config.bottom,
     children: config.children,
   };
 }

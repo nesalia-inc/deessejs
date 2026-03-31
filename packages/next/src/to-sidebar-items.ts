@@ -11,7 +11,7 @@ export interface SidebarSection {
   type: "section";
   name: string;
   slug: string;
-  iconName?: string;
+  bottom?: boolean;
   children: SidebarItem[];
 }
 
@@ -38,11 +38,35 @@ function toSidebarItem(item: PageTree): SidebarItem {
     type: "section",
     name: item.name,
     slug: item.slug,
-    iconName: getIconName(item.icon),
+    bottom: item.bottom,
     children: item.children.map(toSidebarItem),
   };
 }
 
 export function toSidebarItems(pageTree: PageTree[]): SidebarItem[] {
-  return pageTree.map(toSidebarItem);
+  const orphanPages = pageTree.filter((item): item is Extract<PageTree, { type: "page" }> => item.type === "page");
+  const sections = pageTree.filter((item): item is Extract<PageTree, { type: "section" }> => item.type === "section");
+
+  const items: SidebarItem[] = [];
+
+  if (orphanPages.length > 0) {
+    items.push({
+      type: "section",
+      name: "General",
+      slug: "general",
+      children: orphanPages.map(toSidebarItem),
+    });
+  }
+
+  // Sort sections: bottom sections go last
+  const mappedSections = sections.map(toSidebarItem) as SidebarSection[];
+  const sortedSections = mappedSections.sort((a, b) => {
+    if (a.bottom && !b.bottom) return 1;
+    if (!a.bottom && b.bottom) return -1;
+    return 0;
+  });
+
+  items.push(...sortedSections);
+
+  return items;
 }

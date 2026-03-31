@@ -22,7 +22,7 @@ interface SidebarSection {
   type: "section";
   name: string;
   slug: string;
-  iconName?: string;
+  isFooter?: boolean;
   children: SidebarItem[];
 }
 
@@ -73,9 +73,8 @@ function SectionItem({
   currentSlug: string[];
 }) {
   return (
-    <SidebarGroup>
+    <SidebarGroup className={section.isFooter ? "mt-auto" : undefined}>
       <SidebarGroupLabel>
-        {getIcon(section.iconName)}
         {section.name}
       </SidebarGroupLabel>
       <SidebarMenu>

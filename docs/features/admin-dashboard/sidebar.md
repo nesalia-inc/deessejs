@@ -21,7 +21,6 @@ page({
 section({
   name: "Settings",
   slug: "settings",
-  icon: Settings,
   children: [
     page({ name: "General", slug: "general", icon: Settings, content: <GeneralSettings /> }),
     page({ name: "Security", slug: "security", icon: Shield, content: <SecuritySettings /> }),
@@ -68,12 +67,11 @@ Renders as:
 A `section()` definition creates a collapsible group containing child items:
 
 ```typescript
-import { Book, FileText, Folder } from "lucide-react";
+import { FileText, Folder } from "lucide-react";
 
 section({
   name: "Blog",            // Group label
   slug: "blog",            // URL prefix: /admin/blog/*
-  icon: Book,             // Lucide icon
   children: [
     page({ name: "Posts", slug: "posts", icon: FileText, content: <Posts /> }),
     page({ name: "Categories", slug: "categories", icon: Folder, content: <Categories /> }),
@@ -85,7 +83,7 @@ Renders as:
 
 ```
 ┌───────────────────────────┐
-│ 📁 Blog                   │  ← Collapsible section header with icon
+│ Blog                     │  ← Collapsible section header
 │   ├── 📄 Posts           │
 │   └── 📄 Categories      │
 └───────────────────────────┘
@@ -117,7 +115,6 @@ import { Settings, Shield } from "lucide-react";
 section({
   name: "Settings",
   slug: "settings",
-  icon: Settings,
   children: [
     page({ name: "General", slug: "general", icon: Settings, content: <GeneralSettings /> }),
     page({ name: "Security", slug: "security", icon: Shield, content: <SecuritySettings /> }),
@@ -128,12 +125,11 @@ section({
 ### Plugins (Section)
 
 ```typescript
-import { Puzzle, Download, Package } from "lucide-react";
+import { Download, Package } from "lucide-react";
 
 section({
   name: "Plugins",
   slug: "plugins",
-  icon: Puzzle,
   children: [
     page({ name: "Browse", slug: "browse", icon: Download, content: <PluginBrowser /> }),
     page({ name: "Installed", slug: "installed", icon: Package, content: <InstalledPlugins /> }),
@@ -146,7 +142,7 @@ section({
 Plugins contribute to the sidebar by defining their own `page()` and `section()` entries:
 
 ```typescript
-import { Book, FileText, Folder, Tag } from "lucide-react";
+import { FileText, Folder, Tag } from "lucide-react";
 
 // Plugin: blog
 export const blogPlugin = plugin({
@@ -155,7 +151,6 @@ export const blogPlugin = plugin({
     section({
       name: "Blog",
       slug: "blog",
-      icon: Book,
       children: [
         page({ name: "Posts", slug: "posts", icon: FileText, content: <PostsManager /> }),
         page({ name: "Categories", slug: "categories", icon: Folder, content: <CategoriesManager /> }),
