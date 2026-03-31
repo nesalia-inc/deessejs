@@ -27,7 +27,26 @@ const MyPage = page({
 |----------|------|----------|-------------|
 | `name` | `string` | Yes | Display name in navigation |
 | `slug` | `string` | No | URL slug (auto-generated from name if omitted) |
+| `icon` | `LucideIcon` | No | Lucide icon displayed in sidebar |
 | `content` | `() => React.ReactNode` | Yes | React component that renders the page |
+
+### Page with Icon
+
+```typescript
+import { Home, Settings } from "lucide-react";
+
+const HomePage = page({
+  name: "Home",
+  icon: Home,              // Lucide icon
+  content: () => <Dashboard />,
+});
+
+const SettingsPage = page({
+  name: "Settings",
+  icon: Settings,           // Lucide icon
+  content: () => <SettingsForm />,
+});
+```
 
 ### Page with Custom Slug
 
@@ -70,6 +89,7 @@ const SettingsSection = section({
 |----------|------|----------|-------------|
 | `name` | `string` | Yes | Display name in navigation |
 | `slug` | `string` | No | URL slug (auto-generated from name if omitted) |
+| `icon` | `LucideIcon` | No | Lucide icon displayed in sidebar |
 | `children` | `(Page \| Section)[]` | Yes | Array of pages or nested sections |
 
 ### Nested Sections
@@ -101,6 +121,7 @@ Add pages and sections to your `deesse.config.ts`:
 
 ```typescript
 import { defineConfig, page, section } from '@deessejs/deesse';
+import { Home, Settings, Shield } from 'lucide-react';
 
 const DashboardHome = () => (
   <div className="p-6">
@@ -127,17 +148,21 @@ export const config = defineConfig({
   pages: [
     page({
       name: 'Home',
+      icon: Home,
       content: DashboardHome,
     }),
     section({
       name: 'Settings',
+      icon: Settings,
       children: [
         page({
           name: 'General',
+          icon: Settings,
           content: GeneralSettings,
         }),
         page({
           name: 'Security',
+          icon: Shield,
           content: SecuritySettings,
         }),
       ],

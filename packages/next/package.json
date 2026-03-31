@@ -1,6 +1,6 @@
 {
   "name": "@deessejs/next",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -8,6 +8,14 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./admin-shell": {
+      "import": "./dist/admin-shell.js",
+      "types": "./dist/admin-shell.d.ts"
+    },
+    "./to-sidebar-items": {
+      "import": "./dist/to-sidebar-items.js",
+      "types": "./dist/to-sidebar-items.d.ts"
     }
   },
   "scripts": {
@@ -18,7 +26,16 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "deesse": "0.2.5"
+    "@deessejs/ui": "0.3.2",
+    "deesse": "workspace:*",
+    "lucide-react": "^0.468.0"
+  },
+  "peerDependencies": {
+    "@deessejs/ui": "0.3.2",
+    "deesse": "0.2.6",
+    "next": ">=14",
+    "react": ">=18",
+    "react-dom": ">=18"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

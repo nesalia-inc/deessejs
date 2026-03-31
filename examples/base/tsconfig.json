@@ -20,7 +20,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@deesse-config": ["./src/deesse.config.ts"]
+      "@deesse-config": ["./src/deesse.config.tsx"]
     }
   },
   "include": [

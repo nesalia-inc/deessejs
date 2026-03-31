@@ -1,16 +1,19 @@
 import type { ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
 
 export type Page = {
   type: "page";
   name: string;
   slug: string;
-  content: ReactNode;
+  icon?: LucideIcon;
+  content: ReactNode | null;
 };
 
 export type Section = {
   type: "section";
   name: string;
   slug: string;
+  icon?: LucideIcon;
   children: PageTree[];
 };
 
@@ -23,12 +26,14 @@ function toSlug(name: string): string {
 export function page(config: {
   name: string;
   slug?: string;
-  content: ReactNode;
+  icon?: LucideIcon;
+  content: ReactNode | null;
 }): Page {
   return {
     type: "page",
     name: config.name,
     slug: config.slug ?? toSlug(config.name),
+    icon: config.icon,
     content: config.content,
   };
 }
@@ -36,12 +41,14 @@ export function page(config: {
 export function section(config: {
   name: string;
   slug?: string;
+  icon?: LucideIcon;
   children: PageTree[];
 }): Section {
   return {
     type: "section",
     name: config.name,
     slug: config.slug ?? toSlug(config.name),
+    icon: config.icon,
     children: config.children,
   };
 }
