@@ -12,7 +12,7 @@ export async function copyTemplate(
   force = false
 ): Promise<string[]> {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const templateDir = path.resolve(__dirname, '../templates', template);
+  const templateDir = path.resolve(__dirname, '../../templates', template);
 
   // Check if template exists
   if (!existsSync(templateDir)) {

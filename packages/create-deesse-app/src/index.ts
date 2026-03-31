@@ -12,6 +12,14 @@ const getVersion = () => {
   return packageJson.version;
 };
 
+const getPackageManager = () => {
+  const userAgent = process.env['npm_config_user_agent'] || '';
+  if (userAgent.includes('yarn')) return 'yarn';
+  if (userAgent.includes('pnpm')) return 'pnpm';
+  if (userAgent.includes('bun')) return 'bun';
+  return 'npm';
+};
+
 async function main() {
   console.clear();
 
@@ -89,9 +97,10 @@ Location: ${location}`,
     s.stop(`Project created with ${createdFiles.length} files`);
 
     // Next steps
+    const pm = getPackageManager();
     const nextSteps = isCurrentDir
-      ? ['pnpm install', 'pnpm dev']
-      : [`cd ${projectName}`, 'pnpm install', 'pnpm dev'];
+      ? [`${pm} install`, `${pm} dev`]
+      : [`cd ${projectName}`, `${pm} install`, `${pm} dev`];
 
     p.note(nextSteps.join('\n'), 'Next steps');
 
