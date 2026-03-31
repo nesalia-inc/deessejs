@@ -23,7 +23,7 @@ export function RootLayout({
 
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar collapsible="icon">
         <SidebarHeader className="border-b border-sidebar-border">
           <div className="flex h-14 items-center px-4">
             <span className="font-semibold">DeesseJS Admin</span>
