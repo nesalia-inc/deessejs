@@ -1,6 +1,6 @@
 import type { Config } from "deesse";
 import { extractSlugParts, findPage } from "./lib/find-page";
-import { NotFoundPage } from "./lib/not-found-page";
+import { NotFoundPage } from "./components/not-found-page";
 
 export interface RootPageProps {
   config: Config;
