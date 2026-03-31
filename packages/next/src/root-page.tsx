@@ -1,4 +1,5 @@
-import type { Config, PageTree } from "deesse";
+import type { Config } from "deesse";
+import { extractSlugParts, findPage } from "./lib/find-page";
 
 export interface RootPageProps {
   config: Config;
@@ -6,34 +7,8 @@ export interface RootPageProps {
   searchParams: Record<string, string | string[]>;
 }
 
-function findPage(pages: PageTree[] | undefined, slugParts: string[]): { page: Extract<PageTree, { type: "page" }> } | null {
-  if (!pages || slugParts.length === 0) return null;
-
-  const [first, ...rest] = slugParts;
-
-  for (const item of pages) {
-    if (item.type === "section") {
-      if (item.slug === first) {
-        if (rest.length === 0) return null; // section itself, not a page
-        return findPage(item.children, rest);
-      }
-    } else if (item.type === "page") {
-      if (item.slug === first && rest.length === 0) {
-        return { page: item };
-      }
-    }
-  }
-
-  return null;
-}
-
 export function RootPage({ config, params, searchParams: _searchParams }: RootPageProps) {
-  const slugParts = params["slug"]
-    ? Array.isArray(params["slug"])
-      ? params["slug"]
-      : [params["slug"]]
-    : [];
-
+  const slugParts = extractSlugParts(params);
   const result = findPage(config.pages, slugParts);
 
   if (!result) {
