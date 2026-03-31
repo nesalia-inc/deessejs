@@ -33,7 +33,7 @@ export function AdminShell({ items, children, header }: AdminShellProps) {
       </Sidebar>
       <SidebarInset>
         {header && (
-          <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+          <header className="flex min-h-13 shrink-0 items-center gap-2 border-b px-4">
             {header}
           </header>
         )}
