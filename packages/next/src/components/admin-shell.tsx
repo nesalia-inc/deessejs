@@ -7,6 +7,7 @@ import {
   SidebarHeader,
   SidebarProvider,
   SidebarInset,
+  SidebarRail,
   SidebarTrigger,
 } from "@deessejs/ui/sidebar";
 import { SidebarNav } from "./sidebar-nav";
@@ -35,13 +36,14 @@ export function AdminShell({ items, children, header }: AdminShellProps) {
             <SidebarTrigger />
           </div>
         </SidebarFooter>
-        <SidebarInset>
-          <header className="flex min-h-13 shrink-0 items-center gap-2 border-b px-4">
-            {header}
-          </header>
-          {children}
-        </SidebarInset>
       </Sidebar>
+      <SidebarInset>
+        <header className="flex min-h-13 shrink-0 items-center gap-2 border-b px-4">
+          {header}
+        </header>
+        {children}
+      </SidebarInset>
+      <SidebarRail />
     </SidebarProvider>
   );
 }
