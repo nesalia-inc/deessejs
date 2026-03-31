@@ -1,5 +1,6 @@
 import type { Config } from "deesse";
 import { extractSlugParts, findPage } from "./lib/find-page";
+import { NotFoundPage } from "./lib/not-found-page";
 
 export interface RootPageProps {
   config: Config;
@@ -12,12 +13,7 @@ export function RootPage({ config, params, searchParams: _searchParams }: RootPa
   const result = findPage(config.pages, slugParts);
 
   if (!result) {
-    return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold">Page not found</h1>
-        <p className="text-muted-foreground">The requested page does not exist.</p>
-      </div>
-    );
+    return <NotFoundPage />;
   }
 
   return <>{result.page.content}</>;
