@@ -9,7 +9,7 @@ import {
   SidebarTrigger,
 } from "@deessejs/ui/sidebar";
 import { SidebarNav } from "./sidebar-nav";
-import type { SidebarItem } from "./to-sidebar-items";
+import type { SidebarItem } from "../lib/to-sidebar-items";
 
 interface AdminShellProps {
   items: SidebarItem[];
