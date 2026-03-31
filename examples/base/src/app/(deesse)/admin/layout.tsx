@@ -8,5 +8,9 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const items = toSidebarItems(config.pages ?? []);
-  return <AdminShell items={items}>{children}</AdminShell>;
+  return (
+    <AdminShell items={items} header={<span className="font-semibold">Dashboard</span>}>
+      {children}
+    </AdminShell>
+  );
 }

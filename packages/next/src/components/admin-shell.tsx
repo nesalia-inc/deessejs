@@ -14,9 +14,10 @@ import type { SidebarItem } from "../lib/to-sidebar-items";
 interface AdminShellProps {
   items: SidebarItem[];
   children: React.ReactNode;
+  header?: React.ReactNode;
 }
 
-export function AdminShell({ items, children }: AdminShellProps) {
+export function AdminShell({ items, children, header }: AdminShellProps) {
   return (
     <SidebarProvider>
       <Sidebar>
@@ -31,6 +32,11 @@ export function AdminShell({ items, children }: AdminShellProps) {
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
+        {header && (
+          <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+            {header}
+          </header>
+        )}
         {children}
       </SidebarInset>
     </SidebarProvider>
