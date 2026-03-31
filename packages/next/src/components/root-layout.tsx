@@ -13,13 +13,13 @@ import {
 import { SidebarNav } from "./sidebar-nav";
 import type { SidebarItem } from "../lib/to-sidebar-items";
 
-interface AdminShellProps {
+interface RootLayoutProps {
   items: SidebarItem[];
   children: React.ReactNode;
   header: React.ReactNode;
 }
 
-export function AdminShell({ items, children, header }: AdminShellProps) {
+export function RootLayout({ items, children, header }: RootLayoutProps) {
   return (
     <SidebarProvider>
       <Sidebar>

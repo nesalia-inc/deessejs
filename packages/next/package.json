@@ -9,9 +9,9 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./admin-shell": {
-      "import": "./dist/components/admin-shell.js",
-      "types": "./dist/components/admin-shell.d.ts"
+    "./root-layout": {
+      "import": "./dist/components/root-layout.js",
+      "types": "./dist/components/root-layout.d.ts"
     },
     "./to-sidebar-items": {
       "import": "./dist/lib/to-sidebar-items.js",

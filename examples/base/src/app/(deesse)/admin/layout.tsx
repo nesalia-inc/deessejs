@@ -1,4 +1,4 @@
-import { AdminShell } from "@deessejs/next/admin-shell";
+import { RootLayout } from "@deessejs/next/root-layout";
 import { toSidebarItems } from "@deessejs/next/to-sidebar-items";
 import { config } from "@deesse-config";
 
@@ -9,8 +9,8 @@ export default function AdminLayout({
 }) {
   const items = toSidebarItems(config.pages ?? []);
   return (
-    <AdminShell items={items} header={<span className="font-semibold">Dashboard</span>}>
+    <RootLayout items={items} header={<span className="font-semibold">Dashboard</span>}>
       {children}
-    </AdminShell>
+    </RootLayout>
   );
 }
