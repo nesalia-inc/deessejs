@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Sidebar,
   SidebarContent,
@@ -10,16 +8,19 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@deessejs/ui/sidebar";
+import type { Config } from "deesse";
+import { toSidebarItems } from "../lib/to-sidebar-items";
 import { SidebarNav } from "./sidebar-nav";
-import type { SidebarItem } from "../lib/to-sidebar-items";
 
-interface RootLayoutProps {
-  items: SidebarItem[];
+export function RootLayout({
+  config,
+  children,
+}: {
+  config: Config;
   children: React.ReactNode;
-  header: React.ReactNode;
-}
+}) {
+  const items = toSidebarItems(config.pages ?? []);
 
-export function RootLayout({ items, children, header }: RootLayoutProps) {
   return (
     <SidebarProvider>
       <Sidebar>
@@ -39,7 +40,7 @@ export function RootLayout({ items, children, header }: RootLayoutProps) {
       </Sidebar>
       <SidebarInset>
         <header className="flex min-h-13 shrink-0 items-center gap-2 border-b px-4">
-          {header}
+          <span className="font-semibold">Dashboard</span>
         </header>
         {children}
       </SidebarInset>
