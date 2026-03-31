@@ -1,18 +1,6 @@
-"use client";
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarProvider,
-  SidebarInset,
-  SidebarRail,
-  SidebarTrigger,
-} from "@deessejs/ui/sidebar";
 import type { Config } from "deesse";
 import { toSidebarItems } from "../lib/to-sidebar-items";
-import { SidebarNav } from "./sidebar-nav";
+import { AdminShell } from "./admin-shell";
 
 export function RootLayout({
   config,
@@ -24,29 +12,11 @@ export function RootLayout({
   const items = toSidebarItems(config.pages ?? []);
 
   return (
-    <SidebarProvider>
-      <Sidebar collapsible="icon">
-        <SidebarHeader className="border-b border-sidebar-border">
-          <div className="flex h-14 items-center px-4">
-            <span className="font-semibold">DeesseJS Admin</span>
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarNav items={items} />
-        </SidebarContent>
-        <SidebarFooter className="border-t border-sidebar-border">
-          <div className="flex h-14 items-center px-4">
-            <SidebarTrigger />
-          </div>
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <header className="flex min-h-13 shrink-0 items-center gap-2 border-b px-4">
-          <span className="font-semibold">Dashboard</span>
-        </header>
-        {children}
-      </SidebarInset>
-      <SidebarRail />
-    </SidebarProvider>
+    <AdminShell items={items}>
+      <header className="flex min-h-13 shrink-0 items-center gap-2 border-b px-4">
+        <span className="font-semibold">Dashboard</span>
+      </header>
+      {children}
+    </AdminShell>
   );
 }
