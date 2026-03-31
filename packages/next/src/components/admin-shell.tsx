@@ -35,9 +35,9 @@ export function AdminShell({ items, children }: AdminShellProps) {
             <SidebarTrigger />
           </div>
         </SidebarFooter>
+        <SidebarRail />
       </Sidebar>
       <SidebarInset>{children}</SidebarInset>
-      <SidebarRail />
     </SidebarProvider>
   );
 }
