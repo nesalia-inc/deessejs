@@ -13,7 +13,7 @@ export function RootPage({ config, params, searchParams: _searchParams }: RootPa
   const result = findPage(config.pages, slugParts);
 
   if (!result) {
-    return <NotFoundPage />;
+    return <NotFoundPage slug={slugParts.join("/")} />;
   }
 
   return <>{result.page.content}</>;
