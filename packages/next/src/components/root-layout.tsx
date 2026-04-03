@@ -12,7 +12,7 @@ export function RootLayout({
   const items = toSidebarItems(config.pages ?? []);
 
   return (
-    <AdminShell items={items} header={<span className="font-semibold">Dashboard</span>}>
+    <AdminShell name={config.name} items={items} header={<span className="font-semibold">Dashboard</span>}>
       {children}
     </AdminShell>
   );

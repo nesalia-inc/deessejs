@@ -282,3 +282,33 @@ Anything less than excellent is technical debt. Mediocre code works today but co
 **Senior level is not about years.** It is about the standard you hold yourself to. A junior writes code that works. A senior writes code that is hard to improve. There is always a better way. There is always a cleaner abstraction. There is always code that reads like prose.
 
 **The bar is high because the work matters.** Every line you write will be read, debugged, extended by humans who deserve your best. Give them wow.
+
+## Known Next.js Issues
+
+### React Events Not Working with next-themes Hydration Mismatch
+
+When using `next-themes`, the `<html>` element may have a hydration mismatch because the server renders without `style={{color-scheme:"dark"}}` but the client adds it. This causes React hydration to fail silently, meaning:
+- Static HTML renders correctly
+- Client-side JavaScript does not hydrate properly
+- All React events (onClick, onChange, etc.) stop working
+
+**Symptoms:**
+- Clicking buttons does nothing (no console logs, no errors)
+- No JavaScript errors in console
+- Page loads with 200 status
+- Webpack HMR blocked by CORS with `NS_ERROR` in transfer
+
+**Solution:**
+1. Add `suppressHydrationWarning` to the `<html>` element in `layout.tsx`:
+```tsx
+<html lang="en" suppressHydrationWarning>
+```
+
+2. If running dev server on `localhost` but browser uses `127.0.0.1` (or vice versa), add `allowedDevOrigins` in `next.config.ts`:
+```ts
+const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
+};
+```
+
+This CORS issue also manifests as blocked cross-origin requests to `/_next/webpack-hmr`.

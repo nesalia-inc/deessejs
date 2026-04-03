@@ -4,47 +4,152 @@
 
 This document describes how better-auth integrates with DeesseJS. The integration is **first-class and opinionated** - DeesseJS is built to work specifically with better-auth as its authentication solution.
 
+## Design Principles
+
+### Functional-First Architecture
+
+DeesseJS follows functional programming principles:
+
+| Principle | Implementation |
+|-----------|----------------|
+| No classes | Factory functions (`createDeesse`, `createClient`) |
+| No globals | Dependency injection, module-scoped caching |
+| Controlled effects | Effects represented as data, interpreted at boundaries |
+| Railway-Oriented Programming | `Result<T, E>` type for all fallible operations |
+
+### File Organization
+
+Constants and types each have their own dedicated file, grouped by domain:
+
+```
+src/
+├── session/
+│   ├── types.ts       # SessionData, SessionToken, SessionError
+│   ├── constants.ts   # DEFAULT_SESSION_TTL, SESSION_TOKEN_LENGTH
+│   └── index.ts
+├── auth/
+│   ├── types.ts       # User, Credentials, AuthError
+│   ├── constants.ts   # MAX_LOGIN_ATTEMPTS, LOCKOUT_DURATION
+│   └── index.ts
+└── config/
+    ├── types.ts       # DeesseConfig, PluginConfig
+    ├── constants.ts
+    └── index.ts
+```
+
+**Rationale:** Domain first, then category. Easy to find, easy to maintain, easy to import.
+
+---
+
 ## Architecture
 
 ```
 User's project
-├── deesse.config.ts     ← Pure serializable config (no functions)
+├── deesse.config.ts     ← Config with auth.baseURL (NO secrets)
 ├── lib/
-│   └── deesse.ts        ← Wiring: creates deesseServer + deesseClient
-├── auth.ts               ← betterAuth() instance + createAuthClient()
-├── middleware.ts         ← Auth protection via deesseServer
-└── app/
-    └── (deesse)/
-        └── admin/
-            ├── layout.tsx    ← Uses deesseClient
-            ├── page.tsx      ← Uses deesseServer (RSC)
-            ├── login/
-            │   └── page.tsx ← Login page
-            └── setup/
-                └── page.tsx ← First-time admin setup
+│   └── deesse.ts        ← Creates deesse + client (wiring layer)
+├── middleware.ts         ← Auth protection via deesse
+├── app/
+│   └── api/auth/[...slug]/route.ts
+└── app/(deesse)/admin/
+    ├── page.tsx         ← Uses deesse (RSC)
+    └── layout.tsx       ← Uses client (Client Components)
 ```
 
-## Key Changes from Previous Version
+### The Two-Factory Pattern
 
-1. **No "Agnosticism"** - DeesseJS commits to better-auth as the auth provider
-2. **Server/Client Split** - `deesseServer` for RSCs/Actions, `deesseClient` for Client Components
-3. **Runtime Setup Mode** - No build-time DB check; setup page appears when no admin exists
-4. **Middleware Protection** - Auth checks happen in middleware (no FOUC)
-5. **BETTER_AUTH_SECRET** - Uses better-auth's native secret, not a separate one
-6. **Zero-Dep Login** - Simple React state, no TanStack Form dependency
+DeesseJS uses two separate factory functions instead of a single config object:
+
+| Factory | Purpose | Location |
+|---------|---------|----------|
+| `createDeesse(config)` | Server-side auth instance | `@deessejs/next/server` |
+| `createClient(options)` | Client-safe session/hooks | `@deessejs/next/client` |
+
+**Why not single config?**
+
+A single `defineConfig` containing server-only values (database, secret) risks bundle leakage if imported in Client Components. Next.js webpack statically resolves imports, so even `"use client"` cannot prevent secrets from being bundled if any import chain reaches `deesse.config.ts`.
+
+The split pattern provides **defense in depth**:
+1. Module boundary: `deesse` never imported in client files
+2. Type boundary: `createClient()` accepts only client-safe options
+3. ESLint boundary: Rule blocks `deesse.config` import in client files
 
 ---
 
-## Implementation Plan
+## Instance Management (No Globals)
 
-### 1. Config Type (Pure Definition)
+### The Problem
+
+Payload CMS uses `global._payload` singleton which violates DeesseJS principles. Creating fresh instances per request is principled but expensive (database reconnection overhead).
+
+### The Solution: Module-Scoped Cache
+
+```typescript
+// packages/deesse/src/factory.ts
+type CacheEntry<T> = {
+  instance: T | null;
+  promise: Promise<T> | null;
+};
+
+function createFactory<T, Options>(
+  createInstance: (options: Options) => Promise<T>
+) {
+  const cache = new Map<string, CacheEntry<T>>();
+
+  return {
+    async get(key: string, options: Options): Promise<T> {
+      const cached = cache.get(key);
+
+      if (cached?.instance) return cached.instance;
+      if (cached?.promise) return cached.promise;
+
+      const promise = createInstance(options);
+      cache.set(key, { instance: null, promise });
+
+      try {
+        const instance = await promise;
+        cache.set(key, { instance, promise: null });
+        return instance;
+      } catch {
+        cache.delete(key);
+        throw;
+      }
+    },
+
+    clear(): void {
+      cache.clear();
+    }
+  };
+}
+```
+
+**Why this is principled:**
+
+| Principle | How It's Followed |
+|-----------|-------------------|
+| No globals | Cache is module-scoped, not on `global` object |
+| Explicit deps | Factory must be explicitly imported |
+| Testability | `clear()` available for testing |
+| Predictable | Same key = same cached instance |
+
+### Scope: What Gets Cached
+
+| Resource | Scope | Rationale |
+|----------|-------|-----------|
+| Auth instance | Application | Stateless coordinator |
+| Database pool | Application | Connection pooling is the point |
+| Session data | Per-request | User-specific, security-sensitive |
+
+---
+
+## Config Type
 
 **File:** `packages/deesse/src/config/define.ts`
 
-The config contains only serializable values (strings, objects). No functions, no class instances - **except** `database` which is a Drizzle instance.
-
 ```typescript
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import type { PageTree } from "./page";
+import type { Plugin } from "./plugin";
 
 export type Config = {
   name?: string;
@@ -58,91 +163,56 @@ export type Config = {
     apiPath?: string;
   };
 };
+
+export function defineConfig(config: Config): Config {
+  return config;
+}
 ```
 
-**Important:** `config.database` is the **single source of truth** for the database instance. All components (auth, pages, etc.) must use this instance, not create their own.
+**Important:** `config.database` is the **single source of truth**. All components (auth, pages) must use this instance.
 
-**Note:** The config does NOT contain the auth instance itself. That is created in `lib/deesse.ts`.
+---
 
-### 2. Secret Management
+## Secret Management
 
 **Environment Variable:** `BETTER_AUTH_SECRET`
-
-DeesseJS uses better-auth's native secret. No separate `DEESSE_SECRET`.
 
 ```bash
 # .env
 BETTER_AUTH_SECRET=your-secret-here
 ```
 
-If not set in production, better-auth throws an error at startup.
+DeesseJS uses better-auth's native secret. No separate `DEESSE_SECRET`.
 
-### 3. Auth Creation in lib/deesse.ts
+---
 
-The better-auth instance is created in `lib/deesse.ts`, not in a separate `auth.ts`. This ensures `config.database` is used as the single DB source.
+## Factory Functions
 
-The auth instance is exported via `deesseServer.auth` for use in middleware and API routes.
+### createDeesse (Server)
 
-**API route** (`app/api/auth/[...slug]/route.ts`):
-
-```typescript
-import { deesseServer } from "@/lib/deesse";
-import { toNextJsHandler } from "better-auth/next-js";
-
-const { POST, GET } = toNextJsHandler(deesseServer.auth);
-
-export { POST, GET };
-```
-
-### 4. Server/Client Wiring
-
-**File:** `lib/deesse.ts`
-
-This file creates the server and client instances. It wires `config.database` to better-auth. It is NOT part of the config.
+**File:** `packages/deesse/src/server.ts`
 
 ```typescript
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/drizzle-adapter";
-import { adminPlugin } from "better-auth/admin";
-import { createDeesseServer } from "@deessejs/next/server";
-import { createDeesseClient } from "@deessejs/next/client";
-import { config } from "../deesse.config";
+import type { Auth } from "better-auth";
 
-/** Creates better-auth instance using config.database (single source of truth) */
-function createAuth() {
-  return betterAuth({
+export type Deesse = {
+  auth: Auth;
+  /**
+   * Check if any admin exists in the database.
+   */
+  hasAdmin: () => Promise<boolean>;
+};
+
+export function createDeesse(config: Config): Deesse {
+  const auth = betterAuth({
     database: drizzleAdapter(config.database, { provider: "pg" }),
     secret: process.env.BETTER_AUTH_SECRET,
     emailAndPassword: { enabled: true },
     plugins: [adminPlugin()],
   });
-}
 
-/** Used in Server Components, Actions, API routes, Middleware */
-export const deesseServer = createDeesseServer(createAuth());
-
-/** Used in Client Components */
-export const deesseClient = createDeesseClient({
-  auth: deesseServer.auth,
-  baseURL: config.auth.baseURL,
-});
-```
-
-**Important:** `config.database` is passed to `drizzleAdapter()`. The auth instance uses the **same database instance** as the rest of the application. No separate DB connection.
-
-**Server instance** (`packages/next/src/server.ts`):
-
-```typescript
-import type { Auth } from "better-auth";
-
-export function createDeesseServer(auth: Auth) {
   return {
     auth,
-    api: auth,
-    /**
-     * Check if any admin exists in the database.
-     * Used by middleware for setup mode detection.
-     */
     async hasAdmin(): Promise<boolean> {
       const users = await auth.api.admin.listUsers({});
       return users.users.some((u) => u.role === "admin");
@@ -151,86 +221,297 @@ export function createDeesseServer(auth: Auth) {
 }
 ```
 
-**Client instance** (`packages/next/src/client.ts`):
+### createClient (Client)
+
+**File:** `packages/deesse/src/client.ts`
 
 ```typescript
 import type { BetterAuthClient } from "better-auth/react";
 
-export function createDeesseClient(options: {
-  authClient: BetterAuthClient;
+export type Client = Omit<
+  BetterAuthClient,
+  | "$store"
+  | "$fetch"
+>;
+
+export function createClient(options: {
   baseURL: string;
-}) {
+  apiPath?: string;
+}): Client {
+  const authClient = createAuthClient({
+    baseURL: options.baseURL,
+    basePath: options.apiPath,
+  });
+
   return {
-    ...options.authClient,
-    useSession: options.authClient.useSession,
-    signIn: options.authClient.signIn,
-    signOut: options.authClient.signOut,
+    useSession: authClient.useSession,
+    signIn: authClient.signIn,
+    signOut: authClient.signOut,
+    signUp: authClient.signUp,
   };
 }
 ```
 
-### 5. API Route Handler
+---
 
-See Section 3 for the API route handler implementation.
+## Wiring Layer
 
-### 6. DeesseJS Config
-
-**File:** `deesse.config.ts`
+**File:** `lib/deesse.ts` (User project)
 
 ```typescript
-import { defineConfig } from "@deessejs/core";
+import { createDeesse } from "@deessejs/next/server";
+import { createClient } from "@deessejs/next/client";
+import { config } from "../deesse.config";
 
-export const config = defineConfig({
-  name: "My App",
-  database: drizzle(...),
-  auth: {
-    baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    apiPath: "/api/auth",
-  },
-  pages: [
-    // ... page tree
-  ],
+/** Server-side instance - NEVER import in Client Components */
+export const deesse = createDeesse(config);
+
+/** Client-safe instance - OK to import in Client Components */
+export const client = createClient({
+  baseURL: config.auth.baseURL,
+  apiPath: config.auth.apiPath,
 });
 ```
 
-### 7. Middleware (Primary Auth Guard)
+---
 
-**File:** `middleware.ts` (project root)
+## Railway-Oriented Programming (ROP)
+
+### Result Type
+
+DeesseJS uses `Result<T, E>` for all fallible operations:
+
+```typescript
+// types/result.ts
+export type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+export const ok = <T>(data: T): Result<T, never> =>
+  ({ success: true, data });
+
+export const err = <E>(error: E): Result<never, E> =>
+  ({ success: false, error });
+
+export const andThen = <T, U, E>(
+  result: Result<T, E>,
+  fn: (data: T) => Result<U, E>
+): Result<U, E> =>
+  result.success ? fn(result.data) : result;
+
+export const map = <T, U, E>(
+  result: Result<T, E>,
+  fn: (data: T) => U
+): Result<U, E> =>
+  result.success ? ok(fn(result.data)) : result;
+
+export const mapError = <T, E, F>(
+  result: Result<T, E>,
+  fn: (error: E) => F
+): Result<T, F> =>
+  result.success ? result : err(fn(result.error));
+```
+
+### AsyncResult for Async Operations
+
+```typescript
+export type AsyncResult<T, E = Error> = Promise<Result<T, E>>;
+
+export const andThenAsync = async <T, U, E>(
+  result: AsyncResult<T, E>,
+  fn: (data: T) => AsyncResult<U, E>
+): AsyncResult<U, E> => {
+  const resolved = await result;
+  return resolved.success ? fn(resolved.data) : resolved;
+};
+```
+
+---
+
+## Auth Error Types
+
+**File:** `auth/types.ts`
+
+```typescript
+export type AuthError =
+  // Validation
+  | { type: "INVALID_EMAIL" }
+  | { type: "PASSWORD_TOO_SHORT"; minLength: number }
+  | { type: "MISSING_FIELD"; field: string }
+  // Authentication
+  | { type: "USER_NOT_FOUND" }
+  | { type: "INVALID_CREDENTIALS" }
+  | { type: "INVALID_PASSWORD" }
+  // Session
+  | { type: "SESSION_EXPIRED" }
+  | { type: "TOKEN_EXPIRED" }
+  // Account
+  | { type: "EMAIL_NOT_VERIFIED" }
+  | { type: "ACCOUNT_LOCKED"; until?: Date }
+  | { type: "USER_ALREADY_EXISTS" }
+  // Authorization
+  | { type: "FORBIDDEN" }
+  | { type: "INSUFFICIENT_ROLE"; required: string };
+```
+
+### Wrapping Better-Auth Errors
+
+Better-auth server-side throws exceptions, but client-side returns `{ error, data }`. The integration layer must bridge these:
+
+```typescript
+// auth/result.ts
+import { APIError } from "@better-auth/core/error";
+
+const AUTH_ERROR_MAP: Record<string, AuthError["type"]> = {
+  INVALID_EMAIL_OR_PASSWORD: "INVALID_CREDENTIALS",
+  USER_NOT_FOUND: "USER_NOT_FOUND",
+  SESSION_EXPIRED: "SESSION_EXPIRED",
+  EMAIL_NOT_VERIFIED: "EMAIL_NOT_VERIFIED",
+};
+
+export const withAuthResult = <T>(
+  fn: () => Promise<T>
+): AsyncResult<T, AuthError> => async () => {
+  try {
+    return ok(await fn());
+  } catch (err) {
+    if (err instanceof APIError) {
+      return err({
+        type: AUTH_ERROR_MAP[err.code] ?? "FORBIDDEN",
+        message: err.message,
+      });
+    }
+    throw err;
+  }
+};
+```
+
+---
+
+## ROP in Auth Flows
+
+### Sign-In Flow
+
+```typescript
+const validateCredentials = (
+  email: string,
+  password: string
+): Result<Credentials, AuthError> => {
+  if (!email.includes("@")) {
+    return err({ type: "INVALID_EMAIL" });
+  }
+  if (password.length < 8) {
+    return err({ type: "PASSWORD_TOO_SHORT", minLength: 8 });
+  }
+  return ok({ email, password });
+};
+
+const authenticate = (
+  credentials: Credentials
+): AsyncResult<Session, AuthError> =>
+  andThenAsync(
+    ok(credentials),
+    async ({ email, password }) => {
+      const result = await client.signIn.email({ email, password });
+      if (result.error) {
+        return err(mapBetterAuthError(result.error));
+      }
+      return ok(result.data);
+    }
+  );
+
+const signIn = (email: string, password: string) =>
+  pipe(
+    validateCredentials(email, password),
+    andThenAsync(authenticate)
+  );
+```
+
+### Middleware Flow
+
+Middleware uses direct better-auth calls (performance-critical path):
+
+```typescript
+export async function middleware(
+  request: NextRequest
+): Promise<Result<Response, AuthError>> {
+  const pathname = request.nextUrl.pathname;
+
+  if (!pathname.startsWith("/admin")) {
+    return ok(NextResponse.next());
+  }
+
+  // Setup mode detection
+  const hasAdmin = await deesse.hasAdmin();
+  if (!hasAdmin && pathname !== "/admin/setup") {
+    return ok(NextResponse.redirect(new URL("/admin/setup", request.url)));
+  }
+
+  // Session check
+  const session = await deesse.auth.api.getSession({
+    headers: request.headers,
+  });
+
+  if (!session) {
+    return err({ type: "SESSION_EXPIRED" });
+  }
+
+  if (session.user.role !== "admin") {
+    return err({ type: "INSUFFICIENT_ROLE", required: "admin" });
+  }
+
+  return ok(NextResponse.next());
+}
+```
+
+---
+
+## API Route Handler
+
+```typescript
+// app/api/auth/[...slug]/route.ts
+import { deesse } from "@/lib/deesse";
+import { toNextJsHandler } from "better-auth/next-js";
+
+const { POST, GET } = toNextJsHandler(deesse.auth);
+export { POST, GET };
+```
+
+---
+
+## Middleware (Primary Auth Guard)
+
+**File:** `middleware.ts`
 
 Middleware handles auth protection BEFORE any page renders. This prevents Flash of Unauthenticated Content (FOUC).
 
 ```typescript
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { deesseServer } from "./lib/deesse";
+import { deesse } from "./lib/deesse";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Only protect /admin/* routes
   if (!pathname.startsWith("/admin")) {
     return NextResponse.next();
   }
 
-  // Check if setup mode is needed (no admin exists)
-  const hasAdmin = await deesseServer.hasAdmin();
+  const hasAdmin = await deesse.hasAdmin();
 
   if (!hasAdmin && pathname !== "/admin/setup") {
     return NextResponse.redirect(new URL("/admin/setup", request.url));
   }
 
-  // If trying to access setup when admin exists, redirect to login
   if (hasAdmin && pathname === "/admin/setup") {
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
-  // Public routes - allow
   if (pathname === "/admin/login") {
     return NextResponse.next();
   }
 
-  // Check session
-  const session = await deesseServer.auth.api.getSession({
+  const session = await deesse.auth.api.getSession({
     headers: request.headers,
   });
 
@@ -252,78 +533,9 @@ export const config = {
 };
 ```
 
-### 8. AdminPage Component (UI Guard)
+---
 
-The component is a secondary guard for UI purposes only. Real security is in middleware.
-
-**File:** `packages/next/src/components/admin-page.tsx`
-
-```typescript
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { deesseClient } from "@/lib/deesse";
-
-interface AdminPageProps {
-  children: React.ReactNode;
-}
-
-export function AdminPage({ children }: AdminPageProps) {
-  const router = useRouter();
-  const { data: session, isPending } = deesseClient.useSession();
-
-  useEffect(() => {
-    if (!isPending && !session) {
-      router.push("/admin/login");
-    }
-  }, [isPending, session, router]);
-
-  if (isPending) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-foreground" />
-      </div>
-    );
-  }
-
-  if (!session || session.user.role !== "admin") {
-    return null; // Middleware will redirect
-  }
-
-  return <>{children}</>;
-}
-```
-
-### 9. RootLayout
-
-**File:** `packages/next/src/components/root-layout.tsx`
-
-```typescript
-import type { Config } from "deesse";
-import { toSidebarItems } from "../lib/to-sidebar-items";
-import { AdminShell } from "./admin-shell";
-
-export function RootLayout({
-  config,
-  children,
-}: {
-  config: Config;
-  children: React.ReactNode;
-}) {
-  const items = toSidebarItems(config.pages ?? []);
-
-  return (
-    <AdminShell name={config.name} items={items}>
-      {children}
-    </AdminShell>
-  );
-}
-```
-
-### 10. Native Login Page
-
-Simple React state, no external form library.
+## Login Page
 
 **File:** `packages/next/src/pages/login-page.tsx`
 
@@ -332,7 +544,7 @@ Simple React state, no external form library.
 
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { deesseClient } from "@/lib/deesse";
+import { client } from "@/lib/deesse";
 
 export function LoginPage() {
   const router = useRouter();
@@ -349,13 +561,10 @@ export function LoginPage() {
     setError("");
 
     startTransition(async () => {
-      const { error } = await deesseClient.signIn.email({
-        email,
-        password,
-      });
+      const result = await client.signIn.email({ email, password });
 
-      if (error) {
-        setError(error.message);
+      if (result.error) {
+        setError(result.error.message);
         return;
       }
 
@@ -368,9 +577,7 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center">
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
         <h1 className="text-2xl font-bold">Sign In</h1>
-
         {error && <p className="text-red-500">{error}</p>}
-
         <input
           type="email"
           value={email}
@@ -379,7 +586,6 @@ export function LoginPage() {
           required
           className="w-full rounded-md border p-2"
         />
-
         <input
           type="password"
           value={password}
@@ -388,7 +594,6 @@ export function LoginPage() {
           required
           className="w-full rounded-md border p-2"
         />
-
         <button
           type="submit"
           disabled={isPending}
@@ -402,9 +607,9 @@ export function LoginPage() {
 }
 ```
 
-### 11. Setup Page (First Admin)
+---
 
-When no admin exists, this page allows creating the first admin.
+## Setup Page
 
 **File:** `packages/next/src/pages/setup-page.tsx`
 
@@ -413,7 +618,7 @@ When no admin exists, this page allows creating the first admin.
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { deesseClient } from "@/lib/deesse";
+import { client } from "@/lib/deesse";
 
 export function SetupPage() {
   const router = useRouter();
@@ -429,18 +634,13 @@ export function SetupPage() {
     setError("");
 
     startTransition(async () => {
-      const { error } = await deesseClient.signUp.email({
-        email,
-        password,
-        name,
-      });
+      const result = await client.signUp.email({ email, password, name });
 
-      if (error) {
-        setError(error.message);
+      if (result.error) {
+        setError(result.error.message);
         return;
       }
 
-      // After signup, redirect to admin
       router.push("/admin");
       router.refresh();
     });
@@ -453,9 +653,7 @@ export function SetupPage() {
         <p className="text-sm text-gray-500">
           No admin exists yet. Create your admin account to continue.
         </p>
-
         {error && <p className="text-red-500">{error}</p>}
-
         <input
           type="text"
           value={name}
@@ -464,7 +662,6 @@ export function SetupPage() {
           required
           className="w-full rounded-md border p-2"
         />
-
         <input
           type="email"
           value={email}
@@ -473,7 +670,6 @@ export function SetupPage() {
           required
           className="w-full rounded-md border p-2"
         />
-
         <input
           type="password"
           value={password}
@@ -483,7 +679,6 @@ export function SetupPage() {
           minLength={8}
           className="w-full rounded-md border p-2"
         />
-
         <button
           type="submit"
           disabled={isPending}
@@ -497,72 +692,22 @@ export function SetupPage() {
 }
 ```
 
-### 12. CLI Commands
+---
 
-**File:** `packages/cli/src/commands/`
+## CLI Commands
 
 ```bash
 # Generate schema
-npx deesse generate
+npx deesse db:generate
 
 # Apply migrations
-npx deesse migrate
+npx deesse db:migrate
 
-# Create admin user (bypasses auth API, uses raw SQL)
+# Push schema (dev)
+npx deesse db:push
+
+# Create admin user (raw SQL, bypasses auth API)
 npx deesse admin:create --email admin@example.com --name Admin
-```
-
-**admin:create command** (`packages/cli/src/commands/admin-create.ts`):
-
-Uses raw SQL to create admin, bypassing the auth API (in case it's misconfigured).
-
-```typescript
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
-import { hash } from "bcrypt";
-
-export async function adminCreate(email: string, name: string) {
-  const password = await promptSecret("Password:");
-
-  // Insert directly via Drizzle (not through auth API)
-  await db.execute(sql`
-    INSERT INTO users (email, name, password, role, "emailVerified")
-    VALUES (${email}, ${name}, ${await hash(password, 12)}, 'admin', NOW())
-  `);
-
-  console.log("Admin created successfully!");
-}
-```
-
-**Optional CI check** (`packages/cli/src/commands/check.ts`):
-
-```bash
-# Can be run in CI/CD if desired
-npx deesse check-env --production
-```
-
-### 13. Project Setup
-
-**File:** `packages/cli/src/create-app.ts`
-
-During `create-deesse-app`, after setup:
-
-```typescript
-async function createProject() {
-  // ... scaffold, install deps, setup db ...
-
-  const shouldCreateAdmin = await confirm(
-    "Create your first admin account?"
-  );
-
-  if (shouldCreateAdmin) {
-    const email = await prompt("Email:");
-    const password = await promptSecret("Password:");
-    const name = await prompt("Name:");
-
-    await createAdminUser({ email, password, name });
-  }
-}
 ```
 
 ---
@@ -571,75 +716,93 @@ async function createProject() {
 
 | File | Action |
 |------|--------|
-| `packages/deesse/src/config/define.ts` | Config with `database` and `auth` settings |
-| `packages/next/src/server.ts` | New - createDeesseServer factory |
-| `packages/next/src/client.ts` | New - createDeesseClient factory |
-| `packages/next/src/components/admin-page.tsx` | Simplified - UI guard only |
-| `packages/next/src/pages/login-page.tsx` | New - Zero-dep login |
-| `packages/next/src/pages/setup-page.tsx` | New - First admin setup |
-| `packages/cli/src/commands/admin-create.ts` | New - Raw SQL admin creation |
-| `packages/cli/src/commands/generate.ts` | New - Schema generation |
-| `packages/cli/src/commands/migrate.ts` | New - Migration runner |
-| `middleware.ts` | New - Auth protection (user project) |
-| `lib/deesse.ts` | New - Creates auth via `config.database`, exports `deesseServer` + `deesseClient` |
-| `deesse.config.ts` | Updated - includes `auth.baseURL` |
-| `app/api/auth/[...slug]/route.ts` | Updated - imports from lib/deesse.ts |
+| `packages/deesse/src/config/define.ts` | Config with `auth.baseURL` |
+| `packages/deesse/src/server.ts` | `createDeesse()` factory |
+| `packages/deesse/src/client.ts` | `createClient()` factory |
+| `packages/deesse/src/factory.ts` | Module-scoped cache |
+| `packages/deesse/src/types/result.ts` | Result, AsyncResult types |
+| `packages/deesse/src/auth/types.ts` | AuthError discriminated union |
+| `packages/deesse/src/auth/constants.ts` | Auth constants |
+| `packages/next/src/pages/login-page.tsx` | Login page |
+| `packages/next/src/pages/setup-page.tsx` | Setup page |
+| `lib/deesse.ts` | Wiring: `deesse` + `client` |
+| `middleware.ts` | Auth protection |
+| `app/api/auth/[...slug]/route.ts` | Auth API handler |
+
+---
 
 ## Key Principles
 
 ### 1. Middleware-First Security
 
-Auth protection happens in middleware, not in components. This prevents FOUC and ensures security even if JS fails to load.
+Auth protection happens in middleware, not components. This prevents FOUC.
 
 ### 2. Runtime Setup Mode
 
-No build-time DB check. If no admin exists, the app shows the setup page at runtime. Works on Vercel, Docker, any CI/CD.
+No build-time DB check. If no admin exists, the setup page appears at runtime.
 
 ### 3. Server/Client Separation
 
-- `deesseServer` (RSC, Actions, API routes) - has access to secrets
-- `deesseClient` (Client Components) - only has hooks, no secrets
+- `deesse` (server): secrets, database, session validation
+- `client` (client): session hooks, signIn/signOut/signUp
 
-### 4. Commit to Better-Auth
+### 4. ROP for Error Handling
 
-No fake agnosticism. DeesseJS is built for better-auth first. The types and wiring are specific to better-auth.
+All fallible operations return `Result<T, E>`. Errors are discriminated unions.
 
-### 5. Zero New Secrets
+### 5. Functional-First
 
-Uses `BETTER_AUTH_SECRET` (better-auth's native env var). No `DEESSE_SECRET`.
+- Factory functions, not classes
+- No global state (module-scoped cache)
+- Controlled effects via Result type
 
-### 6. Minimal Dependencies
+### 6. Single Database Instance
 
-Login page uses plain React state. No TanStack Form dependency for built-in pages.
-
-### 7. Single Database Instance
-
-`config.database` is the single source of truth for the database. Better-auth and all application code use the same Drizzle instance. No separate DB connections.
+`config.database` is the single source of truth.
 
 ---
 
 ## Security Considerations
 
-### Flash of Unauthenticated Content (FOUC)
+### Bundle Leakage Prevention
 
-**Previous issue:** AdminPage redirected in a Client Component, causing 500ms of visible content before redirect.
+**Problem:** If `deesse.config.ts` is imported in Client Components, server-only values leak.
 
-**Fix:** Middleware handles redirects before any content renders.
+**Solution:** Split factories + ESLint rule:
+
+```javascript
+// eslint.config.js
+{
+  rules: {
+    "no-restricted-imports": [
+      "error",
+      {
+        patterns: [{
+          group: ["@/deesse.config"],
+          message: "Import from @/lib/deesse instead",
+        }],
+      },
+    ],
+  },
+}
+```
+
+### FOUC Prevention
+
+Middleware redirects before any content renders.
 
 ### Build-Time DB Access
 
-**Previous issue:** Build script queried production DB, failing in most CI/CD environments.
+Runtime check via `deesse.hasAdmin()` in middleware. No build-time dependency.
 
-**Fix:** Runtime check via middleware. No build-time DB dependency.
+---
 
-### Secret Exposure
+## Comparison with Payload CMS
 
-**Previous issue:** Auth instance (containing secrets) passed to Client Components.
-
-**Fix:** Config contains only URLs/paths. Auth instance lives in `lib/deesse.ts` which is never imported by Client Components.
-
-### CLI Path Resolution
-
-**Previous issue:** CLI tried to import `@/auth` which requires TS compilation.
-
-**Fix:** CLI uses raw SQL via Drizzle, bypassing the auth API entirely. No module resolution needed.
+| Aspect | Payload | DeesseJS |
+|--------|---------|----------|
+| Instance | `getPayload()` singleton on `global._payload` | `createDeesse()` with module-scoped cache |
+| Error handling | Exceptions | `Result<T, E>` with ROP |
+| Classes | `BasePayload` class | Factory functions only |
+| Global state | Yes (`global`) | No (module-scoped) |
+| Effects | Embedded | Controlled via `Result` type |
