@@ -277,53 +277,20 @@ export const client = createClient({
 
 ## Railway-Oriented Programming (ROP)
 
+DeesseJS uses `@deessejs/core` for type-safe error handling. See [deessejs-core skill](./.claude/skills/deessejs-core) for detailed documentation.
+
 ### Result Type
 
-DeesseJS uses `Result<T, E>` for all fallible operations:
+Import from `@deessejs/core`:
 
 ```typescript
-// types/result.ts
-export type Result<T, E = Error> =
-  | { success: true; data: T }
-  | { success: false; error: E };
-
-export const ok = <T>(data: T): Result<T, never> =>
-  ({ success: true, data });
-
-export const err = <E>(error: E): Result<never, E> =>
-  ({ success: false, error });
-
-export const andThen = <T, U, E>(
-  result: Result<T, E>,
-  fn: (data: T) => Result<U, E>
-): Result<U, E> =>
-  result.success ? fn(result.data) : result;
-
-export const map = <T, U, E>(
-  result: Result<T, E>,
-  fn: (data: T) => U
-): Result<U, E> =>
-  result.success ? ok(fn(result.data)) : result;
-
-export const mapError = <T, E, F>(
-  result: Result<T, E>,
-  fn: (error: E) => F
-): Result<T, F> =>
-  result.success ? result : err(fn(result.error));
+import { ok, err, map, flatMap, mapErr } from '@deessejs/core';
 ```
 
 ### AsyncResult for Async Operations
 
 ```typescript
-export type AsyncResult<T, E = Error> = Promise<Result<T, E>>;
-
-export const andThenAsync = async <T, U, E>(
-  result: AsyncResult<T, E>,
-  fn: (data: T) => AsyncResult<U, E>
-): AsyncResult<U, E> => {
-  const resolved = await result;
-  return resolved.success ? fn(resolved.data) : resolved;
-};
+import { fromPromise, okAsync, errAsync, flatMap, map, mapErr } from '@deessejs/core';
 ```
 
 ---
@@ -360,6 +327,8 @@ Better-auth server-side throws exceptions, but client-side returns `{ error, dat
 
 ```typescript
 // auth/result.ts
+import { ok, err } from '@deessejs/core';
+import type { Result } from '@deessejs/core';
 import { APIError } from "@better-auth/core/error";
 
 const AUTH_ERROR_MAP: Record<string, AuthError["type"]> = {
@@ -371,7 +340,7 @@ const AUTH_ERROR_MAP: Record<string, AuthError["type"]> = {
 
 export const withAuthResult = <T>(
   fn: () => Promise<T>
-): AsyncResult<T, AuthError> => async () => {
+): Promise<Result<T, AuthError>> => async () => {
   try {
     return ok(await fn());
   } catch (err) {
@@ -389,6 +358,12 @@ export const withAuthResult = <T>(
 ---
 
 ## ROP in Auth Flows
+
+Using `@deessejs/core` for type-safe error handling:
+
+```typescript
+import { ok, err, map, flatMap, flatMapAsync, fromPromise, pipe } from '@deessejs/core';
+```
 
 ### Sign-In Flow
 
@@ -408,8 +383,8 @@ const validateCredentials = (
 
 const authenticate = (
   credentials: Credentials
-): AsyncResult<Session, AuthError> =>
-  andThenAsync(
+): Promise<Result<Session, AuthError>> =>
+  flatMapAsync(
     ok(credentials),
     async ({ email, password }) => {
       const result = await client.signIn.email({ email, password });
@@ -422,8 +397,9 @@ const authenticate = (
 
 const signIn = (email: string, password: string) =>
   pipe(
-    validateCredentials(email, password),
-    andThenAsync(authenticate)
+    ok({ email, password }),
+    flatMap(validateCredentials),
+    flatMapAsync(authenticate)
   );
 ```
 
@@ -432,6 +408,8 @@ const signIn = (email: string, password: string) =>
 Middleware uses direct better-auth calls (performance-critical path):
 
 ```typescript
+import { ok, err, flatMap } from '@deessejs/core';
+
 export async function middleware(
   request: NextRequest
 ): Promise<Result<Response, AuthError>> {
@@ -720,7 +698,6 @@ npx deesse admin:create --email admin@example.com --name Admin
 | `packages/deesse/src/server.ts` | `createDeesse()` factory |
 | `packages/deesse/src/client.ts` | `createClient()` factory |
 | `packages/deesse/src/factory.ts` | Module-scoped cache |
-| `packages/deesse/src/types/result.ts` | Result, AsyncResult types |
 | `packages/deesse/src/auth/types.ts` | AuthError discriminated union |
 | `packages/deesse/src/auth/constants.ts` | Auth constants |
 | `packages/next/src/pages/login-page.tsx` | Login page |
