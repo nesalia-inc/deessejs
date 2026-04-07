@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { deesse } from "@/lib/deesse";
+import { auth, database } from "@/lib/deesse";
 
 export default async function Home() {
   // Verify deesse instance is properly initialized
-  const hasDatabase = !!deesse?.database;
-  const hasAuth = !!deesse?.auth;
+  const hasDatabase = !!database;
+  const hasAuth = !!auth;
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
