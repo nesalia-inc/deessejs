@@ -3,6 +3,7 @@ import type { Plugin } from './plugin';
 import type { PageTree } from './page';
 
 export type Config = {
+  name?: string;
   database: PostgresJsDatabase;
   plugins?: Plugin[];
   pages?: PageTree[];

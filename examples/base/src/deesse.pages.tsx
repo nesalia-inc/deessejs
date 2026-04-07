@@ -7,7 +7,7 @@ export const deessePages = [
     name: 'Home',
     slug: '',
     icon: Home,
-    content: () => <div>Home</div>,
+    content: <div>Home</div>,
   }),
   section({
     name: 'Settings',
@@ -17,7 +17,7 @@ export const deessePages = [
       page({
         name: 'General',
         slug: 'general',
-        content: () => <div>General Settings</div>,
+        content: <div>General Settings</div>,
       }),
     ],
   }),

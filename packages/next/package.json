@@ -9,13 +9,13 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./admin-shell": {
-      "import": "./dist/admin-shell.js",
-      "types": "./dist/admin-shell.d.ts"
+    "./root-layout": {
+      "import": "./dist/components/root-layout.js",
+      "types": "./dist/components/root-layout.d.ts"
     },
     "./to-sidebar-items": {
-      "import": "./dist/to-sidebar-items.js",
-      "types": "./dist/to-sidebar-items.d.ts"
+      "import": "./dist/lib/to-sidebar-items.js",
+      "types": "./dist/lib/to-sidebar-items.d.ts"
     }
   },
   "scripts": {

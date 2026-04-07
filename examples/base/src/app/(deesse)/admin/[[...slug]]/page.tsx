@@ -8,7 +8,7 @@ interface AdminPageProps {
 
 export default async function AdminPage({ params, searchParams }: AdminPageProps) {
   const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
+  const resolvedSearchParams = (await searchParams) as Record<string, string | string[]>;
 
   return (
     <RootPage

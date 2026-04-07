@@ -4,6 +4,7 @@ import { Pool } from 'pg';
 import { deessePages } from './deesse.pages';
 
 export const config = defineConfig({
+  name: "DeesseJS App",
   database: drizzle({
     client: new Pool({
       connectionString: process.env.DATABASE_URL,
