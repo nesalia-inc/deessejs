@@ -1,5 +1,5 @@
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import type { Config } from "./config/define";
+import type { InternalConfig } from "./config/define";
 import { betterAuth } from "better-auth";
 // @ts-expect-error - @better-auth/drizzle-adapter is a valid package
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
@@ -10,7 +10,7 @@ export type Deesse = {
   database: PostgresJsDatabase;
 };
 
-export function createDeesse(config: Config): Deesse {
+export function createDeesse(config: InternalConfig): Deesse {
   const auth = config.auth
     ? betterAuth({
         database: drizzleAdapter(config.database, {
