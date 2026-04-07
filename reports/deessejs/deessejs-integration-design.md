@@ -391,8 +391,8 @@ export const config = defineConfig({
 });
 
 // lib/deesse.ts (wiring layer)
-import { createDeesse } from "@deessejs/server";
-import { createClient } from "@deessejs/client";
+import { createDeesse } from "@deessejs/core/server";
+import { createClient } from "@deessejs/core/client";
 import { config } from "../deesse.config";
 
 export const deesse = createDeesse(config);

@@ -358,7 +358,8 @@ export const withDeesse = (nextConfig = {}, options = {}) => {
     transpilePackages: [
       ...(nextConfig.transpilePackages || []),
       '@deessejs/core',
-      '@deessejs/server',
+      '@deessejs/core/server',
+      '@deessejs/core/client',
       'better-auth',
     ],
 
