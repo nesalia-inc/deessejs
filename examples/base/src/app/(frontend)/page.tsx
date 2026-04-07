@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { auth, database } from "@/lib/deesse";
+import { database } from "@/lib/deesse";
+import { SessionStatus } from "@/components/session-status";
 
 export default async function Home() {
   // Verify deesse instance is properly initialized
   const hasDatabase = !!database;
-  const hasAuth = !!auth;
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -28,12 +28,7 @@ export default async function Home() {
                 {hasDatabase ? "Yes" : "No"}
               </code>
             </p>
-            <p className="text-zinc-600 dark:text-zinc-400">
-              Auth initialized:{" "}
-              <code className="text-sm bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">
-                {hasAuth ? "Yes" : "No"}
-              </code>
-            </p>
+            <SessionStatus />
           </div>
         </div>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
