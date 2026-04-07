@@ -23,14 +23,14 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 export type Config = {
   name?: string;
   database: PostgresJsDatabase;  // Drizzle instance
-  plugins?: Plugin[];
-  pages?: PageTree[];
 };
 
 export function defineConfig(config: Config): Config {
   return config;
 }
 ```
+
+**Note:** The `database` field accepts a Drizzle instance. This document covers PostgreSQL via `drizzle-orm/node-postgres`. Other databases (MySQL, SQLite) use different drizzle drivers and are documented separately.
 
 ### User Configuration
 
@@ -50,14 +50,6 @@ export const config = defineConfig({
 });
 ```
 
-### Supported Databases
-
-| Database | Driver | Import |
-|----------|--------|--------|
-| PostgreSQL | `pg` or `postgres` | `drizzle-orm/node-postgres` |
-| MySQL | `mysql2` | `drizzle-orm/mysql2` |
-| SQLite | `better-sqlite3` | `drizzle-orm/better-sqlite3` |
-
 ---
 
 ## 2. Server Instance (`createDeesse`)
@@ -66,8 +58,10 @@ export const config = defineConfig({
 
 ```typescript
 // The Deesse server instance (database-only, auth comes separately)
+// Note: This exposes the full Drizzle instance directly. All drizzle-orm
+// operations (select, insert, update, delete, transaction, etc.) are available.
 export type Deesse = {
-  database: PostgresJsDatabase; // Drizzle instance (direct access)
+  database: PostgresJsDatabase;
 };
 ```
 
@@ -85,7 +79,9 @@ export function createDeesse(config: Config): Deesse {
 }
 ```
 
-### Module-Scoped Cache
+### Module-Scoped Singleton
+
+The cache uses a **singleton pattern** with a single `"main"` key:
 
 ```typescript
 // packages/deesse/src/factory.ts
@@ -115,8 +111,8 @@ const getCached = <T>(state: CacheState<T>, key: string): T | Promise<T> | undef
   return state.promises.get(key);
 };
 
-// Factory with immutable state
-const createFactory = <T, Options>(
+// Singleton cache with immutable state
+const createCache = <T, Options>(
   createInstance: (options: Options) => Promise<T>
 ) => {
   let state: CacheState<T> = empty();
@@ -145,12 +141,15 @@ const createFactory = <T, Options>(
   };
 };
 
-// Module-scoped cache
-const deesseCache = createFactory<Deesse, Config>(createDeesse);
+// Module-scoped singleton
+const deesseCache = createCache<Deesse, Config>(createDeesse);
 
+// Singleton accessor - only one instance per app
 export const getDeesse = (config: Config) => deesseCache.get("main", config);
 export const clearDeesseCache = () => deesseCache.clear();
 ```
+
+**Key insight:** The `"main"` key means only **one** Deesse instance exists per application. Subsequent calls to `getDeesse()` with different configs will return the **first** cached instance. This is intentional — Deesse is designed as a single-instance per app pattern.
 
 ### Why Module-Scoped?
 
@@ -200,19 +199,26 @@ await deesse.database.insert(users).values({
 });
 
 // Update
+const [targetUser] = await deesse.database
+  .select()
+  .from(users)
+  .where(eq(users.email, "old@example.com"))
+  .limit(1);
+
 await deesse.database
   .update(users)
   .set({ name: "Updated Name" })
-  .where(eq(users.id, userId));
+  .where(eq(users.id, targetUser.id));
 
 // Delete
-await deesse.database.delete(users).where(eq(users.id, userId));
+await deesse.database.delete(users).where(eq(users.id, targetUser.id));
 
 // Transaction
 await deesse.database.transaction(async (trx) => {
+  const [user] = await trx.select().from(users).limit(1);
   await trx.insert(posts).values({
     title: "New Post",
-    authorId: userId,
+    authorId: user.id,
   });
 });
 ```
@@ -296,20 +302,20 @@ export async function getUserPosts(authorId: string) {
 ### With Schema
 
 ```typescript
-import { drizzle } from "drizzle-orm/node-postgres";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import * as schema from "@/db/schema";
+import { deesse } from "@/lib/deesse";
+import { eq } from "drizzle-orm";
+import { users } from "@/db/schema";
 
-type DbWithSchema = PostgresJsDatabase<typeof schema>;
-
-// Access typed schema via deesse.database
+// deesse.database is typed based on the schema passed to drizzle()
 export async function getUser(id: string) {
   return deesse.database
     .select()
-    .from(schema.users)
-    .where(eq(schema.users.id, id));
+    .from(users)
+    .where(eq(users.id, id));
 }
 ```
+
+The Drizzle instance is typed via the schema you pass to `drizzle()`. See the user configuration example in Section 1.
 
 ### Drizzle Config Options
 
