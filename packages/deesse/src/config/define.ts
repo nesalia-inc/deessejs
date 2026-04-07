@@ -10,6 +10,7 @@ export type Config = {
   pages?: PageTree[];
   auth?: {
     baseURL: string;
+    secret?: string;
   };
 };
 
@@ -19,6 +20,7 @@ export type Config = {
 export type InternalConfig = Config & {
   auth?: {
     baseURL: string;
+    secret?: string;
     plugins: any[];
   };
 };

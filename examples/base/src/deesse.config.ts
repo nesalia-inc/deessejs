@@ -13,5 +13,6 @@ export const config = defineConfig({
   pages: deessePages,
   auth: {
     baseURL: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
+    secret: process.env.DEESSE_SECRET,
   },
 });
