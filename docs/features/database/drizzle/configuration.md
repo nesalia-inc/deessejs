@@ -5,10 +5,14 @@
 ```typescript
 // packages/deesse/src/config/define.ts
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import type { Plugin } from "./plugin";
+import type { PageTree } from "./page";
 
 export type Config = {
   name?: string;
-  database: PostgresJsDatabase;  // Drizzle instance
+  database: PostgresJsDatabase;  // Drizzle instance (optional addition)
+  plugins?: Plugin[];
+  pages?: PageTree[];
 };
 
 export function defineConfig(config: Config): Config {
@@ -16,7 +20,7 @@ export function defineConfig(config: Config): Config {
 }
 ```
 
-**Note:** The `database` field accepts a Drizzle instance. This documentation covers PostgreSQL via `drizzle-orm/node-postgres`. Other databases (MySQL, SQLite) use different drizzle drivers.
+**Note:** The `database` field is an optional addition for database access via drizzle-orm. The core `Config` type includes `plugins` and `pages` for extending DeesseJS functionality.
 
 ## User Configuration
 
