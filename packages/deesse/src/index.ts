@@ -9,3 +9,6 @@ export type { Page, Section, PageTree } from "./config";
 
 export { z } from "zod";
 export type { ZodSchema } from "zod";
+
+export { getDeesse, clearDeesseCache } from "./factory";
+export type { Deesse } from "./server";
