@@ -12,12 +12,6 @@ npx deesse db:generate
 
 Runs `drizzle-kit generate` to create migration files in the `drizzle/` folder.
 
-**Example output:**
-```
-[✓] Generated migration: 2024-01-15-123456_add_users_table.sql
-[✓] Generated migration: 2024-01-15-234567_add_posts_table.sql
-```
-
 ## db:push
 
 Push schema changes directly to the database (development only):
@@ -30,7 +24,7 @@ npx deesse db:push
 
 ```bash
 # Skip confirmation
-npx deesse db:push --yes
+npx deesse db:push --force
 ```
 
 ## db:migrate
@@ -43,40 +37,28 @@ npx deesse db:migrate
 
 Runs all pending migrations from the `drizzle/` folder in order.
 
-**Example:**
-```
-[✓] Applied migration: 2024-01-15-123456_add_users_table.sql
-[✓] Applied migration: 2024-01-15-234567_add_posts_table.sql
-```
-
-## db:studio
-
-Open Drizzle Studio to visually explore and edit your data:
-
 ```bash
-npx deesse db:studio
+# Show what would be migrated without executing
+npx deesse db:migrate --dry-run
 ```
 
-Opens a local web interface at `http://localhost:4983`.
+## Requirements
+
+All commands require:
+
+- `src/db/schema.ts` - Your Drizzle tables
+- `drizzle.config.ts` - Standard drizzle-kit config
+- `.env` - Should contain `DATABASE_URL`
 
 ## Direct Drizzle Commands
 
 You can also use drizzle-kit directly:
 
 ```bash
-# Generate migrations
 npx drizzle-kit generate
-
-# Push schema (dev)
 npx drizzle-kit push
-
-# Migrate
 npx drizzle-kit migrate
-
-# Drop everything (careful!)
 npx drizzle-kit drop
-
-# Check for drift
 npx drizzle-kit check
 ```
 
