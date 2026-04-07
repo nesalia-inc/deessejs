@@ -1,13 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { sql } from "drizzle-orm";
 import { deesse } from "@/lib/deesse";
 
 export default async function Home() {
-  // Example: Query database version via raw SQL
-  const [{ result }] = await deesse.database.execute(
-    sql`SELECT version() as result`
-  );
+  // Verify deesse instance is properly initialized
+  const hasDatabase = !!deesse?.database;
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -24,9 +21,9 @@ export default async function Home() {
             DeesseJS Database Example
           </h1>
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Connected to PostgreSQL. Database version:{" "}
+            Database initialized:{" "}
             <code className="text-sm bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">
-              {String(result)}
+              {hasDatabase ? "Yes" : "No"}
             </code>
           </p>
         </div>
