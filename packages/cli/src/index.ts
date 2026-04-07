@@ -4,6 +4,7 @@ import * as p from '@clack/prompts';
 import { readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { runDbCommand, showDbHelp } from './commands/db.js';
+import { adminCreate } from './commands/admin-create.js';
 
 const getVersion = () => {
   try {
@@ -26,12 +27,14 @@ Commands:
   help     Show this help message
   init     Initialize a new DeesseJS project in current directory
   db       Database management commands (db:generate, db:push, etc.)
+  admin    Admin user management (admin create)
 
 Examples:
   npx deesse help
   npx deesse init
   npx deesse db:generate
   npx deesse db:push --force
+  npx deesse admin create
 
 For more information, visit: https://github.com/nesalia-inc/deessejs
   `);
@@ -64,6 +67,29 @@ const runInit = async () => {
   }
 };
 
+function parseAdminCreateArgs(args: string[]): {
+  email?: string;
+  password?: string;
+  name?: string;
+  cwd?: string;
+} {
+  const opts: { email?: string; password?: string; name?: string; cwd?: string } = {};
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--email' && i + 1 < args.length) {
+      opts.email = args[++i];
+    } else if (args[i] === '--password' && i + 1 < args.length) {
+      opts.password = args[++i];
+    } else if (args[i] === '--name' && i + 1 < args.length) {
+      opts.name = args[++i];
+    } else if (args[i] === '--cwd' && i + 1 < args.length) {
+      opts.cwd = args[++i];
+    }
+  }
+
+  return opts;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const command = args[0] || 'help';
@@ -92,6 +118,50 @@ async function main() {
       console.error(`Error: ${(error as Error).message}`);
       process.exit(1);
     }
+    return;
+  }
+
+  // Handle admin commands
+  if (command === 'admin') {
+    const subcommand = args[1];
+    const subArgs = args.slice(2);
+
+    if (!subcommand || subcommand === 'help' || subcommand === '--help' || subcommand === '-h') {
+      console.warn(`
+DeesseJS Admin Commands
+
+Usage: npx deesse admin <command>
+
+Commands:
+  admin create    Create an admin user
+
+Options:
+  --email <email>        Admin email address
+  --password <password>  Admin password (min 8 characters)
+  --name <name>          Admin display name (default: Admin)
+  --cwd <path>           Working directory
+
+Examples:
+  npx deesse admin create
+  npx deesse admin create --email admin@example.com --password Secur3P@ss!
+`);
+      return;
+    }
+
+    if (subcommand === 'create') {
+      const opts = parseAdminCreateArgs(subArgs);
+      try {
+        await adminCreate(opts);
+      } catch (error) {
+        console.error(`Error: ${(error as Error).message}`);
+        process.exit(1);
+      }
+      return;
+    }
+
+    console.error(`Unknown admin command: ${subcommand}`);
+    console.error('Run "npx deesse admin help" for usage information.');
+    process.exit(1);
     return;
   }
 

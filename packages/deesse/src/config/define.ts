@@ -7,6 +7,10 @@ export type Config = {
   database: PostgresJsDatabase;
   plugins?: Plugin[];
   pages?: PageTree[];
+  auth?: {
+    baseURL: string;
+    plugins?: any[];
+  };
 };
 
 export function defineConfig(config: Config) {

@@ -8,10 +8,8 @@ const deesseFactory = createCache<Deesse, Config>(async (config) => {
   return createDeesse(config);
 });
 
-export const getDeesse = (config: Config): Deesse => {
-  const cached = deesseFactory.getState().instances.get("main");
-  if (cached) return cached;
-  return createDeesse(config);
+export const getDeesse = async (config: Config): Promise<Deesse> => {
+  return deesseFactory.get("main", config);
 };
 
 export const clearDeesseCache = (): void => {

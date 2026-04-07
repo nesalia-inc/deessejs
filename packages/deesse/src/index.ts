@@ -12,3 +12,6 @@ export type { ZodSchema } from "zod";
 
 export { getDeesse, clearDeesseCache } from "./factory";
 export type { Deesse } from "./server";
+
+export { createClient } from "./client";
+export type { DeesseClient, DeesseClientOptions } from "./client";

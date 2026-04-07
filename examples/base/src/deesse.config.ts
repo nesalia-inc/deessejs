@@ -2,6 +2,7 @@ import { defineConfig } from 'deesse';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { deessePages } from './deesse.pages';
+import { admin } from 'better-auth/plugins';
 
 export const config = defineConfig({
   name: "DeesseJS App",
@@ -11,4 +12,8 @@ export const config = defineConfig({
     }),
   }),
   pages: deessePages,
+  auth: {
+    baseURL: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
+    plugins: [admin()],
+  },
 });

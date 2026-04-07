@@ -32,8 +32,13 @@
   "author": "DeesseJS",
   "license": "MIT",
   "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.0.0",
     "@clack/prompts": "^0.8.2",
-    "dotenv": "^17.3.1"
+    "better-auth": "^1.0.0",
+    "dotenv": "^17.3.1",
+    "drizzle-orm": "^0.38.0",
+    "pg": "^8.13.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.6",
