@@ -5,7 +5,7 @@ DeesseJS uses Drizzle ORM as its database layer, integrated with better-auth.
 ## Files
 
 - [Configuration](./configuration.md) - `defineConfig` and database setup
-- [Server Instance](./server-instance.md) - `createDeesse()` and singleton cache
+- [Server Instance](./server-instance.md) - `getDeesse()` factory and singleton cache
 - [Database Access](./database-access.md) - Query patterns via `deesse.database`
 - [Schema](./schema.md) - Defining tables and relations
 - [Type Safety](./type-safety.md) - TypeScript integration
@@ -28,11 +28,10 @@ export const config = defineConfig({
 
 ```typescript
 // lib/deesse.ts
-import { createDeesse } from "deesse";
+import { getDeesse } from "deesse";
 import { config } from "../deesse.config";
 
-export const deesse = createDeesse(config);
-```
+export const deesse = getDeesse(config);
 ```
 
 ## Notes

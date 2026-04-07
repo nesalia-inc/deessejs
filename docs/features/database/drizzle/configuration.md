@@ -59,7 +59,7 @@ export const config = defineConfig({
 ┌─────────────────────────────────────────────────────────────────┐
 │                        lib/deesse.ts                              │
 │                                                                  │
-│  export const deesse = createDeesse(config);                     │
+│  export const deesse = getDeesse(config);                       │
 │                                                                  │
 │  deesse.database  ──►  drizzle({ client: new Pool({...}) })   │
 └─────────────────────────────────────────────────────────────────┘

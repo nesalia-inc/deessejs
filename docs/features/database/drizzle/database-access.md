@@ -4,10 +4,10 @@
 
 ```typescript
 // lib/deesse.ts
-import { createDeesse } from "deesse";
+import { getDeesse } from "deesse";
 import { config } from "../deesse.config";
 
-export const deesse = createDeesse(config);
+export const deesse = getDeesse(config);
 ```
 
 ## Accessing the Database
