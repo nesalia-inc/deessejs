@@ -17,7 +17,7 @@ export function createDeesse(config: InternalConfig): Deesse {
           provider: "pg",
         }),
         baseURL: config.auth.baseURL,
-        secret: config.auth.secret,
+        secret: config.secret,
         plugins: config.auth.plugins,
       })
     : undefined;

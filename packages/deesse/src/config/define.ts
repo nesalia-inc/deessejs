@@ -8,9 +8,9 @@ export type Config = {
   database: PostgresJsDatabase;
   plugins?: Plugin[];
   pages?: PageTree[];
+  secret?: string;
   auth?: {
     baseURL: string;
-    secret?: string;
   };
 };
 
@@ -20,7 +20,6 @@ export type Config = {
 export type InternalConfig = Config & {
   auth?: {
     baseURL: string;
-    secret?: string;
     plugins: any[];
   };
 };
