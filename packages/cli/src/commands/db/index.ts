@@ -7,9 +7,9 @@
  * - db:migrate    Apply pending migrations to database
  */
 
-import { dbGenerate } from './db-generate.js';
-import { dbPush } from './db-push.js';
-import { dbMigrate } from './db-migrate.js';
+import { dbGenerate } from './generate.js';
+import { dbPush } from './push.js';
+import { dbMigrate } from './migrate.js';
 
 export interface DbCommandOptions {
   subcommand: string;

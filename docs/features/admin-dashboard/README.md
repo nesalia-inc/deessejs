@@ -110,4 +110,18 @@ The admin dashboard comes with the following native pages:
 - **Plugins**: Page to manage plugins
 - **Appearance** (optional): Page to manage the dashboard appearance
 
-The Home page can be customized with widgets. See [UI System](../ui/README.md) for more details.
+The Home page can be customized with widgets. See [Widget System](./widgets/README.md) for details.
+
+## Widget System
+
+The admin dashboard supports drag-and-drop widget customization. See the [Widget System](./widgets/README.md) for:
+
+- [Architecture](./widgets/ARCHITECTURE.md) — Three-layer data model, widget registry
+- [Grid System](./widgets/GRID-SYSTEM.md) — 12-column grid, positioning
+- [Drag-and-Drop](./widgets/DRAG-AND-DROP.md) — dnd-kit integration
+- [Widget Definition](./widgets/WIDGET-DEFINITION.md) — Types, registration API
+- [Layout Schema](./widgets/LAYOUT-SCHEMA.md) — JSON serialization, versioning
+- [Edit Mode](./widgets/EDIT-MODE.md) — Config panel, auto-save
+- [Plugin DX](./widgets/PLUGIN-DX.md) — How plugin creators build widgets
+- [Security](./widgets/SECURITY.md) — XSS, validation, authorization
+- [Open Questions](./widgets/OPEN-QUESTIONS.md) — Decisions requiring team input

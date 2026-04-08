@@ -1,6 +1,6 @@
 {
   "name": "@deessejs/cli",
-  "version": "0.6.3",
+  "version": "0.6.17",
   "description": "DeesseJS CLI for managing DeesseJS projects",
   "type": "module",
   "bin": {
@@ -34,10 +34,12 @@
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.0.0",
     "@clack/prompts": "^0.8.2",
+    "auth": "^1.6.0",
     "better-auth": "^1.0.0",
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.38.0",
     "pg": "^8.13.0",
+    "tsx": "^4.21.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {

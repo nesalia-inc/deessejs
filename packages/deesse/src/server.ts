@@ -1,25 +1,28 @@
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import type { BetterAuthPlugin } from "better-auth";
 import type { InternalConfig } from "./config/define";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 
 export type Deesse = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  auth: any;
+  auth: Awaited<ReturnType<typeof betterAuth<{
+    database: ReturnType<typeof drizzleAdapter>;
+    baseURL: string;
+    secret: string;
+    plugins: BetterAuthPlugin[];
+  }>>>;
   database: PostgresJsDatabase;
 };
 
 export function createDeesse(config: InternalConfig): Deesse {
-  const auth = config.auth
-    ? betterAuth({
-        database: drizzleAdapter(config.database, {
-          provider: "pg",
-        }),
-        baseURL: config.auth.baseURL,
-        secret: config.secret,
-        plugins: config.auth.plugins,
-      })
-    : undefined;
+  const auth = betterAuth({
+    database: drizzleAdapter(config.database, {
+      provider: "pg",
+    }),
+    baseURL: config.auth.baseURL,
+    secret: config.secret,
+    plugins: config.auth.plugins,
+  });
 
   return {
     auth,

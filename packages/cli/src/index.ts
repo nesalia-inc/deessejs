@@ -3,8 +3,8 @@
 import * as p from '@clack/prompts';
 import { readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
-import { runDbCommand, showDbHelp } from './commands/db.js';
-import { adminCreate } from './commands/admin-create.js';
+import { runDbCommand, showDbHelp } from './commands/db/index.js';
+import { adminCreate } from './commands/admin/create.js';
 
 const getVersion = () => {
   try {

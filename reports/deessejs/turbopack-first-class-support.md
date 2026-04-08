@@ -357,9 +357,7 @@ export const withDeesse = (nextConfig = {}, options = {}) => {
     // 1. Transpile monorepo packages
     transpilePackages: [
       ...(nextConfig.transpilePackages || []),
-      '@deessejs/core',
-      '@deessejs/core/server',
-      '@deessejs/core/client',
+      'deesse',
       'better-auth',
     ],
 

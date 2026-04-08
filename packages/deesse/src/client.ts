@@ -1,24 +1,15 @@
 import { createAuthClient } from "better-auth/react";
+import type {
+  AuthClient,
+  BetterAuthClientOptions,
+} from "better-auth/client";
 
 export interface DeesseClientOptions {
-  /**
-   * Auth server URL. Defaults to `/api/auth`.
-   */
-  baseURL?: string;
-
-  /**
-   * Custom base path for API routes
-   */
-  apiPath?: string;
-
-  /**
-   * Client plugins to extend functionality
-   */
-  plugins?: any[];
+  auth: BetterAuthClientOptions;
 }
 
 export interface DeesseClient {
-  auth: ReturnType<typeof createAuthClient>;
+  auth: AuthClient<BetterAuthClientOptions>;
 }
 
 /**
@@ -29,20 +20,20 @@ export interface DeesseClient {
  * ```typescript
  * import { createClient } from "deesse";
  *
- * export const client = createClient();
+ * export const client = createClient({
+ *   auth: {
+ *     baseURL: "/api/auth",
+ *   },
+ * });
  *
  * // In a component:
  * const { data, isPending } = client.auth.useSession();
  * ```
  */
-export function createClient(options: DeesseClientOptions = {}): DeesseClient {
-  const { baseURL = "/api/auth", apiPath, plugins = [] } = options;
-
-  const auth = createAuthClient({
-    baseURL,
-    ...(apiPath && { basePath: apiPath }),
-    plugins,
-  });
+export function createClient(
+  options: DeesseClientOptions,
+): DeesseClient {
+  const auth = createAuthClient(options.auth) as unknown as AuthClient<BetterAuthClientOptions>;
 
   return { auth };
 }

@@ -10,12 +10,13 @@
  */
 
 import { spawn } from 'node:child_process';
-import { verifySchemaPath, SCHEMA_PATH } from '../utils/schema-loader.js';
+import { verifySchemaPath, DEFAULT_SCHEMA_PATH } from '../../lib/db/schema.js';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as dotenv from 'dotenv';
 
 const DRIZZLE_CONFIG_PATH = './drizzle.config.ts';
+const SCHEMA_PATH = DEFAULT_SCHEMA_PATH;
 
 export interface DbMigrateOptions {
   cwd?: string;
@@ -27,7 +28,7 @@ export async function dbMigrate(options: DbMigrateOptions = {}): Promise<void> {
 
   // Verify schema file exists
   try {
-    await verifySchemaPath();
+    await verifySchemaPath(cwd);
   } catch {
     throw new Error(
       `db:migrate requires ${SCHEMA_PATH} to exist.\n` +
