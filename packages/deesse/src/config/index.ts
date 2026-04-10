@@ -1,6 +1,6 @@
-export { defineConfig } from "./define";
-export type { Config, InternalConfig } from "./define";
-export { plugin } from "./plugin";
-export type { Plugin } from "./plugin";
-export { page, section } from "./page";
-export type { Page, Section, PageTree } from "./page";
+export { defineConfig } from "./define.js";
+export type { Config, InternalConfig } from "./define.js";
+export { plugin } from "./plugin.js";
+export type { Plugin } from "./plugin.js";
+export { page, section } from "./page.js";
+export type { Page, Section, PageTree } from "./page.js";

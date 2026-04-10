@@ -6,7 +6,7 @@ import { admin } from 'better-auth/plugins';
 
 export type Config = {
   name?: string;
-  database: PostgresJsDatabase;
+  database: PostgresJsDatabase<any>;
   plugins?: Plugin[];
   pages?: PageTree[];
   secret: string;

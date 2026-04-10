@@ -9,6 +9,10 @@ export type Deesse = {
     database: ReturnType<typeof drizzleAdapter>;
     baseURL: string;
     secret: string;
+    emailAndPassword: {
+      enabled: true;
+    };
+    trustedOrigins: string[];
     plugins: BetterAuthPlugin[];
   }>>>;
   database: PostgresJsDatabase;
@@ -21,6 +25,10 @@ export function createDeesse(config: InternalConfig): Deesse {
     }),
     baseURL: config.auth.baseURL,
     secret: config.secret,
+    emailAndPassword: {
+      enabled: true,
+    },
+    trustedOrigins: [config.auth.baseURL],
     plugins: config.auth.plugins,
   });
 

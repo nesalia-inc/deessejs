@@ -2,6 +2,7 @@ import { defineConfig } from 'deesse';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { deessePages } from './deesse.pages';
+import { schema } from './db/schema/auth-schema';
 
 export const config = defineConfig({
   name: "DeesseJS App",
@@ -9,6 +10,7 @@ export const config = defineConfig({
     client: new Pool({
       connectionString: process.env.DATABASE_URL,
     }),
+    schema,
   }),
   pages: deessePages,
   secret: process.env.DEESSE_SECRET!,

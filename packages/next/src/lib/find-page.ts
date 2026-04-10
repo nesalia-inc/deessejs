@@ -3,14 +3,32 @@ import type { PageTree } from "deesse";
 export type FindPageResult = { page: Extract<PageTree, { type: "page" }> } | null;
 
 export function findPage(pages: PageTree[] | undefined, slugParts: string[]): FindPageResult {
-  if (!pages || slugParts.length === 0) return null;
+  if (!pages) return null;
+
+  // Handle empty slugParts: match pages with empty slug
+  if (slugParts.length === 0) {
+    for (const item of pages) {
+      if (item.type === "page" && item.slug === "") {
+        return { page: item };
+      }
+    }
+    return null;
+  }
 
   const [first, ...rest] = slugParts;
 
   for (const item of pages) {
     if (item.type === "section") {
       if (item.slug === first) {
-        if (rest.length === 0) return null;
+        // If no more parts, return first child page if exists
+        if (rest.length === 0) {
+          for (const child of item.children) {
+            if (child.type === "page") {
+              return { page: child };
+            }
+          }
+          return null;
+        }
         return findPage(item.children, rest);
       }
     } else if (item.type === "page") {

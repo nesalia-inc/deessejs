@@ -1,23 +1,27 @@
 // @deessejs/deesse core package
 
-import type { InternalConfig } from "./config/define";
+import type { InternalConfig } from "./config/define.js";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { createDeesse, type Deesse } from "./server";
+import { createDeesse, type Deesse } from "./server.js";
 
-export { defineConfig } from "./config";
-export type { Config, InternalConfig } from "./config";
-export { plugin } from "./config";
-export type { Plugin } from "./config";
-export { page, section } from "./config";
-export type { Page, Section, PageTree } from "./config";
+export { defineConfig } from "./config/index.js";
+export type { Config, InternalConfig } from "./config/index.js";
+export { plugin } from "./config/index.js";
+export type { Plugin } from "./config/index.js";
+export { page, section } from "./config/index.js";
+export type { Page, Section, PageTree } from "./config/index.js";
 
 export { z } from "zod";
 export type { ZodSchema } from "zod";
 
-export type { Deesse } from "./server";
+export type { Deesse } from "./server.js";
 
-export { createClient } from "./client";
-export type { DeesseClient, DeesseClientOptions } from "./client";
+export { createClient } from "./client.js";
+export type { DeesseClient, DeesseClientOptions } from "./client.js";
+
+export { isDatabaseEmpty, requireDatabaseNotEmpty, hasAdminUsers, validateAdminEmail } from "./lib/admin.js";
+export type { EmailValidationOptions } from "./lib/admin.js";
+export { isPublicEmailDomain, isAllowedAdminEmail, getAllowedDomains, validateAdminEmailDomain, PUBLIC_EMAIL_DOMAINS } from "./lib/validation.js";
 
 /**
  * Symbol-based global storage for Deesse instance.
@@ -79,22 +83,14 @@ export const getDeesse = async (
   }
 
   // Case 2: Instance exists but config changed - hot reload
+  // IMPORTANT: Don't close the pool! cache.instance still uses the old pool.
+  // The new config's pool will be garbage collected when the HMR module reference is dropped.
   if (
     cache.instance &&
     cache.config &&
     !isConfigEqual(cache.config, config)
   ) {
     console.info("[deesse] Config changed, performing hot reload...");
-
-    // Close old pool if it exists
-    const oldPool = extractPool(cache.config.database as PostgresJsDatabase);
-    if (oldPool) {
-      const pool = oldPool as { end?: () => Promise<void> };
-      if (typeof pool.end === "function") {
-        await pool.end();
-      }
-    }
-
     cache.config = config;
     return cache.instance;
   }

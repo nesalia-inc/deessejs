@@ -1,19 +1,11 @@
 import type { Config } from "deesse";
-import { toSidebarItems } from "../lib/to-sidebar-items";
-import { AdminShell } from "./admin-shell";
 
-export function RootLayout({
-  config,
-  children,
-}: {
-  config: Config;
-  children: React.ReactNode;
-}) {
-  const items = toSidebarItems(config.pages ?? []);
-
+export function RootLayout({ children }: { config: Config; children: React.ReactNode }) {
+  // Minimal HTML shell - no AdminShell here
+  // AdminShell is rendered by RootPage when needed
   return (
-    <AdminShell name={config.name} items={items} header={<span className="font-semibold">Dashboard</span>}>
+    <div className="min-h-screen h-full flex flex-col">
       {children}
-    </AdminShell>
+    </div>
   );
 }

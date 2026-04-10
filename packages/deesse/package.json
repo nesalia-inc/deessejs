@@ -1,6 +1,6 @@
 {
   "name": "deesse",
-  "version": "0.2.7",
+  "version": "0.2.11",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
@@ -9,6 +9,34 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./server": {
+      "import": "./dist/server.js",
+      "types": "./dist/server.d.ts"
+    },
+    "./config": {
+      "import": "./dist/config/index.js",
+      "types": "./dist/config/index.d.ts"
+    },
+    "./config/define": {
+      "import": "./dist/config/define.js",
+      "types": "./dist/config/define.d.ts"
+    },
+    "./client": {
+      "import": "./dist/client.js",
+      "types": "./dist/client.d.ts"
+    },
+    "./cache": {
+      "import": "./dist/cache.js",
+      "types": "./dist/cache.d.ts"
+    },
+    "./lib/admin": {
+      "import": "./dist/lib/admin.js",
+      "types": "./dist/lib/admin.d.ts"
+    },
+    "./lib/validation": {
+      "import": "./dist/lib/validation.js",
+      "types": "./dist/lib/validation.d.ts"
     }
   },
   "scripts": {

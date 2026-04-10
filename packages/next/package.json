@@ -20,6 +20,14 @@
     "./to-sidebar-items": {
       "import": "./dist/lib/to-sidebar-items.js",
       "types": "./dist/lib/to-sidebar-items.d.ts"
+    },
+    "./app-sidebar": {
+      "import": "./dist/components/app-sidebar.js",
+      "types": "./dist/components/app-sidebar.d.ts"
+    },
+    "./admin-shell": {
+      "import": "./dist/components/admin-shell.js",
+      "types": "./dist/components/admin-shell.d.ts"
     }
   },
   "scripts": {

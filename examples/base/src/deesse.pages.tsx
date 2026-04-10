@@ -1,6 +1,7 @@
 import React from 'react';
 import { page, section } from 'deesse';
-import { Home } from 'lucide-react';
+import { Home, LayoutDashboard } from 'lucide-react';
+import { DashboardPage } from '@deessejs/next';
 
 export const deessePages = [
   page({
@@ -8,6 +9,16 @@ export const deessePages = [
     slug: '',
     icon: Home,
     content: <div>Home</div>,
+  }),
+  page({
+    name: 'Dashboard',
+    slug: 'dashboard',
+    icon: LayoutDashboard,
+    content: (
+      <DashboardPage name="DeesseJS Admin">
+        <div>Dashboard content</div>
+      </DashboardPage>
+    ),
   }),
   section({
     name: 'Settings',

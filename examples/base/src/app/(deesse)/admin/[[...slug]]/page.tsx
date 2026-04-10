@@ -1,6 +1,6 @@
 import { RootPage } from "@deessejs/next";
 import { config } from "@deesse-config";
-import { deesseAuth } from "@/lib/deesse";
+import { auth } from "@/lib/auth";
 
 interface AdminPageProps {
   params: Promise<{ slug?: string[] }>;
@@ -14,7 +14,7 @@ export default async function AdminPage({ params, searchParams }: AdminPageProps
   return (
     <RootPage
       config={config}
-      auth={deesseAuth}
+      auth={auth}
       params={resolvedParams}
       searchParams={resolvedSearchParams}
     />
