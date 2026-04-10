@@ -46,12 +46,15 @@ function isActive(currentSlug: string[], targetSlug: string): boolean {
 function PageItem({
   page,
   currentSlug,
+  basePath,
 }: {
   page: SidebarPage;
   currentSlug: string[];
+  basePath: string;
 }) {
-  const href = `/admin/${page.slug}`;
-  const active = isActive(currentSlug, page.slug);
+  const fullPath = basePath ? `${basePath}/${page.slug}` : page.slug;
+  const href = `/admin/${fullPath}`.replace(/\/$/, "") || "/admin";
+  const active = isActive(currentSlug, fullPath);
 
   return (
     <SidebarMenuItem>
@@ -68,10 +71,13 @@ function PageItem({
 function SectionItem({
   section,
   currentSlug,
+  basePath,
 }: {
   section: SidebarSection;
   currentSlug: string[];
+  basePath: string;
 }) {
+  const fullBasePath = basePath ? `${basePath}/${section.slug}` : section.slug;
   return (
     <SidebarGroup className={section.isFooter ? "mt-auto" : undefined}>
       <SidebarGroupLabel>
@@ -80,12 +86,13 @@ function SectionItem({
       <SidebarMenu>
         {section.children.map((child) =>
           child.type === "page" ? (
-            <PageItem key={child.slug} page={child} currentSlug={currentSlug} />
+            <PageItem key={`${fullBasePath}/${child.slug}`} page={child} currentSlug={currentSlug} basePath={fullBasePath} />
           ) : (
             <SectionItem
-              key={child.slug}
+              key={`${fullBasePath}/${child.slug}`}
               section={child as SidebarSection}
               currentSlug={currentSlug}
+              basePath={fullBasePath}
             />
           )
         )}
@@ -103,11 +110,11 @@ export function SidebarNav({ items }: SidebarNavProps) {
 
   return (
     <SidebarMenu>
-      {items.map((item) =>
+      {items.map((item, index) =>
         item.type === "page" ? (
-          <PageItem key={item.slug} page={item} currentSlug={currentSlug} />
+          <PageItem key={`root-${index}-${item.slug}`} page={item} currentSlug={currentSlug} basePath="" />
         ) : (
-          <SectionItem key={item.slug} section={item} currentSlug={currentSlug} />
+          <SectionItem key={`root-${index}-${item.slug}`} section={item} currentSlug={currentSlug} basePath="" />
         )
       )}
     </SidebarMenu>

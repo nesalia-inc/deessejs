@@ -11,7 +11,7 @@ export interface SidebarSection {
   type: "section";
   name: string;
   slug: string;
-  bottom?: boolean;
+  isFooter?: boolean;
   children: SidebarItem[];
 }
 
@@ -38,7 +38,7 @@ function toSidebarItem(item: PageTree): SidebarItem {
     type: "section",
     name: item.name,
     slug: item.slug,
-    bottom: item.bottom,
+    isFooter: item.bottom,
     children: item.children.map(toSidebarItem),
   };
 }
@@ -58,11 +58,21 @@ export function toSidebarItems(pageTree: PageTree[]): SidebarItem[] {
     });
   }
 
+  // Deduplicate sections by slug (later pages override earlier ones with same slug)
+  const seenSlugs = new Set<string>();
+  const uniqueSections: typeof sections = [];
+  for (const section of sections) {
+    if (!seenSlugs.has(section.slug)) {
+      seenSlugs.add(section.slug);
+      uniqueSections.push(section);
+    }
+  }
+
   // Sort sections: bottom sections go last
-  const mappedSections = sections.map(toSidebarItem) as SidebarSection[];
+  const mappedSections = uniqueSections.map(toSidebarItem) as SidebarSection[];
   const sortedSections = mappedSections.sort((a, b) => {
-    if (a.bottom && !b.bottom) return 1;
-    if (!a.bottom && b.bottom) return -1;
+    if (a.isFooter && !b.isFooter) return 1;
+    if (!a.isFooter && b.isFooter) return -1;
     return 0;
   });
 
