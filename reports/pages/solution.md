@@ -412,7 +412,7 @@ export { defineConfig } from "./define.js";
 export type { Config, InternalConfig } from "./define.js";
 export { plugin } from "./plugin.js";
 export type { Plugin } from "./plugin.js";
-export { page, section } from "./page.js";
+export { page, subPage, collapsibleGroup, section } from "./page.js";
 export type { Page, SubPage, Section, CollapsibleGroup, PageTree, BreadcrumbSegment, TraversalResult, Maybe, Slug, PageConfig, SubPageConfig, CollapsibleGroupConfig, SectionConfig } from "./page.js";
 ```
 

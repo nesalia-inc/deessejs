@@ -50,11 +50,21 @@ export function toSidebarItems(pageTree: PageTree[]): SidebarItem[] {
   const items: SidebarItem[] = [];
 
   if (orphanPages.length > 0) {
+    // Deduplicate orphan pages by name (later pages override earlier ones with same name)
+    const seenPageNames = new Set<string>();
+    const uniqueOrphanPages = orphanPages.filter((page) => {
+      if (!seenPageNames.has(page.name)) {
+        seenPageNames.add(page.name);
+        return true;
+      }
+      return false;
+    });
+
     items.push({
       type: "section",
       name: "General",
       slug: "general",
-      children: orphanPages.map(toSidebarItem),
+      children: uniqueOrphanPages.map(toSidebarItem),
     });
   }
 

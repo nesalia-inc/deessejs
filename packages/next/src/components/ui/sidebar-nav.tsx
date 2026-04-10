@@ -86,10 +86,10 @@ function SectionItem({
       <SidebarMenu>
         {section.children.map((child) =>
           child.type === "page" ? (
-            <PageItem key={`${fullBasePath}/${child.slug}`} page={child} currentSlug={currentSlug} basePath={fullBasePath} />
+            <PageItem key={`${fullBasePath}/${child.name}`} page={child} currentSlug={currentSlug} basePath={fullBasePath} />
           ) : (
             <SectionItem
-              key={`${fullBasePath}/${child.slug}`}
+              key={`${fullBasePath}/${child.name}`}
               section={child as SidebarSection}
               currentSlug={currentSlug}
               basePath={fullBasePath}
