@@ -1,7 +1,10 @@
+import { RootLayout } from "@deessejs/next/root-layout";
+import { config } from "@deesse-config";
+
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="min-h-screen bg-background text-foreground">{children}</div>;
+  return <RootLayout config={config}>{children}</RootLayout>;
 }
