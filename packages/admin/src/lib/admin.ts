@@ -22,7 +22,7 @@ export async function requireDatabaseNotEmpty(auth: Auth): Promise<void> {
   if (await isDatabaseEmpty(auth)) {
     throw new Error(
       "Database is empty. Cannot proceed with this operation. " +
-      "Use the First Admin Setup page to create the initial admin account."
+        "Use the First Admin Setup page to create the initial admin account."
     );
   }
 }
@@ -59,7 +59,7 @@ export function validateAdminEmail(
   email: string,
   options: EmailValidationOptions = {}
 ): { valid: boolean; error?: string } {
-  const domain = email.split('@')[1]?.toLowerCase();
+  const domain = email.split("@")[1]?.toLowerCase();
 
   if (!domain) {
     return { valid: false, error: "Invalid email format" };
@@ -71,15 +71,31 @@ export function validateAdminEmail(
   }
 
   // Check allowed domains (if specified)
-  if (options.allowedDomains?.length && !options.allowedDomains.includes(domain)) {
-    return { valid: false, error: `Email must be from: ${options.allowedDomains.join(', ')}` };
+  if (
+    options.allowedDomains?.length &&
+    !options.allowedDomains.includes(domain)
+  ) {
+    return {
+      valid: false,
+      error: `Email must be from: ${options.allowedDomains.join(", ")}`,
+    };
   }
 
   // Require organization (no public email domains)
   if (options.requireOrganization) {
-    const PUBLIC_DOMAINS = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com'];
+    const PUBLIC_DOMAINS = [
+      "gmail.com",
+      "yahoo.com",
+      "hotmail.com",
+      "outlook.com",
+      "icloud.com",
+    ];
     if (PUBLIC_DOMAINS.includes(domain)) {
-      return { valid: false, error: "Personal email domains are not allowed. Use an organizational email." };
+      return {
+        valid: false,
+        error:
+          "Personal email domains are not allowed. Use an organizational email.",
+      };
     }
   }
 

@@ -1,4 +1,4 @@
-import { page, section } from "deesse";
+import { page, section } from "@deessejs/admin";
 import { Home, Users, Database, Settings, Puzzle } from "lucide-react";
 import { HomePage } from "../components/pages/home-page";
 import { UsersPage } from "../components/pages/users-page";

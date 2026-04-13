@@ -29,14 +29,6 @@
     "./cache": {
       "import": "./dist/cache.js",
       "types": "./dist/cache.d.ts"
-    },
-    "./lib/admin": {
-      "import": "./dist/lib/admin.js",
-      "types": "./dist/lib/admin.d.ts"
-    },
-    "./lib/validation": {
-      "import": "./dist/lib/validation.js",
-      "types": "./dist/lib/validation.d.ts"
     }
   },
   "scripts": {

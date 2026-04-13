@@ -3,17 +3,17 @@
  */
 
 export const PUBLIC_EMAIL_DOMAINS = [
-  'gmail.com',
-  'yahoo.com',
-  'hotmail.com',
-  'outlook.com',
-  'icloud.com',
-  'mail.com',
-  'aol.com',
-  'protonmail.com',
-  'zoho.com',
-  'yandex.com',
-  'gmx.com',
+  "gmail.com",
+  "yahoo.com",
+  "hotmail.com",
+  "outlook.com",
+  "icloud.com",
+  "mail.com",
+  "aol.com",
+  "protonmail.com",
+  "zoho.com",
+  "yandex.com",
+  "gmx.com",
 ] as const;
 
 export type PublicEmailDomain = (typeof PUBLIC_EMAIL_DOMAINS)[number];
@@ -22,7 +22,7 @@ export type PublicEmailDomain = (typeof PUBLIC_EMAIL_DOMAINS)[number];
  * Check if an email uses a public email domain
  */
 export function isPublicEmailDomain(email: string): boolean {
-  const domain = email.split('@')[1]?.toLowerCase();
+  const domain = email.split("@")[1]?.toLowerCase();
   return PUBLIC_EMAIL_DOMAINS.includes(domain as PublicEmailDomain);
 }
 
@@ -31,10 +31,10 @@ export function isPublicEmailDomain(email: string): boolean {
  * Returns empty array if not configured (no restrictions).
  */
 export function getAllowedDomains(): string[] {
-  const envValue = process.env['ADMIN_ALLOWED_DOMAINS'];
+  const envValue = process.env["ADMIN_ALLOWED_DOMAINS"];
   if (!envValue) return [];
   return envValue
-    .split(',')
+    .split(",")
     .map((d) => d.trim().toLowerCase())
     .filter(Boolean);
 }
@@ -46,7 +46,7 @@ export function getAllowedDomains(): string[] {
 export function isAllowedAdminEmail(email: string): boolean {
   const allowed = getAllowedDomains();
   if (!allowed.length) return true; // No restriction configured
-  const domain = email.split('@')[1]?.toLowerCase();
+  const domain = email.split("@")[1]?.toLowerCase();
   return allowed.includes(domain);
 }
 
@@ -63,23 +63,24 @@ export function validateAdminEmailDomain(
 
   // If allowed domains are configured, enforce them strictly
   if (allowed.length > 0) {
-    const domain = email.split('@')[1]?.toLowerCase();
+    const domain = email.split("@")[1]?.toLowerCase();
     if (!allowed.includes(domain)) {
       return {
         valid: false,
-        code: 'INVALID_EMAIL_DOMAIN',
-        message: `Admin email must be from an allowed domain. Allowed: ${allowed.join(', ')}`,
-        suggestion: 'Set ADMIN_ALLOWED_DOMAINS environment variable to configure allowed email domains',
+        code: "INVALID_EMAIL_DOMAIN",
+        message: `Admin email must be from an allowed domain. Allowed: ${allowed.join(", ")}`,
+        suggestion:
+          "Set ADMIN_ALLOWED_DOMAINS environment variable to configure allowed email domains",
       };
     }
   }
 
   // If email is from a public domain, return warning info (but allow through)
   if (isPublic && allowed.length === 0) {
-    const domain = email.split('@')[1]?.toLowerCase();
+    const domain = email.split("@")[1]?.toLowerCase();
     return {
       valid: false,
-      code: 'PUBLIC_EMAIL_DOMAIN',
+      code: "PUBLIC_EMAIL_DOMAIN",
       message: `${email} is a public email domain. Admin accounts should use organizational email addresses.`,
       suggestion: `Set ADMIN_ALLOWED_DOMAINS environment variable to restrict to organizational domains only (e.g., ADMIN_ALLOWED_DOMAINS=${domain})`,
     };

@@ -1,8 +1,11 @@
-import type { PageTree } from "@deessejs/admin";
+import type { PageTree } from "../config/page.js";
 
 export type FindPageResult = { page: Extract<PageTree, { type: "page" }> } | null;
 
-export function findPage(pages: PageTree[] | undefined, slugParts: string[]): FindPageResult {
+export function findPage(
+  pages: PageTree[] | undefined,
+  slugParts: string[]
+): FindPageResult {
   if (!pages) return null;
 
   // Handle empty slugParts: match pages with empty slug
@@ -41,7 +44,9 @@ export function findPage(pages: PageTree[] | undefined, slugParts: string[]): Fi
   return null;
 }
 
-export function extractSlugParts(params: Record<string, string | string[]>): string[] {
+export function extractSlugParts(
+  params: Record<string, string | string[]>
+): string[] {
   const slug = params["slug"];
   if (!slug) return [];
   return Array.isArray(slug) ? slug : [slug];

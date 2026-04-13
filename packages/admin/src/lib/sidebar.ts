@@ -1,4 +1,4 @@
-import type { PageTree } from "@deessejs/admin";
+import type { PageTree } from "../config/page.js";
 
 export interface SidebarPage {
   type: "page";
@@ -44,8 +44,13 @@ function toSidebarItem(item: PageTree): SidebarItem {
 }
 
 export function toSidebarItems(pageTree: PageTree[]): SidebarItem[] {
-  const orphanPages = pageTree.filter((item): item is Extract<PageTree, { type: "page" }> => item.type === "page");
-  const sections = pageTree.filter((item): item is Extract<PageTree, { type: "section" }> => item.type === "section");
+  const orphanPages = pageTree.filter(
+    (item): item is Extract<PageTree, { type: "page" }> => item.type === "page"
+  );
+  const sections = pageTree.filter(
+    (item): item is Extract<PageTree, { type: "section" }> =>
+      item.type === "section"
+  );
 
   const items: SidebarItem[] = [];
 

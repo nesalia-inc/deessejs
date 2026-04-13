@@ -1,6 +1,6 @@
 import type { Auth, BetterAuthOptions } from 'better-auth';
 import { NextResponse } from "next/server";
-import { hasAdminUsers, validateAdminEmail } from "deesse";
+import { createFirstAdmin, type FirstAdminInput } from "@deessejs/admin";
 
 /**
  * Handler for first-admin setup endpoint.
@@ -20,55 +20,23 @@ export async function handleFirstAdmin(
       );
     }
 
-    // Check if admin users already exist
-    const adminExists = await hasAdminUsers(auth as any);
-    if (adminExists) {
-      return NextResponse.json(
-        { message: "Admin users already exist. Cannot create first admin." },
-        { status: 403 }
-      );
-    }
-
     // Parse body
     const body = await request.json();
     const { name, email, password } = body;
 
-    if (!email || !password || !name) {
+    const input: FirstAdminInput = { name, email, password };
+    const result = await createFirstAdmin(auth, input);
+
+    if (result.success) {
       return NextResponse.json(
-        { message: "Missing required fields: name, email, password" },
-        { status: 400 }
+        { message: "Admin user created successfully", userId: result.userId },
+        { status: 201 }
       );
     }
-
-    if (password.length < 8) {
-      return NextResponse.json(
-        { message: "Password must be at least 8 characters" },
-        { status: 400 }
-      );
-    }
-
-    // Validate email domain
-    const validation = validateAdminEmail(email);
-    if (!validation.valid) {
-      return NextResponse.json(
-        { message: validation.error },
-        { status: 400 }
-      );
-    }
-
-    // Create admin user (internal call without headers - bypasses auth)
-    const result = await (auth.api as any).createUser({
-      body: {
-        email,
-        password,
-        name,
-        role: "admin",
-      },
-    });
 
     return NextResponse.json(
-      { message: "Admin user created successfully", userId: result.user?.id },
-      { status: 201 }
+      { code: result.code, message: result.message },
+      { status: 400 }
     );
   } catch (error) {
     console.error("[first-admin]", error);

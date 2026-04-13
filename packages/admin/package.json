@@ -1,0 +1,64 @@
+{
+  "name": "@deessejs/admin",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "React-agnostic admin logic for DeesseJS",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./config": {
+      "import": "./dist/config/index.js",
+      "types": "./dist/config/index.d.ts"
+    },
+    "./lib/*": {
+      "import": "./dist/lib/*.js",
+      "types": "./dist/lib/*.d.ts"
+    },
+    "./context/*": {
+      "import": "./dist/context/*.js",
+      "types": "./dist/context/*.d.ts"
+    },
+    "./default-pages": {
+      "import": "./dist/default-pages.js",
+      "types": "./dist/default-pages.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "deessejs",
+    "admin",
+    "react"
+  ],
+  "author": "DeesseJS",
+  "license": "MIT",
+  "dependencies": {
+    "better-auth": "^1.0.0",
+    "lucide-react": "^0.468.0",
+    "react": ">=18",
+    "react-dom": ">=18",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+  },
+  "peerDependencies": {
+    "better-auth": "^1.0.0",
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

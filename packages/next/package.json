@@ -38,6 +38,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@deessejs/admin": "workspace:*",
     "@deessejs/ui": "0.3.2",
     "better-auth": "^1.0.0",
     "deesse": "workspace:*",

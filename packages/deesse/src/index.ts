@@ -19,10 +19,6 @@ export type { Deesse } from "./server.js";
 export { createClient } from "./client.js";
 export type { DeesseClient, DeesseClientOptions } from "./client.js";
 
-export { isDatabaseEmpty, requireDatabaseNotEmpty, hasAdminUsers, validateAdminEmail } from "./lib/admin.js";
-export type { EmailValidationOptions } from "./lib/admin.js";
-export { isPublicEmailDomain, isAllowedAdminEmail, getAllowedDomains, validateAdminEmailDomain, PUBLIC_EMAIL_DOMAINS } from "./lib/validation.js";
-
 /**
  * Symbol-based global storage for Deesse instance.
  * Using Symbol.for ensures uniqueness across the process.
