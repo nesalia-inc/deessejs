@@ -157,6 +157,31 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/admin:
+    dependencies:
+      better-auth:
+        specifier: ^1.0.0
+        version: 1.6.0(@opentelemetry/api@1.9.1)(drizzle-kit@0.30.6)(drizzle-orm@0.38.4(@opentelemetry/api@1.9.1)(@types/pg@8.20.0)(@types/react@19.2.14)(kysely@0.28.15)(pg@8.20.0)(react@19.2.4))(next@16.2.1(@opentelemetry/api@1.9.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.20.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@2.1.9(@types/node@22.19.11)(lightningcss@1.32.0)(msw@2.12.10(@types/node@22.19.11)(typescript@5.9.3)))
+      lucide-react:
+        specifier: ^0.468.0
+        version: 0.468.0(react@19.2.4)
+      react:
+        specifier: '>=18'
+        version: 19.2.4
+      react-dom:
+        specifier: '>=18'
+        version: 19.2.4(react@19.2.4)
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.14)
+
   packages/cli:
     dependencies:
       '@better-auth/drizzle-adapter':
@@ -252,6 +277,9 @@ importers:
 
   packages/next:
     dependencies:
+      '@deessejs/admin':
+        specifier: workspace:*
+        version: link:../admin
       '@deessejs/ui':
         specifier: 0.3.2
         version: 0.3.2(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(next@16.2.1(@opentelemetry/api@1.9.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react-is@16.13.1)(react@19.2.4)
