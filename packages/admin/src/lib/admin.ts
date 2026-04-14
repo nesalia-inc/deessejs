@@ -41,8 +41,10 @@ export async function hasAdminUsers(auth: Auth): Promise<boolean> {
     const context = await auth.$context;
     const users = await context.internalAdapter.listUsers(100);
     return users.some((u: any) => u.role === "admin") ?? false;
-  } catch {
-    return false;
+  } catch (error) {
+    // Log the error but re-throw - we don't know if admin exists or not
+    console.error("[deesse] Failed to check admin users:", error);
+    throw new Error("Failed to check admin users", { cause: error });
   }
 }
 

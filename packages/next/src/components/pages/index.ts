@@ -1,5 +1,4 @@
 export { LoginPage } from './login-page';
-export { DashboardPage } from './dashboard-page';
 export { FirstAdminSetup } from './first-admin-setup';
 export { NotFoundPage } from './not-found-page';
 export { HomePage } from './home-page';
