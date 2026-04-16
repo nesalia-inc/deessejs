@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 
 export function Header() {
   return (
-    <header className="flex h-14 items-center justify-between px-4 border-b border-border bg-background">
+    <header className="flex h-14 items-center justify-between px-4 mx-auto max-w-7xl border-b border-border bg-background">
       <Link href="/" className="flex items-center gap-2">
         <Image
           src="/nesalia.svg"
           alt="Logo"
-          width={28}
-          height={28}
+          width={36}
+          height={36}
         />
       </Link>
       <nav className="flex items-center gap-2">
