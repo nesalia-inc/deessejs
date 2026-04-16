@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export function Header() {
   return (
@@ -11,21 +12,14 @@ export function Header() {
           width={28}
           height={28}
         />
-        <span className="font-semibold text-foreground">DeesseJS</span>
       </Link>
-      <nav className="flex items-center gap-4">
-        <Link
-          href="/login"
-          className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Login
-        </Link>
-        <Link
-          href="/signup"
-          className="text-sm font-medium px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-        >
-          Sign up
-        </Link>
+      <nav className="flex items-center gap-2">
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/login">Login</Link>
+        </Button>
+        <Button size="sm" asChild>
+          <Link href="/signup">Sign up</Link>
+        </Button>
       </nav>
     </header>
   );
