@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,6 +10,7 @@ import { client } from "@/lib/client"
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -27,7 +28,8 @@ export default function LoginPage() {
       return
     }
 
-    router.push("/home")
+    const redirectTo = searchParams.get("redirectTo") || "/home"
+    router.push(redirectTo)
   }
 
   return (
