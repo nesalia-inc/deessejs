@@ -176,6 +176,48 @@ export function REST_POST(config) {
 
 **Key DeesseJS interception**: `REST_POST` intercepts `/api/first-admin` before delegating to better-auth. This endpoint creates the initial admin user and is only available in development mode.
 
+### API Design Issue & Refactor Plan
+
+**Current Limitation**: `REST_GET` and `REST_POST` only accept `{ auth: Auth }` (the better-auth instance), not the full Deesse config:
+
+```typescript
+// Current signature - only auth instance
+export function REST_GET(config: DeesseAPIConfig<Options>) {
+  return toNextJsHandler(config.auth).GET;
+}
+```
+
+This means the route handler can't access Deesse-specific configuration like interceptors, custom plugins, or middleware that should apply to auth routes.
+
+**Planned Refactor**: Modify `REST_GET` and `REST_POST` to accept the full Deesse config (or at least a config that includes both `auth` and route interception options):
+
+```typescript
+// Planned signature - full config
+export function REST_GET(config: DeesseConfig) {
+  const { auth, routeOptions } = config;
+  return toNextJsHandler(auth).GET;
+}
+
+export function REST_POST(config: DeesseConfig) {
+  const { auth, routeOptions } = config;
+  return async (request: Request) => {
+    // Check routeOptions.interceptors before delegating
+    for (const interceptor of routeOptions.interceptors ?? []) {
+      const response = await interceptor(request);
+      if (response) return response; // intercepted
+    }
+    return toNextJsHandler(auth).POST(request);
+  };
+}
+```
+
+This refactor will allow:
+- Custom route interceptors beyond just `/api/first-admin`
+- Per-route middleware (rate limiting, logging, etc.)
+- Plugin-based route handling
+
+**Note**: Code changes for this refactor are **NOT implemented yet**. This is documented here as a prerequisite before integrating auth into templates.
+
 ### First-Admin Handler
 
 ```typescript
@@ -430,6 +472,7 @@ packages/
 
 | Step | Action | Priority |
 |------|--------|----------|
+| 2.0 | Refactor `REST_GET`/`REST_POST` to accept full config (not just auth) | P0 |
 | 2.1 | Create `app/(deesse)/api/[...slug]/route.ts` in templates | P1 |
 | 2.2 | Create `src/lib/deesse.ts` singleton | P1 |
 | 2.3 | Create `src/lib/deesse-client.ts` for client auth | P1 |
