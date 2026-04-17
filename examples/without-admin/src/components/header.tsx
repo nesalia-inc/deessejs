@@ -12,6 +12,7 @@ export function Header() {
             alt="Logo"
             width={36}
             height={36}
+            loading="eager"
           />
         </Link>
         <nav className="flex items-center gap-2">

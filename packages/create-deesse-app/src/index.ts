@@ -60,6 +60,7 @@ async function main() {
     options: [
       { value: 'minimal', label: 'Minimal' },
       { value: 'default', label: 'Default (Tailwind + shadcn/ui)' },
+      { value: 'without-admin', label: 'Without Admin Dashboard' },
     ],
     initialValue: 'default',
   });
@@ -87,7 +88,7 @@ Location: ${location}`,
   try {
     const targetDir = isCurrentDir ? process.cwd() : path.join(process.cwd(), projectName);
     const createdFiles = await copyTemplate(
-      template as 'minimal' | 'default',
+      template as 'minimal' | 'default' | 'without-admin',
       projectName,
       targetDir,
       isCurrentDir,

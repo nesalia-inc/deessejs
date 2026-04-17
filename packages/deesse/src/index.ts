@@ -48,6 +48,8 @@ function getGlobalCache(): GlobalDeesseCache {
 /**
  * Deep equality check for config comparison.
  * Required because config objects are recreated on HMR.
+ * Note: We do NOT compare database pools - the pool reference from $client
+ * may return new wrapper objects on each access, causing false positives.
  */
 function isConfigEqual(a: InternalConfig, b: InternalConfig): boolean {
   if (a.secret !== b.secret) return false;
@@ -79,16 +81,31 @@ export const getDeesse = async (
   }
 
   // Case 2: Instance exists but config changed - hot reload
-  // IMPORTANT: Don't close the pool! cache.instance still uses the old pool.
-  // The new config's pool will be garbage collected when the HMR module reference is dropped.
   if (
     cache.instance &&
     cache.config &&
     !isConfigEqual(cache.config, config)
   ) {
     console.info("[deesse] Config changed, performing hot reload...");
+
+    // Close the old pool before creating new instance (with 5s timeout)
+    if (cache.pool) {
+      const oldPool = cache.pool as { end?: () => Promise<void> };
+      if (typeof oldPool.end === "function") {
+        await Promise.race([
+          oldPool.end(),
+          new Promise((resolve) => setTimeout(() => resolve(undefined), 5000)),
+        ]).catch(console.error);
+      }
+    }
+
+    // Create new instance with new config
+    const instance = createDeesse(config);
+    cache.pool = extractPool(instance.database);
+    cache.instance = instance;
     cache.config = config;
-    return cache.instance;
+
+    return instance;
   }
 
   // Case 3: No instance exists - create one
