@@ -1,9 +1,36 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PasswordInput } from "@/components/password-input";
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { PasswordInput } from "@/components/password-input"
+import { client } from "@/lib/client"
 
 export default function SignupPage() {
+  const router = useRouter()
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError(null)
+
+    const formData = new FormData(e.currentTarget)
+    const name = formData.get("name") as string
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
+
+    const { error } = await client.auth.signUp.email({ email, password, name })
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    router.push("/")
+  }
+
   return (
     <div className="flex flex-1 items-center justify-center py-12">
       <div className="mx-auto w-full max-w-sm space-y-6">
@@ -13,18 +40,23 @@ export default function SignupPage() {
             Enter your email below to create your account
           </p>
         </div>
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          {error && (
+            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" type="text" placeholder="John Doe" required />
+            <Input id="name" name="name" type="text" placeholder="John Doe" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="m@example.com" required />
+            <Input id="email" name="email" type="email" placeholder="m@example.com" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <PasswordInput id="password" required />
+            <PasswordInput id="password" name="password" required />
           </div>
           <Button className="w-full" type="submit">
             Create account
@@ -38,5 +70,5 @@ export default function SignupPage() {
         </p>
       </div>
     </div>
-  );
+  )
 }
