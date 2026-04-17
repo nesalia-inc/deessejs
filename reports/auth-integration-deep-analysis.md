@@ -127,34 +127,99 @@ This falls back to `db._.fullSchema`, which works only if the database was creat
 
 ## 3. Pillar 2: API Route Integration
 
-### Route Handler Pattern
+### DeesseJS Route Pattern
+
+DeesseJS uses a catch-all slug route at `app/(deesse)/api/[...slug]/route.ts`:
 
 ```typescript
-// app/api/auth/[...all]/route.ts
-import { auth } from "@/lib/auth";
-import { toNextJsHandler } from "better-auth/next-js";
+// app/(deesse)/api/[...slug]/route.ts
+import { deesseAuth } from "@/lib/deesse";
+import { REST_GET, REST_POST } from "@deessejs/next/routes";
 
-export const { GET, POST } = toNextJsHandler(auth);
+export const GET = REST_GET({ auth: deesseAuth });
+export const POST = REST_POST({ auth: deesseAuth });
 ```
 
-The catch-all `[...all]` handles all better-auth endpoints:
-- `/sign-in/email`
-- `/sign-up/email`
-- `/sign-out`
-- `/get-session`
-- `/callback/[provider]`
-- `/admin/*` (13 admin endpoints)
+This single route handles all better-auth endpoints via the `[...slug]` catch-all:
+- `GET /api/sign-in/email` - sign in page
+- `POST /api/sign-in/email` - email sign in action
+- `POST /api/sign-up/email` - email sign up action
+- `POST /api/sign-out` - sign out action
+- `GET /api/get-session` - get current session
+- `POST /api/callback/[provider]` - OAuth callbacks
+- `POST /api/first-admin` - DeesseJS admin setup (intercepted)
+- `GET|POST /api/admin/*` - admin endpoints (13 total)
+
+### DeesseJS REST Handlers
+
+The `REST_GET` and `REST_POST` functions from `@deessejs/next/routes` are DeesseJS wrappers around `toNextJsHandler` from `better-auth/next-js`:
+
+```typescript
+// packages/next/src/api/rest/index.ts
+
+export function REST_GET(config) {
+  return toNextJsHandler(config.auth).GET;
+}
+
+export function REST_POST(config) {
+  const betterAuthHandler = toNextJsHandler(config.auth).POST;
+  return async (request: Request) => {
+    const pathname = new URL(request.url).pathname;
+    // DeesseJS intercepts /api/first-admin
+    if (pathname === "/api/first-admin" || pathname.endsWith("/first-admin")) {
+      return handleFirstAdmin(config.auth, request);
+    }
+    return betterAuthHandler(request);
+  };
+}
+```
+
+**Key DeesseJS interception**: `REST_POST` intercepts `/api/first-admin` before delegating to better-auth. This endpoint creates the initial admin user and is only available in development mode.
+
+### First-Admin Handler
+
+```typescript
+// packages/next/src/api/rest/admin/first-admin.ts
+export async function handleFirstAdmin(auth: Auth, request: Request): Promise<NextResponse> {
+  if (process.env['NODE_ENV'] === "production") {
+    return NextResponse.json({ message: "..." }, { status: 403 });
+  }
+  const { name, email, password } = await request.json();
+  const result = await createFirstAdmin(auth, { name, email, password });
+  if (result.success) {
+    return NextResponse.json({ message: "Admin user created", userId: result.userId }, { status: 201 });
+  }
+  return NextResponse.json({ code: result.code, message: result.message }, { status: 400 });
+}
+```
+
+### Deesse Singleton (`lib/deesse.ts`)
+
+The `deesseAuth` import comes from a singleton created in `src/lib/deesse.ts`:
+
+```typescript
+// src/lib/deesse.ts
+import { getDeesse } from "@deessejs/next";
+import { deesseConfig } from "@/deesse.config";
+
+const deesse = await getDeesse(deesseConfig);
+export const deesseAuth = deesse.auth;
+```
+
+This leverages the `getDeesse()` function which caches the Deesse instance globally to survive HMR.
 
 ### nextCookies Plugin
 
 **Critical**: The `nextCookies()` plugin from `better-auth/next-js` must be the **last plugin** in the plugins array. It handles cookie synchronization between better-auth and Next.js.
 
+In DeesseJS, plugins are configured via `defineConfig()` and automatically include `admin()`. The `nextCookies()` plugin should be appended at the end:
+
 ```typescript
-export const auth = betterAuth({
-  // ...
-  plugins: [admin(), nextCookies()],  // admin() first, nextCookies() last
-});
+// packages/deesse/src/config/define.ts
+const authPlugins: BetterAuthPlugin[] = [admin() /*, nextCookies() should be added at end */];
 ```
+
+Note: `nextCookies()` is currently not in the default plugin list - this is a gap that needs addressing.
 
 ### Cookie Configuration
 
@@ -164,46 +229,65 @@ export const auth = betterAuth({
 | `trustedOrigins` | `[baseURL]` | Origins allowed to make API requests |
 | `advanced.cookiePrefix` | `"better-auth"` | Cookie name prefix |
 
-### Deesse Current Pattern
-
-In `packages/next/src/api/rest/index.ts`:
-
-```typescript
-export function REST_POST(config) {
-  const betterAuthHandler = toNextJsHandler(config.auth).POST;
-  return async (request: Request) => {
-    // Intercept custom routes
-    if (pathname === "/api/first-admin") {
-      return handleFirstAdmin(config.auth, request);
-    }
-    return betterAuthHandler(request);
-  };
-}
-```
-
-This allows Deesse to intercept specific paths while delegating standard auth routes to better-auth.
+Note: In DeesseJS, `baseURL` and `trustedOrigins` are set in `deesse.config.ts` under `auth.baseURL`.
 
 ---
 
 ## 4. Pillar 3: Client Session Management
 
-### Creating the Client
+### Creating the Client (DeesseJS Way)
+
+DeesseJS provides a `createClient` function that wraps `better-auth/react`'s `createAuthClient`:
 
 ```typescript
-// lib/auth-client.ts
-import { createAuthClient } from "better-auth/react"
+// lib/auth-client.ts (or lib/deesse-client.ts)
+import { createClient } from "deesse";
 
-export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_AUTH_URL ?? "http://localhost:3000",
-  sessionOptions: {
-    refetchInterval: 0,           // Disable polling
-    refetchOnWindowFocus: true,   // Refetch when tab becomes visible
-    refetchWhenOffline: false,
+export const client = createClient({
+  auth: {
+    baseURL: process.env.NEXT_PUBLIC_AUTH_URL ?? "http://localhost:3000",
+    sessionOptions: {
+      refetchInterval: 0,           // Disable polling
+      refetchOnWindowFocus: true,   // Refetch when tab becomes visible
+      refetchWhenOffline: false,
+    },
   },
-})
+});
+```
+
+The `createClient` function from `packages/deesse/src/client.ts` is a thin wrapper:
+
+```typescript
+export function createClient(options: DeesseClientOptions): DeesseClient {
+  const auth = createAuthClient(options.auth) as unknown as AuthClient<BetterAuthClientOptions>;
+  return { auth };
+}
 ```
 
 ### useSession Hook
+
+```tsx
+"use client";
+
+import { client } from "@/lib/auth-client";
+
+export function UserProfile() {
+  const { data: session, isPending, error } = client.auth.useSession();
+
+  if (isPending) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  if (!session) return <div>Not authenticated</div>;
+
+  return (
+    <div>
+      <p>Welcome, {session.user.name}</p>
+      <p>Email: {session.user.email}</p>
+    </div>
+  );
+}
+```
+
+Note: The `client.auth.useSession()` call uses the `AuthClient` interface from `better-auth`, proxied through DeesseJS's `DeesseClient.auth`.
 
 ```tsx
 "use client";
@@ -346,10 +430,11 @@ packages/
 
 | Step | Action | Priority |
 |------|--------|----------|
-| 2.1 | Create `app/api/auth/[...all]/route.ts` in templates | P1 |
-| 2.2 | Create `src/lib/auth-client.ts` singleton | P1 |
-| 2.3 | Create `src/components/providers/auth-provider.tsx` | P2 |
-| 2.4 | Create `src/hooks/use-session.ts` | P2 |
+| 2.1 | Create `app/(deesse)/api/[...slug]/route.ts` in templates | P1 |
+| 2.2 | Create `src/lib/deesse.ts` singleton | P1 |
+| 2.3 | Create `src/lib/deesse-client.ts` for client auth | P1 |
+| 2.4 | Create `src/components/providers/auth-provider.tsx` | P2 |
+| 2.5 | Create `src/hooks/use-session.ts` | P2 |
 
 ### Phase 3: Plugin System Rewrite
 
@@ -376,15 +461,15 @@ packages/
 
 | File | Action | Description |
 |------|--------|-------------|
-| `app/api/auth/[...all]/route.ts` | Create | Route handler mounting better-auth |
-| `lib/auth-client.ts` | Create | Client-side auth singleton |
-| `lib/deesse.ts` | Create | Server-side deesse singleton |
+| `app/(deesse)/api/[...slug]/route.ts` | Create | Route handler using REST_GET/POST from @deessejs/next |
+| `lib/deesse.ts` | Create | Server-side singleton using `getDeesse()` from deesse |
+| `lib/deesse-client.ts` | Create | Client-side auth singleton using `createClient()` from deesse |
 | `components/providers/auth-provider.tsx` | Create | Auth context provider |
 | `hooks/use-session.ts` | Create | Session hook |
 
 ### templates/without-admin/src/
 
-Same as default template, minus admin-specific endpoints.
+Same as default template, minus admin-specific first-admin endpoint.
 
 ---
 
@@ -410,5 +495,6 @@ Same as default template, minus admin-specific endpoints.
 
 ---
 
-**Document Version**: 1.0
+**Document Version**: 1.1
 **Status**: Awaiting implementation approval
+**Last Updated**: 2026-04-17 (Pillar 2 revised to reflect DeesseJS wrapper patterns)
