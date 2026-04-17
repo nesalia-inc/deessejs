@@ -1,15 +1,14 @@
 import { AppProvider } from '@/components/providers';
 import type { Metadata } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
-
-const inter = Inter({
+const geistSans = Geist({
   variable: '--font-sans',
   subsets: ['latin'],
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const geistMono = Geist_Mono({
   variable: '--font-mono',
   subsets: ['latin'],
 });
@@ -25,9 +24,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="h-full">
-        <AppProvider>{children}</AppProvider>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
+      <body className="min-h-full flex flex-col font-sans">
+        <AppProvider>
+          {children}
+        </AppProvider>
       </body>
     </html>
   );

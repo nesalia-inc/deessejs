@@ -10,7 +10,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@deessejs/ui/sidebar";
-import type { SidebarItem } from "../../lib/to-sidebar-items";
+import type { SidebarItem } from "@deessejs/admin";
 import { SidebarNav } from "./sidebar-nav";
 
 export interface AppSidebarProps {

@@ -15,6 +15,7 @@ export interface AuthContext {
   user: AuthContext["session"] extends { user: infer U } ? U : undefined;
   adminExists: boolean;
   isLoginPage: boolean;
+  isAdminUser: boolean;
   slugParts: string[];
 }
 
@@ -69,6 +70,7 @@ export async function createAuthContext({
       user: (session as any)?.user ?? undefined,
       adminExists: false,
       isLoginPage: true,
+      isAdminUser: false,
       slugParts,
     };
   }
@@ -92,6 +94,7 @@ export async function createAuthContext({
     user: (session as any)?.user ?? undefined,
     adminExists,
     isLoginPage: false,
+    isAdminUser: (session as any)?.user?.role === "admin",
     slugParts,
   };
 }

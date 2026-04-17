@@ -1,12 +1,19 @@
 "use client";
 
-import { SidebarProvider, SidebarInset, Avatar, AvatarFallback } from "@deessejs/ui";
-import type { SidebarItem } from "../../lib/to-sidebar-items";
+import { SidebarProvider, SidebarInset, Avatar, AvatarFallback, AvatarImage } from "@deessejs/ui";
+import type { SidebarItem } from "@deessejs/admin";
 import { AppSidebar } from "../ui/app-sidebar";
 
 export interface AdminDashboardUser {
   name?: string | null;
   email?: string | null;
+  role?: string | null;
+}
+
+function getAvatarUrl(email: string | null | undefined): string {
+  if (!email) return "";
+  const encoded = encodeURIComponent(email);
+  return `https://avatar.vercel.sh/${encoded}?rounded=60`;
 }
 
 export interface AdminDashboardLayoutProps {
@@ -24,14 +31,7 @@ export function AdminDashboardLayout({
   user,
   children,
 }: AdminDashboardLayoutProps) {
-  const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "??";
+  const avatarUrl = getAvatarUrl(user?.email);
 
   return (
     <SidebarProvider>
@@ -41,8 +41,9 @@ export function AdminDashboardLayout({
           {header}
           <div className="ml-auto flex items-center gap-3">
             <Avatar>
+              <AvatarImage src={avatarUrl} alt={user?.name ?? "User"} />
               <AvatarFallback className="bg-primary text-primary-foreground font-medium">
-                {initials}
+                {user?.name?.[0]?.toUpperCase() ?? "?"}
               </AvatarFallback>
             </Avatar>
           </div>

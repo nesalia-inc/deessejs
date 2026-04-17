@@ -5,6 +5,7 @@ import { NotFoundPage } from "./components/pages/not-found-page";
 import { AdminNotConfigured } from "./components/pages/admin-not-configured";
 import { LoginPage } from "./components/pages/login-page";
 import { FirstAdminSetup } from "./components/pages/first-admin-setup";
+import { UnauthorizedPage } from "./components/pages/unauthorized-page";
 import { AdminDashboardLayout } from "./components/layouts/admin-shell";
 import { defaultPages } from "./pages/default-pages";
 
@@ -14,7 +15,7 @@ export interface RootPageProps {
 }
 
 export async function RootPage({ config, params }: RootPageProps) {
-  const { user, adminExists, isLoginPage, slugParts } = await createAuthContext({ config, params });
+  const { user, adminExists, isLoginPage, isAdminUser, slugParts } = await createAuthContext({ config, params });
 
   if (isLoginPage) {
     return <LoginPage />;
@@ -25,6 +26,11 @@ export async function RootPage({ config, params }: RootPageProps) {
 
   if (!result) {
     return <NotFoundPage slug={slugParts.join("/")} />;
+  }
+
+  // Check if user has admin role (only after confirming admin exists)
+  if (!isAdminUser) {
+    return <UnauthorizedPage />;
   }
 
   return (
