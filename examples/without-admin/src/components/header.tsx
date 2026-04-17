@@ -5,7 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,6 +73,10 @@ export function Header() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Avatar className="cursor-pointer">
+                    <AvatarImage
+                      src={`https://vercel.com/api/www/avatar?s=64&u=${session.user.name}`}
+                      alt={session.user.name ?? "User"}
+                    />
                     <AvatarFallback>
                       {session.user.name?.[0] ?? "U"}
                     </AvatarFallback>
