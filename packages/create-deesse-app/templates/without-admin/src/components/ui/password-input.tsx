@@ -5,12 +5,13 @@ import { Eye, EyeOff } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 function PasswordInput({ className, ...props }: React.ComponentProps<"input">) {
   const [showPassword, setShowPassword] = React.useState(false)
 
   return (
+    <TooltipProvider>
       <div className="relative">
         <input
           type={showPassword ? "text" : "password"}
@@ -42,7 +43,8 @@ function PasswordInput({ className, ...props }: React.ComponentProps<"input">) {
           </TooltipContent>
         </Tooltip>
       </div>
-      )
+    </TooltipProvider>
+  )
 }
 
 export { PasswordInput }
