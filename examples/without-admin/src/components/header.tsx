@@ -1,8 +1,39 @@
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+"use client"
+
+import Image from "next/image"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { client } from "@/lib/client"
 
 export function Header() {
+  const router = useRouter()
+  const { data: session, isPending } = client.auth.useSession()
+
+  async function handleSignOut() {
+    await client.auth.signOut()
+    router.push("/")
+  }
+
+  if (isPending) {
+    return (
+      <header className="flex h-14 items-center border-b border-border bg-background">
+        <div className="flex items-center justify-between w-full px-4 mx-auto max-w-7xl">
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/nesalia.svg"
+              alt="Logo"
+              width={36}
+              height={36}
+              loading="eager"
+            />
+          </Link>
+        </div>
+      </header>
+    )
+  }
+
   return (
     <header className="flex h-14 items-center border-b border-border bg-background">
       <div className="flex items-center justify-between w-full px-4 mx-auto max-w-7xl">
@@ -15,15 +46,35 @@ export function Header() {
             loading="eager"
           />
         </Link>
-        <nav className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/login">Login</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/signup">Sign up</Link>
-          </Button>
+        <nav className="flex items-center gap-4">
+          {session ? (
+            <>
+              <Button variant="outline" asChild>
+                <Link href="/home">Dashboard</Link>
+              </Button>
+              <div className="flex items-center gap-2">
+                <Avatar>
+                  <AvatarFallback>
+                    {session.user.name?.[0] ?? "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              <Button variant="ghost" onClick={handleSignOut}>
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" asChild>
+                <Link href="/login">Login</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/signup">Sign up</Link>
+              </Button>
+            </>
+          )}
         </nav>
       </div>
     </header>
-  );
+  )
 }
