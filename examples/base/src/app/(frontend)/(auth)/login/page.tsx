@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { PasswordInput } from "@/components/password-input"
 import { client } from "@/lib/client"
 
-export default function LoginPage() {
+function LoginPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
@@ -29,7 +29,7 @@ export default function LoginPage() {
 
     if (error) {
       toast.error(error.message)
-      setError(error.message)
+      setError(error.message ?? null)
       setIsPending(false)
       return
     }
@@ -81,5 +81,19 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-1 items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin" />
+        </div>
+      }
+    >
+      <LoginPageInner />
+    </Suspense>
   )
 }
