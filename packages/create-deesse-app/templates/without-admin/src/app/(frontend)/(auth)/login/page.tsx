@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -59,7 +60,14 @@ export default function LoginPage() {
             <PasswordInput id="password" name="password" required disabled={isPending} />
           </div>
           <Button className="w-full" type="submit" disabled={isPending}>
-            {isPending ? "Signing in..." : "Sign in"}
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              "Sign in"
+            )}
           </Button>
         </form>
         <p className="text-center text-sm text-muted-foreground">
