@@ -12,10 +12,12 @@ export default function SignupPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
+  const [isPending, setIsPending] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
+    setIsPending(true)
 
     const formData = new FormData(e.currentTarget)
     const name = formData.get("name") as string
@@ -26,6 +28,7 @@ export default function SignupPage() {
 
     if (error) {
       setError(error.message)
+      setIsPending(false)
       return
     }
 
@@ -50,18 +53,18 @@ export default function SignupPage() {
           )}
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" type="text" placeholder="John Doe" required />
+            <Input id="name" name="name" type="text" placeholder="John Doe" required disabled={isPending} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+            <Input id="email" name="email" type="email" placeholder="m@example.com" required disabled={isPending} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <PasswordInput id="password" name="password" required />
+            <PasswordInput id="password" name="password" required disabled={isPending} />
           </div>
-          <Button className="w-full" type="submit">
-            Create account
+          <Button className="w-full" type="submit" disabled={isPending}>
+            {isPending ? "Creating account..." : "Create account"}
           </Button>
         </form>
         <p className="text-center text-sm text-muted-foreground">

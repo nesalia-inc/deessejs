@@ -12,10 +12,12 @@ export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
+  const [isPending, setIsPending] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
+    setIsPending(true)
 
     const formData = new FormData(e.currentTarget)
     const email = formData.get("email") as string
@@ -25,6 +27,7 @@ export default function LoginPage() {
 
     if (error) {
       setError(error.message)
+      setIsPending(false)
       return
     }
 
@@ -49,14 +52,14 @@ export default function LoginPage() {
           )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+            <Input id="email" name="email" type="email" placeholder="m@example.com" required disabled={isPending} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <PasswordInput id="password" name="password" required />
+            <PasswordInput id="password" name="password" required disabled={isPending} />
           </div>
-          <Button className="w-full" type="submit">
-            Sign in
+          <Button className="w-full" type="submit" disabled={isPending}>
+            {isPending ? "Signing in..." : "Sign in"}
           </Button>
         </form>
         <p className="text-center text-sm text-muted-foreground">
