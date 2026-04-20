@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,11 +29,13 @@ export default function SignupPage() {
     const { error } = await client.auth.signUp.email({ email, password, name })
 
     if (error) {
+      toast.error(error.message)
       setError(error.message)
       setIsPending(false)
       return
     }
 
+    toast.success("Account created successfully")
     const redirectTo = searchParams.get("redirectTo") || "/home"
     router.push(redirectTo)
   }

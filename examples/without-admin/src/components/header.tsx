@@ -4,6 +4,7 @@ import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -31,6 +32,7 @@ export function Header() {
 
   const handleSignOut = async () => {
     await client.auth.signOut()
+    toast.success("Signed out successfully")
     router.push("/")
   }
 
