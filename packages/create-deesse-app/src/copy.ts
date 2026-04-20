@@ -1,6 +1,7 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { randomBytes } from 'node:crypto';
 
 export type Template = 'minimal' | 'default' | 'without-admin';
 
@@ -47,6 +48,7 @@ export async function copyTemplate(
   // Variables to replace in template files
   const vars = {
     PROJECT_NAME: projectName,
+    DEESSE_SECRET: randomBytes(32).toString('hex'),
   };
 
   // Copy template files
