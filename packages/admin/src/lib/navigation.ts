@@ -8,11 +8,19 @@ export function findPage(
 ): FindPageResult {
   if (!pages) return null;
 
-  // Handle empty slugParts: match pages with empty slug
+  // Handle empty slugParts: match pages with empty slug (including inside sections)
   if (slugParts.length === 0) {
     for (const item of pages) {
       if (item.type === "page" && item.slug === "") {
         return { page: item };
+      }
+      // Search inside sections for orphan pages wrapped in "General"
+      if (item.type === "section") {
+        for (const child of item.children) {
+          if (child.type === "page" && child.slug === "") {
+            return { page: child };
+          }
+        }
       }
     }
     return null;

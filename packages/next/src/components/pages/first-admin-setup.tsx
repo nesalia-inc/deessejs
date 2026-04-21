@@ -2,30 +2,26 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { Button } from "@deessejs/ui";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@deessejs/ui";
 import { Input } from "@deessejs/ui";
 import { Label } from "@deessejs/ui";
+import { PasswordInput } from "./password-input";
 
 export function FirstAdminSetup() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, setIsPending] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError("");
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
@@ -37,7 +33,7 @@ export function FirstAdminSetup() {
       return;
     }
 
-    setLoading(true);
+    setIsPending(true);
 
     try {
       const response = await fetch("/api/first-admin", {
@@ -54,27 +50,27 @@ export function FirstAdminSetup() {
         router.push("/admin/login?created=true");
       } else {
         setError(data.message || "Failed to create admin user");
+        setIsPending(false);
       }
     } catch {
       setError("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
+      setIsPending(false);
     }
   }
 
   return (
-    <div className="flex h-full items-center justify-center p-4">
-      <Card className="w-full max-w-sm mx-auto">
-        <CardHeader>
-          <CardTitle>Create First Admin</CardTitle>
-          <CardDescription>
-            No admin users exist yet. Create your first admin account to get started.
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
+    <div className="flex" style={{ height: "100vh" }}>
+      <div className="flex flex-1 items-center justify-center py-12">
+        <div className="mx-auto w-full max-w-sm space-y-6">
+          <div className="space-y-2 text-center">
+            <h1 className="text-2xl font-semibold tracking-tight">Create First Admin</h1>
+            <p className="text-sm text-muted-foreground">
+              No admin users exist yet. Create your first admin account to get started.
+            </p>
+          </div>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {error && (
-              <div className="text-sm text-red-500 bg-red-50 border border-red-200 rounded p-2">
+              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
                 {error}
               </div>
             )}
@@ -82,54 +78,55 @@ export function FirstAdminSetup() {
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
+                name="name"
                 type="text"
-                value={name}
-                onChange={(e) => setName((e.target as HTMLInputElement).value)}
                 placeholder="Admin User"
                 required
+                disabled={isPending}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail((e.target as HTMLInputElement).value)}
                 placeholder="admin@example.com"
                 required
+                disabled={isPending}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword((e.target as HTMLInputElement).value)}
+                name="password"
                 required
-                minLength={8}
+                disabled={isPending}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
+              <PasswordInput
                 id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword((e.target as HTMLInputElement).value)}
+                name="confirmPassword"
                 required
-                minLength={8}
+                disabled={isPending}
               />
             </div>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating..." : "Create Admin"}
+            <Button className="w-full" type="submit" disabled={isPending}>
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Admin"
+              )}
             </Button>
-          </CardFooter>
-        </form>
-      </Card>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

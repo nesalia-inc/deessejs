@@ -75,8 +75,30 @@ export async function createAuthContext({
     };
   }
 
-  // If no session exists, redirect to login
+  // If no session exists, redirect to login (unless in dev with no admin)
   if (!session) {
+    // Check if admin exists before redirecting to login
+    let adminExistsCheck = false;
+    try {
+      adminExistsCheck = await hasAdminUsers(auth);
+    } catch {
+      // In dev mode, if check fails, assume no admin exists yet
+      adminExistsCheck = process.env["NODE_ENV"] !== "production";
+    }
+
+    // In dev mode with no admin, allow access to render FirstAdminSetup
+    if (process.env["NODE_ENV"] !== "production" && !adminExistsCheck) {
+      return {
+        auth,
+        session: null,
+        user: undefined,
+        adminExists: false,
+        isLoginPage: false,
+        isAdminUser: false,
+        slugParts,
+      };
+    }
+
     redirect(ADMIN_LOGIN_PATH);
   }
 

@@ -1,11 +1,9 @@
 import type { InternalConfig } from "deesse";
 import { createAuthContext } from "./lib/auth-context";
 import { findAdminPage } from "./lib/page-finder";
-import { NotFoundPage } from "./components/pages/not-found-page";
-import { AdminNotConfigured } from "./components/pages/admin-not-configured";
+import { notFound } from "next/navigation";
 import { LoginPage } from "./components/pages/login-page";
 import { FirstAdminSetup } from "./components/pages/first-admin-setup";
-import { UnauthorizedPage } from "./components/pages/unauthorized-page";
 import { AdminDashboardLayout } from "./components/layouts/admin-shell";
 import { defaultPages } from "./pages/default-pages";
 
@@ -21,22 +19,30 @@ export async function RootPage({ config, params }: RootPageProps) {
     return <LoginPage />;
   }
 
+  // In production, if no admin exists, block all admin routes with 404
+  if (process.env["NODE_ENV"] === "production" && !adminExists) {
+    return notFound();
+  }
+
+  // In dev mode, if no admin exists, show only FirstAdminSetup (no sidebar/layout)
+  if (!adminExists) {
+    return <FirstAdminSetup />;
+  }
+
+  // Admin exists - check authorization
+  if (!isAdminUser) {
+    return notFound();
+  }
+
   const allPages = [...defaultPages, ...(config.pages ?? [])];
   const { result, sidebarItems } = findAdminPage(allPages, slugParts);
 
   if (!result) {
-    return <NotFoundPage slug={slugParts.join("/")} />;
-  }
-
-  // Check if user has admin role (only after confirming admin exists)
-  if (!isAdminUser) {
-    return <UnauthorizedPage />;
+    return notFound();
   }
 
   return (
-    <AdminDashboardLayout items={sidebarItems} user={user}>
-      {process.env["NODE_ENV"] !== "production" && !adminExists && <FirstAdminSetup />}
-      {process.env["NODE_ENV"] === "production" && !adminExists && <AdminNotConfigured />}
+    <AdminDashboardLayout name={config.name} icon="/nesalia.svg" items={sidebarItems} user={user}>
       {result.page.content}
     </AdminDashboardLayout>
   );

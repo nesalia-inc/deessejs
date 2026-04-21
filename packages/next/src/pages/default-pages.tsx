@@ -34,9 +34,10 @@ export const defaultPages = [
   section({
     name: "Settings",
     slug: "settings",
+    bottom: true,
     children: [
       page({
-        name: "General",
+        name: "Settings",
         slug: "",
         icon: Settings,
         content: <SettingsPage />,

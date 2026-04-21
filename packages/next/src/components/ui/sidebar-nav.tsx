@@ -47,12 +47,18 @@ function PageItem({
   page,
   currentSlug,
   basePath,
+  sectionSlug,
 }: {
   page: SidebarPage;
   currentSlug: string[];
   basePath: string;
+  sectionSlug?: string;
 }) {
-  const fullPath = basePath ? `${basePath}/${page.slug}` : page.slug;
+  // If page has empty slug, use basePath directly (strips "general" section prefix for orphan pages)
+  // This ensures /admin/general maps to /admin for empty-slug pages
+  // Skip "general" artificial section slug to get clean URLs
+  const effectiveBase = sectionSlug === "general" ? "" : basePath;
+  const fullPath = page.slug === "" ? effectiveBase : (effectiveBase ? `${effectiveBase}/${page.slug}` : page.slug);
   const href = `/admin/${fullPath}`.replace(/\/$/, "") || "/admin";
   const active = isActive(currentSlug, fullPath);
 
@@ -79,14 +85,16 @@ function SectionItem({
 }) {
   const fullBasePath = basePath ? `${basePath}/${section.slug}` : section.slug;
   return (
-    <SidebarGroup className={section.isFooter ? "mt-auto" : undefined}>
-      <SidebarGroupLabel>
-        {section.name}
-      </SidebarGroupLabel>
+    <SidebarGroup>
+      {!section.isFooter && (
+        <SidebarGroupLabel>
+          {section.name}
+        </SidebarGroupLabel>
+      )}
       <SidebarMenu>
         {section.children.map((child) =>
           child.type === "page" ? (
-            <PageItem key={`${fullBasePath}/${child.name}`} page={child} currentSlug={currentSlug} basePath={fullBasePath} />
+            <PageItem key={`${fullBasePath}/${child.name}`} page={child} currentSlug={currentSlug} basePath={fullBasePath} sectionSlug={section.slug} />
           ) : (
             <SectionItem
               key={`${fullBasePath}/${child.name}`}
@@ -108,15 +116,31 @@ export function SidebarNav({ items }: SidebarNavProps) {
     .filter(Boolean)
     .slice(1);
 
+  const topItems = items.filter((item) => !(item.type === "section" && item.isFooter));
+  const bottomItems = items.filter((item) => item.type === "section" && item.isFooter);
+
   return (
-    <SidebarMenu>
-      {items.map((item, index) =>
-        item.type === "page" ? (
-          <PageItem key={`root-${index}-${item.slug}`} page={item} currentSlug={currentSlug} basePath="" />
-        ) : (
-          <SectionItem key={`root-${index}-${item.slug}`} section={item} currentSlug={currentSlug} basePath="" />
-        )
+    <>
+      <SidebarMenu>
+        {topItems.map((item, index) =>
+          item.type === "page" ? (
+            <PageItem key={`root-${index}-${item.slug}`} page={item} currentSlug={currentSlug} basePath="" />
+          ) : (
+            <SectionItem key={`root-${index}-${item.slug}`} section={item} currentSlug={currentSlug} basePath="" />
+          )
+        )}
+      </SidebarMenu>
+      {bottomItems.length > 0 && (
+        <div className="mt-auto">
+          <SidebarMenu>
+            {bottomItems.map((item, index) =>
+              item.type === "section" ? (
+                <SectionItem key={`footer-${index}-${item.slug}`} section={item} currentSlug={currentSlug} basePath="" />
+              ) : null
+            )}
+          </SidebarMenu>
+        </div>
       )}
-    </SidebarMenu>
+    </>
   );
 }
