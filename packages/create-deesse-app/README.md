@@ -24,9 +24,8 @@ node packages/create-deesse-app/bin/cli.js
 
 ## Templates
 
-- **minimal**: Minimal Next.js starter
 - **default**: Next.js with Tailwind CSS and shadcn/ui
-- **full-stack**: Full-stack template (coming soon)
+- **without-admin**: Full-stack template without admin dashboard
 
 ## License
 
