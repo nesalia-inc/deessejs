@@ -1,5 +1,6 @@
-import { findPage, toSidebarItems } from "@deessejs/admin";
 import type { PageTree, FindPageResult, SidebarItem } from "@deessejs/admin";
+
+import { findPage, toSidebarItems } from "@deessejs/admin";
 
 export interface PageFinderResult {
   result: FindPageResult;

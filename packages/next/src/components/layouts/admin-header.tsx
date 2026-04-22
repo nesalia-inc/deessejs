@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,47 +12,20 @@ import {
   Separator,
   SidebarTrigger,
 } from "@deessejs/ui";
+
 import { useSidebar } from "@deessejs/ui/sidebar";
+
 import type { SidebarItem } from "@deessejs/admin";
+
+import { getBreadcrumbFromPathname } from "../lib/admin-header";
 
 interface AdminHeaderProps {
   name?: string;
   items: SidebarItem[];
+  headerActions?: React.ReactNode;
 }
 
-function getBreadcrumbFromPathname(pathname: string, items: SidebarItem[]): { section: string; page: string } | null {
-  const slugParts = pathname.split("/").filter(Boolean).slice(1);
-
-  if (slugParts.length === 0) {
-    return { section: "Home", page: "" };
-  }
-
-  const [sectionSlug, ...pageSlugParts] = slugParts;
-  const pageSlug = pageSlugParts.join("/") || "";
-
-  for (const item of items) {
-    if (item.type === "section" && item.slug === sectionSlug) {
-      for (const child of item.children) {
-        if (child.type === "page") {
-          if (child.slug === pageSlug || (child.slug === "" && pageSlug === "")) {
-            return { section: item.name, page: child.name };
-          }
-        } else if (child.type === "section") {
-          for (const grandchild of child.children) {
-            if (grandchild.type === "page" && grandchild.slug === pageSlug) {
-              return { section: item.name, page: grandchild.name };
-            }
-          }
-        }
-      }
-      return { section: item.name, page: "" };
-    }
-  }
-
-  return null;
-}
-
-export function AdminHeader({ name, items }: AdminHeaderProps) {
+export const AdminHeader = ({ name, items, headerActions }: AdminHeaderProps) => {
   const pathname = usePathname();
   const { toggleSidebar } = useSidebar();
   const breadcrumb = getBreadcrumbFromPathname(pathname, items);
@@ -79,6 +53,11 @@ export function AdminHeader({ name, items }: AdminHeaderProps) {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
+      {headerActions && (
+        <div className="ml-auto flex items-center gap-2">
+          {headerActions}
+        </div>
+      )}
     </header>
   );
-}
+};

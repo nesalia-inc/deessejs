@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { Button } from "@deessejs/ui";
-import { Card, CardDescription, CardHeader, CardTitle } from "@deessejs/ui";
+
+import { Button, Card, CardDescription, CardHeader, CardTitle } from "@deessejs/ui";
 
 export interface UnauthorizedPageProps {
   redirectTo?: string;
 }
 
-export function UnauthorizedPage({ redirectTo = "/" }: UnauthorizedPageProps) {
+export const UnauthorizedPage = ({ redirectTo = "/" }: UnauthorizedPageProps) => {
   return (
     <div className="flex h-full items-center justify-center p-4">
       <Card className="w-full max-w-sm mx-auto text-center">
@@ -24,4 +24,4 @@ export function UnauthorizedPage({ redirectTo = "/" }: UnauthorizedPageProps) {
       </Card>
     </div>
   );
-}
+};

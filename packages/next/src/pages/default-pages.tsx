@@ -1,10 +1,12 @@
+import { Home, Database, Settings, Puzzle, Users } from "lucide-react";
+
 import { page, section } from "@deessejs/admin";
-import { Home, Users, Database, Settings, Puzzle } from "lucide-react";
-import { HomePage } from "../components/pages/home-page";
-import { UsersPage } from "../components/pages/users-page";
+
 import { DatabasePage } from "../components/pages/database-page";
-import { SettingsPage } from "../components/pages/settings-page";
+import { HomePage } from "../components/pages/home-page";
 import { PluginsPage } from "../components/pages/plugins-page";
+import { SettingsPage } from "../components/pages/settings-page";
+import { UsersPage } from "../components/pages/users-page";
 
 export const defaultPages = [
   page({

@@ -2,18 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
 import { Loader2 } from "lucide-react";
-import { Button } from "@deessejs/ui";
-import { Input } from "@deessejs/ui";
-import { Label } from "@deessejs/ui";
+
+import { Button, Input, Label } from "@deessejs/ui";
+
 import { PasswordInput } from "./password-input";
 
-export function FirstAdminSetup() {
+export const FirstAdminSetup = () => {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
@@ -129,4 +130,4 @@ export function FirstAdminSetup() {
       </div>
     </div>
   );
-}
+};

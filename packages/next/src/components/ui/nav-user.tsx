@@ -1,5 +1,10 @@
 "use client";
 
+import { ChevronsUpDown, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+import { createClient } from "deesse";
+
 import {
   Avatar,
   AvatarFallback,
@@ -19,9 +24,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@deessejs/ui/sidebar";
-import { createClient } from "deesse";
-import { ChevronsUpDown, LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
+
+import { getAvatarUrl } from "../lib/nav-user";
 
 const client = createClient({
   auth: {
@@ -29,12 +33,7 @@ const client = createClient({
   },
 });
 
-function getAvatarUrl(email: string | null | undefined): string {
-  if (!email) return "";
-  return `https://vercel.com/api/www/avatar?s=64&u=${email}`;
-}
-
-export function NavUser() {
+export const NavUser = () => {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const { data: session, isPending } = client.auth.useSession();
@@ -42,7 +41,7 @@ export function NavUser() {
   const user = session?.user;
   const avatarUrl = getAvatarUrl(user?.email);
 
-  async function handleSignOut() {
+  const handleSignOut = async () => {
     await client.auth.signOut();
     router.push("/admin/login");
   }
@@ -131,4 +130,4 @@ export function NavUser() {
       </SidebarMenuItem>
     </SidebarMenu>
   );
-}
+};

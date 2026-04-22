@@ -1,9 +1,11 @@
 "use client";
 
-import { forwardRef, type InputHTMLAttributes, useState } from "react";
+import type { InputHTMLAttributes } from "react";
+import { forwardRef, useState } from "react";
+
 import { Eye, EyeOff } from "lucide-react";
-import { Button } from "@deessejs/ui";
-import { Input } from "@deessejs/ui";
+
+import { Button, Input } from "@deessejs/ui";
 
 export const PasswordInput = forwardRef<
   HTMLInputElement,

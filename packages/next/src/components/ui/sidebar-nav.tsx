@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import * as LucideIcons from "lucide-react";
+
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -11,32 +11,12 @@ import {
   SidebarMenuItem,
 } from "@deessejs/ui/sidebar";
 
-interface SidebarPage {
-  type: "page";
-  name: string;
-  slug: string;
-  iconName?: string;
-}
+import type { SidebarItem, SidebarPage, SidebarSection } from "@deessejs/admin";
 
-interface SidebarSection {
-  type: "section";
-  name: string;
-  slug: string;
-  isFooter?: boolean;
-  children: SidebarItem[];
-}
-
-type SidebarItem = SidebarPage | SidebarSection;
+import { getIcon } from "../lib/sidebar-nav";
 
 interface SidebarNavProps {
   items: SidebarItem[];
-}
-
-function getIcon(iconName?: string) {
-  if (!iconName) return null;
-  const icons = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>;
-  const Icon = icons[iconName];
-  return Icon ? <Icon className="size-4" /> : null;
 }
 
 function isActive(currentSlug: string[], targetSlug: string): boolean {
@@ -64,7 +44,7 @@ function PageItem({
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={active}>
+      <SidebarMenuButton asChild isActive={active} tooltip={page.name}>
         <Link href={href}>
           {getIcon(page.iconName)}
           <span>{page.name}</span>
@@ -109,7 +89,7 @@ function SectionItem({
   );
 }
 
-export function SidebarNav({ items }: SidebarNavProps) {
+export const SidebarNav = ({ items }: SidebarNavProps) => {
   const pathname = usePathname();
   const currentSlug = pathname
     .split("/")
@@ -143,4 +123,4 @@ export function SidebarNav({ items }: SidebarNavProps) {
       )}
     </>
   );
-}
+};

@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+
 import { Loader2 } from "lucide-react";
+
 import { createClient } from "deesse";
-import { Button } from "@deessejs/ui";
-import { Input } from "@deessejs/ui";
-import { Label } from "@deessejs/ui";
+
+import { Button, Input, Label } from "@deessejs/ui";
+
 import { PasswordInput } from "./password-input";
 
 const client = createClient({
@@ -15,13 +17,13 @@ const client = createClient({
   },
 });
 
-export function LoginPage() {
+export const LoginPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setIsPending(true);
@@ -93,4 +95,4 @@ export function LoginPage() {
       </div>
     </div>
   );
-}
+};

@@ -1,9 +1,12 @@
+import type { InternalConfig } from "deesse";
+
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-import type { InternalConfig } from "deesse";
-import { getDeesse } from "deesse";
-import { extractSlugParts, hasAdminUsers } from "@deessejs/admin";
+
 import type { FindPageResult } from "@deessejs/admin";
+import { extractSlugParts, hasAdminUsers } from "@deessejs/admin";
+
+import { getDeesse } from "deesse";
 
 const LOGIN_SLUG = "login";
 const ADMIN_LOGIN_PATH = "/admin/login";

@@ -1,5 +1,5 @@
 import type { Config } from "deesse";
 
-export function RootLayout({ children }: { config: Config; children: React.ReactNode }) {
+export const RootLayout = ({ children }: { config: Config; children: React.ReactNode }) => {
   return <>{children}</>;
-}
+};

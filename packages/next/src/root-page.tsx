@@ -1,10 +1,12 @@
+import { notFound } from "next/navigation";
+
 import type { InternalConfig } from "deesse";
+
+import { AdminDashboardLayout } from "./components/layouts/admin-shell";
 import { createAuthContext } from "./lib/auth-context";
 import { findAdminPage } from "./lib/page-finder";
-import { notFound } from "next/navigation";
-import { LoginPage } from "./components/pages/login-page";
 import { FirstAdminSetup } from "./components/pages/first-admin-setup";
-import { AdminDashboardLayout } from "./components/layouts/admin-shell";
+import { LoginPage } from "./components/pages/login-page";
 import { defaultPages } from "./pages/default-pages";
 
 export interface RootPageProps {
@@ -12,7 +14,7 @@ export interface RootPageProps {
   params: Record<string, string | string[]>;
 }
 
-export async function RootPage({ config, params }: RootPageProps) {
+export const RootPage = async ({ config, params }: RootPageProps) => {
   const { user, adminExists, isLoginPage, isAdminUser, slugParts } = await createAuthContext({ config, params });
 
   if (isLoginPage) {
@@ -42,7 +44,7 @@ export async function RootPage({ config, params }: RootPageProps) {
   }
 
   return (
-    <AdminDashboardLayout name={config.name} icon="/nesalia.svg" items={sidebarItems} user={user}>
+    <AdminDashboardLayout config={{ name: config.name, icon: "/nesalia.svg" }} items={sidebarItems} user={user} headerActions={config.admin?.header?.actions}>
       {result.page.content}
     </AdminDashboardLayout>
   );

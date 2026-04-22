@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+
 import {
   Sidebar,
   SidebarContent,
@@ -9,9 +10,11 @@ import {
   SidebarRail,
   useSidebar,
 } from "@deessejs/ui/sidebar";
+
 import type { SidebarItem } from "@deessejs/admin";
-import { SidebarNav } from "./sidebar-nav";
+
 import { NavUser } from "./nav-user";
+import { SidebarNav } from "./sidebar-nav";
 
 export interface AppSidebarProps {
   name?: string;
@@ -19,7 +22,7 @@ export interface AppSidebarProps {
   items: SidebarItem[];
 }
 
-export function AppSidebar({ name, icon, items }: AppSidebarProps) {
+export const AppSidebar = ({ name, icon, items }: AppSidebarProps) => {
   const { state } = useSidebar();
   const displayName = name ?? "DeesseJS Admin";
   const isCollapsed = state === "collapsed";
@@ -47,4 +50,4 @@ export function AppSidebar({ name, icon, items }: AppSidebarProps) {
       <SidebarRail />
     </Sidebar>
   );
-}
+};
