@@ -1,4 +1,4 @@
 // Settings page - admin settings
-export function SettingsPage() {
+export const SettingsPage = () => {
   return <div>Settings content</div>;
-}
+};

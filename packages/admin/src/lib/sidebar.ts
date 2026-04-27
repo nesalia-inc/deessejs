@@ -24,8 +24,12 @@ function getIconName(icon: unknown): string | undefined {
   return iconAny.displayName || iconAny.name || undefined;
 }
 
-function toSidebarItem(item: PageTree): SidebarItem {
+function toSidebarItem(item: PageTree): SidebarItem | null {
   if (item.type === "page") {
+    // Skip dynamic pages (those with [param] patterns) - they're not in the sidebar
+    if (item.slug.includes("[")) {
+      return null;
+    }
     return {
       type: "page",
       name: item.name,
@@ -34,12 +38,17 @@ function toSidebarItem(item: PageTree): SidebarItem {
     };
   }
 
+  // For sections, filter out null children
+  const filteredChildren = item.children
+    .map(toSidebarItem)
+    .filter((child): child is SidebarItem => child !== null);
+
   return {
     type: "section",
     name: item.name,
     slug: item.slug,
     isFooter: item.bottom,
-    children: item.children.map(toSidebarItem),
+    children: filteredChildren,
   };
 }
 
@@ -69,7 +78,7 @@ export function toSidebarItems(pageTree: PageTree[]): SidebarItem[] {
       type: "section",
       name: "General",
       slug: "general",
-      children: uniqueOrphanPages.map(toSidebarItem),
+      children: uniqueOrphanPages.map(toSidebarItem).filter((child): child is SidebarItem => child !== null),
     });
   }
 

@@ -1,4 +1,4 @@
 // Home page - default admin landing page
-export function HomePage() {
+export const HomePage = () => {
   return <div>Home content</div>;
-}
+};

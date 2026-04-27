@@ -1,6 +1,9 @@
-import type { Auth, BetterAuthOptions } from 'better-auth';
+import type { Auth, BetterAuthOptions } from "better-auth";
+
 import { NextResponse } from "next/server";
-import { createFirstAdmin, type FirstAdminInput } from "@deessejs/admin";
+
+import type { FirstAdminInput } from "@deessejs/admin";
+import { createFirstAdmin } from "@deessejs/admin";
 
 /**
  * Handler for first-admin setup endpoint.

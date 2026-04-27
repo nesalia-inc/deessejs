@@ -1,18 +1,12 @@
 "use client";
 
-import { Button } from "@deessejs/ui";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@deessejs/ui";
+import { Button, Card, CardDescription, CardHeader, CardTitle } from "@deessejs/ui";
 
 export interface AdminNotConfiguredProps {
   onSetupClick?: () => void;
 }
 
-export function AdminNotConfigured({ onSetupClick }: AdminNotConfiguredProps) {
+export const AdminNotConfigured = ({ onSetupClick }: AdminNotConfiguredProps) => {
   return (
     <div className="flex h-full items-center justify-center p-4">
       <Card className="w-full max-w-sm mx-auto text-center">
@@ -32,4 +26,4 @@ export function AdminNotConfigured({ onSetupClick }: AdminNotConfiguredProps) {
       </Card>
     </div>
   );
-}
+};

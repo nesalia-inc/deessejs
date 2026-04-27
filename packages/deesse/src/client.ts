@@ -1,15 +1,8 @@
 import { createAuthClient } from "better-auth/react";
-import type {
-  AuthClient,
-  BetterAuthClientOptions,
-} from "better-auth/client";
+import type { BetterAuthClientOptions } from "better-auth/client";
 
 export interface DeesseClientOptions {
   auth: BetterAuthClientOptions;
-}
-
-export interface DeesseClient {
-  auth: AuthClient<BetterAuthClientOptions>;
 }
 
 /**
@@ -30,10 +23,8 @@ export interface DeesseClient {
  * const { data, isPending } = client.auth.useSession();
  * ```
  */
-export function createClient(
+export const createClient = (
   options: DeesseClientOptions,
-): DeesseClient {
-  const auth = createAuthClient(options.auth) as unknown as AuthClient<BetterAuthClientOptions>;
-
-  return { auth };
+) => {
+  return { auth: createAuthClient(options.auth) };
 }

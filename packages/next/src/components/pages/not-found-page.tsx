@@ -2,7 +2,7 @@ export interface NotFoundPageProps {
   slug: string;
 }
 
-export function NotFoundPage({ slug }: NotFoundPageProps) {
+export const NotFoundPage = ({ slug }: NotFoundPageProps) => {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold">Page not found</h1>
@@ -11,4 +11,4 @@ export function NotFoundPage({ slug }: NotFoundPageProps) {
       </p>
     </div>
   );
-}
+};
