@@ -10,8 +10,8 @@
       "types": "./dist/index.d.ts"
     },
     "./routes": {
-      "import": "./dist/routes.js",
-      "types": "./dist/routes.d.ts"
+      "import": "./dist/routes/index.js",
+      "types": "./dist/routes/index.d.ts"
     },
     "./root-layout": {
       "import": "./dist/components/root-layout.js",

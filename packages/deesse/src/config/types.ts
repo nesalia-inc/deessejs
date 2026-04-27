@@ -6,6 +6,18 @@ import type { PageTree } from '@deessejs/admin/config';
 import type { AdminHeaderConfig } from '@deessejs/admin';
 
 /**
+ * DRPC API instance type returned by createPublicAPI().
+ * Provided by @deessejs/server package.
+ */
+export interface APIInstance {
+  router: unknown;
+  ctx: unknown;
+  plugins: unknown[];
+  globalMiddleware: unknown[];
+  eventEmitter: unknown;
+}
+
+/**
  * User-facing config type.
  * Uses generics to preserve Drizzle type safety.
  */
@@ -21,6 +33,7 @@ export type Config<TSchema extends Record<string, unknown> = Record<string, neve
   admin?: {
     header?: AdminHeaderConfig;
   };
+  routes?: APIInstance;  // DRPC procedures from createPublicAPI()
 };
 
 /**
