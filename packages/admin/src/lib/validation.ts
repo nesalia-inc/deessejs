@@ -55,9 +55,9 @@ export function isAllowedAdminEmail(email: string): boolean {
  * Returns an error message if validation fails.
  */
 export function validateAdminEmailDomain(
-  email: string
+  email: string,
+  options: { skipPublicDomainCheck?: boolean } = {}
 ): { valid: true } | { valid: false; code: string; message: string; suggestion?: string } {
-  // Check if email is from a public domain (warning level, not blocking)
   const isPublic = isPublicEmailDomain(email);
   const allowed = getAllowedDomains();
 
@@ -75,7 +75,12 @@ export function validateAdminEmailDomain(
     }
   }
 
-  // If email is from a public domain, return warning info (but allow through)
+  // In dev mode, allow public domains with a warning (not blocking)
+  if (isPublic && allowed.length === 0 && options.skipPublicDomainCheck) {
+    return { valid: true };
+  }
+
+  // If email is from a public domain, return warning info (but allow through in prod)
   if (isPublic && allowed.length === 0) {
     const domain = email.split("@")[1]?.toLowerCase();
     return {

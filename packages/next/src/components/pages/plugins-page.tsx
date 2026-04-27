@@ -1,4 +1,4 @@
 // Plugins page - plugin management
-export function PluginsPage() {
+export const PluginsPage = () => {
   return <div>Plugins content</div>;
-}
+};

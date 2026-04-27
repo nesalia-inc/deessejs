@@ -1,4 +1,4 @@
 // Users page - user management
-export function UsersPage() {
+export const UsersPage = () => {
   return <div>Users content</div>;
-}
+};

@@ -1,5 +1,6 @@
-import { toNextJsHandler } from 'better-auth/next-js';
-import type { Auth, BetterAuthOptions } from 'better-auth';
+import type { Auth, BetterAuthOptions } from "better-auth";
+import { toNextJsHandler } from "better-auth/next-js";
+
 import { handleFirstAdmin } from "./admin/first-admin";
 
 export interface DeesseAPIConfig<

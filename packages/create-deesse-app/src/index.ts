@@ -58,8 +58,8 @@ async function main() {
   const template = await p.select({
     message: 'Which template would you like to use?',
     options: [
-      { value: 'minimal', label: 'Minimal' },
       { value: 'default', label: 'Default (Tailwind + shadcn/ui)' },
+      { value: 'without-admin', label: 'Without Admin Dashboard' },
     ],
     initialValue: 'default',
   });
@@ -87,7 +87,7 @@ Location: ${location}`,
   try {
     const targetDir = isCurrentDir ? process.cwd() : path.join(process.cwd(), projectName);
     const createdFiles = await copyTemplate(
-      template as 'minimal' | 'default',
+      template as 'default' | 'without-admin',
       projectName,
       targetDir,
       isCurrentDir,

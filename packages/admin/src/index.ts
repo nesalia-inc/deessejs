@@ -5,10 +5,19 @@ export { defineAdminConfig } from "./config/index.js";
 export type { AdminConfig, InternalAdminConfig } from "./config/index.js";
 export { plugin } from "./config/index.js";
 export type { Plugin } from "./config/index.js";
+export type { AdminHeaderConfig } from "./config/index.js";
 
 // Page types
 export { page, section } from "./config/index.js";
 export type { Page, Section, PageTree } from "./config/index.js";
+
+// Page creation helpers
+export { serverPage, clientPage, dynamicPage } from "./config/index.js";
+export type { ServerPageHandler, ClientPageHandler, DynamicPageContent } from "./config/index.js";
+
+// Slug parsing utilities
+export { parseSlug, extractParamNames } from "./config/index.js";
+export type { SlugSegment, StaticSlugSegment, DynamicSlugSegment } from "./config/index.js";
 
 // Admin utilities
 export { isDatabaseEmpty, requireDatabaseNotEmpty, hasAdminUsers } from "./lib/admin.js";

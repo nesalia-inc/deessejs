@@ -1,11 +1,12 @@
+import { notFound } from "next/navigation";
+
 import type { InternalConfig } from "deesse";
+import type { DynamicPageContent } from "@deessejs/admin";
+import { AdminDashboardLayout } from "./components/layouts/admin-shell";
 import { createAuthContext } from "./lib/auth-context";
 import { findAdminPage } from "./lib/page-finder";
-import { NotFoundPage } from "./components/pages/not-found-page";
-import { AdminNotConfigured } from "./components/pages/admin-not-configured";
-import { LoginPage } from "./components/pages/login-page";
 import { FirstAdminSetup } from "./components/pages/first-admin-setup";
-import { AdminDashboardLayout } from "./components/layouts/admin-shell";
+import { LoginPage } from "./components/pages/login-page";
 import { defaultPages } from "./pages/default-pages";
 
 export interface RootPageProps {
@@ -13,25 +14,44 @@ export interface RootPageProps {
   params: Record<string, string | string[]>;
 }
 
-export async function RootPage({ config, params }: RootPageProps) {
-  const { user, adminExists, isLoginPage, slugParts } = await createAuthContext({ config, params });
+export const RootPage = async ({ config, params }: RootPageProps) => {
+  const { user, adminExists, isLoginPage, isAdminUser, slugParts } = await createAuthContext({ config, params });
 
   if (isLoginPage) {
     return <LoginPage />;
   }
 
+  // In production, if no admin exists, block all admin routes with 404
+  if (process.env["NODE_ENV"] === "production" && !adminExists) {
+    return notFound();
+  }
+
+  // In dev mode, if no admin exists, show only FirstAdminSetup (no sidebar/layout)
+  if (!adminExists) {
+    return <FirstAdminSetup />;
+  }
+
+  // Admin exists - check authorization
+  if (!isAdminUser) {
+    return notFound();
+  }
+
   const allPages = [...defaultPages, ...(config.pages ?? [])];
   const { result, sidebarItems } = findAdminPage(allPages, slugParts);
 
-  if (!result) {
-    return <NotFoundPage slug={slugParts.join("/")} />;
+  if (!result || !result.page) {
+    return notFound();
   }
 
+  // If content is a dynamic page function, call it with the extracted params
+  const content = result.page.content;
+  const pageContent = typeof content === "function"
+    ? (content as DynamicPageContent<Record<string, string>>)(result.params)
+    : content;
+
   return (
-    <AdminDashboardLayout items={sidebarItems} user={user}>
-      {process.env["NODE_ENV"] !== "production" && !adminExists && <FirstAdminSetup />}
-      {process.env["NODE_ENV"] === "production" && !adminExists && <AdminNotConfigured />}
-      {result.page.content}
+    <AdminDashboardLayout config={{ name: config.name, icon: "/nesalia.svg" }} items={sidebarItems} user={user} headerActions={config.admin?.header?.actions}>
+      {pageContent}
     </AdminDashboardLayout>
   );
-}
+};

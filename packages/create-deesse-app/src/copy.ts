@@ -1,8 +1,9 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { randomBytes } from 'node:crypto';
 
-export type Template = 'minimal' | 'default';
+export type Template = 'default' | 'without-admin';
 
 export async function copyTemplate(
   template: Template,
@@ -16,7 +17,7 @@ export async function copyTemplate(
 
   // Check if template exists
   if (!existsSync(templateDir)) {
-    throw new Error(`Template "${template}" not found. Available templates: minimal, default`);
+    throw new Error(`Template "${template}" not found. Available templates: default, without-admin`);
   }
 
   // Create target directory if it doesn't exist (skip for current directory)
@@ -47,6 +48,7 @@ export async function copyTemplate(
   // Variables to replace in template files
   const vars = {
     PROJECT_NAME: projectName,
+    DEESSE_SECRET: randomBytes(32).toString('hex'),
   };
 
   // Copy template files
