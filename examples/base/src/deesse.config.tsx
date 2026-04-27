@@ -4,6 +4,7 @@ import { Pool } from 'pg';
 import { deessePages } from './deesse.pages';
 import { schema } from './db/schema/auth-schema';
 import { ThemeToggle } from './components/theme-toggle';
+import { publicAPI } from './server/index';
 
 export const config = defineConfig({
   name: "DeesseJS App",
@@ -22,5 +23,6 @@ export const config = defineConfig({
     header: {
       actions: <ThemeToggle />
     }
-  }
+  },
+  routes: publicAPI,
 });
