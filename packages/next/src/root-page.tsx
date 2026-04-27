@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import type { InternalConfig } from "deesse";
-
+import type { DynamicPageContent } from "@deessejs/admin";
 import { AdminDashboardLayout } from "./components/layouts/admin-shell";
 import { createAuthContext } from "./lib/auth-context";
 import { findAdminPage } from "./lib/page-finder";
@@ -39,13 +39,19 @@ export const RootPage = async ({ config, params }: RootPageProps) => {
   const allPages = [...defaultPages, ...(config.pages ?? [])];
   const { result, sidebarItems } = findAdminPage(allPages, slugParts);
 
-  if (!result) {
+  if (!result || !result.page) {
     return notFound();
   }
 
+  // If content is a dynamic page function, call it with the extracted params
+  const content = result.page.content;
+  const pageContent = typeof content === "function"
+    ? (content as DynamicPageContent<Record<string, string>>)(result.params)
+    : content;
+
   return (
     <AdminDashboardLayout config={{ name: config.name, icon: "/nesalia.svg" }} items={sidebarItems} user={user} headerActions={config.admin?.header?.actions}>
-      {result.page.content}
+      {pageContent}
     </AdminDashboardLayout>
   );
-}
+};

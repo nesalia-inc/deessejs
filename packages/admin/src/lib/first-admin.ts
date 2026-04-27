@@ -41,8 +41,10 @@ export async function createFirstAdmin(
     };
   }
 
-  // Validate email domain
-  const emailValidation = validateAdminEmailDomain(input.email);
+  // Validate email domain (skip public domain check in dev mode)
+  const emailValidation = validateAdminEmailDomain(input.email, {
+    skipPublicDomainCheck: process.env["NODE_ENV"] !== "production",
+  });
   if (!emailValidation.valid) {
     return {
       success: false,

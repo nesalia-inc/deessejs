@@ -4,6 +4,7 @@ export { NotFoundPage } from './not-found-page';
 export { HomePage } from './home-page';
 export { UsersPage } from './users-page';
 export { DatabasePage } from './database-page';
+export { TableViewPage } from './table-view-page';
 export { SettingsPage } from './settings-page';
 export { PluginsPage } from './plugins-page';
 export { AdminNotConfigured } from './admin-not-configured';

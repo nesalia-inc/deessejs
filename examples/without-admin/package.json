@@ -9,11 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@deessejs/next": "workspace:*",
+    "@deessejs/next": "^0.1.4",
     "better-auth": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "deesse": "workspace:*",
+    "deesse": "^0.2.12",
     "drizzle-orm": "^0.38.0",
     "lucide-react": "^1.8.0",
     "next": "16.2.4",
@@ -33,7 +33,7 @@
     "@types/pg": "^8.11.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "drizzle-kit": "^0.30.0",
+    "drizzle-kit": "^0.31.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",

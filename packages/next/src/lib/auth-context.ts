@@ -12,10 +12,38 @@ const LOGIN_SLUG = "login";
 const ADMIN_LOGIN_PATH = "/admin/login";
 const ADMIN_HOME_PATH = "/admin";
 
+/**
+ * Session user type based on better-auth structure.
+ */
+export interface SessionUser {
+  id: string;
+  email: string;
+  name?: string;
+  image?: string;
+  emailVerified?: boolean;
+  role?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/**
+ * Session type returned by better-auth getSession.
+ */
+export interface Session {
+  user: SessionUser;
+  session: {
+    id: string;
+    expiresAt: string;
+    token: string;
+    ipAddress?: string;
+    userAgent?: string;
+  };
+}
+
 export interface AuthContext {
   auth: Awaited<ReturnType<typeof getDeesse>>["auth"];
-  session: Awaited<ReturnType<Awaited<ReturnType<typeof getDeesse>>["auth"]["api"]["getSession"]>>;
-  user: AuthContext["session"] extends { user: infer U } ? U : undefined;
+  session: Session | null;
+  user: SessionUser | undefined;
   adminExists: boolean;
   isLoginPage: boolean;
   isAdminUser: boolean;
@@ -48,11 +76,12 @@ export async function createAuthContext({
   const slugParts = extractSlugParts(params);
 
   // Check if session exists with error handling
-  let session = null;
+  let session: Session | null = null;
   try {
-    session = await auth.api.getSession({
+    const result = await auth.api.getSession({
       headers: requestHeaders,
     });
+    session = result as Session | null;
   } catch (error) {
     console.error("[deesse] Session check failed:", error);
     session = null;
@@ -66,11 +95,12 @@ export async function createAuthContext({
     if (session) {
       redirect(ADMIN_HOME_PATH);
     }
+    // At this point session is null (redirect throws if session was truthy)
     // Return early - login page will be rendered by caller
     return {
       auth,
-      session,
-      user: (session as any)?.user ?? undefined,
+      session: null,
+      user: undefined,
       adminExists: false,
       isLoginPage: true,
       isAdminUser: false,
@@ -116,10 +146,10 @@ export async function createAuthContext({
   return {
     auth,
     session,
-    user: (session as any)?.user ?? undefined,
+    user: session?.user,
     adminExists,
     isLoginPage: false,
-    isAdminUser: (session as any)?.user?.role === "admin",
+    isAdminUser: session?.user?.role === "admin",
     slugParts,
   };
 }

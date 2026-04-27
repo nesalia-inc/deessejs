@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@deesse-config": ["./src/deesse.config.ts"]
     }
   },
   "include": [

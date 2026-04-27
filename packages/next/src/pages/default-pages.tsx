@@ -1,11 +1,12 @@
-import { Home, Database, Settings, Puzzle, Users } from "lucide-react";
+import { Home, Database, Settings, Puzzle, Users, Table } from "lucide-react";
 
-import { page, section } from "@deessejs/admin";
+import { page, section, dynamicPage } from "@deessejs/admin";
 
 import { DatabasePage } from "../components/pages/database-page";
 import { HomePage } from "../components/pages/home-page";
 import { PluginsPage } from "../components/pages/plugins-page";
 import { SettingsPage } from "../components/pages/settings-page";
+import { TableViewPage } from "../components/pages/table-view-page";
 import { UsersPage } from "../components/pages/users-page";
 
 export const defaultPages = [
@@ -27,11 +28,23 @@ export const defaultPages = [
       }),
     ],
   }),
-  page({
+  section({
     name: "Database",
     slug: "database",
-    icon: Database,
-    content: <DatabasePage />,
+    children: [
+      page({
+        name: "Tables",
+        slug: "",
+        icon: Database,
+        content: <DatabasePage />,
+      }),
+      dynamicPage({
+        name: "Table View",
+        slug: "[table_slug]",
+        icon: Table,
+        content: (params) => <TableViewPage tableName={params["table_slug"]} />,
+      }),
+    ],
   }),
   section({
     name: "Settings",

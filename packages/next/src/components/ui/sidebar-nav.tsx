@@ -44,7 +44,7 @@ function PageItem({
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={active} tooltip={page.name}>
+      <SidebarMenuButton asChild isActive={active} tooltip={page.name} className="bg-muted-foreground">
         <Link href={href}>
           {getIcon(page.iconName)}
           <span>{page.name}</span>

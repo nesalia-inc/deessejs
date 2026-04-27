@@ -1,8 +1,10 @@
 // @deessejs/deesse core package
 
-import type { InternalConfig } from "./config/define.js";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { createDeesse, type Deesse } from "./server.js";
+import { createDeesse } from "./server.js";
+import type { Deesse } from "./config/types.js";
+import { getGlobalConfig } from "./config/define.js";
+import type { InternalConfig } from "./config/types.js";
 
 export { defineConfig } from "./config/index.js";
 export type { Config, InternalConfig } from "./config/index.js";
@@ -14,10 +16,12 @@ export type { Page, Section, PageTree } from "./config/index.js";
 export { z } from "zod";
 export type { ZodSchema } from "zod";
 
-export type { Deesse } from "./server.js";
+export { sql } from "drizzle-orm";
+
+export type { Deesse } from "./config/types.js";
 
 export { createClient } from "./client.js";
-export type { DeesseClient, DeesseClientOptions } from "./client.js";
+export type { DeesseClientOptions } from "./client.js";
 
 /**
  * Symbol-based global storage for Deesse instance.
@@ -31,7 +35,7 @@ interface GlobalDeesseCache {
   pool: unknown | undefined;
 }
 
-function getGlobalCache(): GlobalDeesseCache {
+const getGlobalCache = (): GlobalDeesseCache => {
   const g = global as typeof global & {
     [DEESSE_GLOBAL_KEY]?: GlobalDeesseCache;
   };
@@ -42,7 +46,7 @@ function getGlobalCache(): GlobalDeesseCache {
       pool: undefined,
     };
   }
-  return g[DEESSE_GLOBAL_KEY]!;
+  return g[DEESSE_GLOBAL_KEY];
 }
 
 /**
@@ -51,10 +55,29 @@ function getGlobalCache(): GlobalDeesseCache {
  * Note: We do NOT compare database pools - the pool reference from $client
  * may return new wrapper objects on each access, causing false positives.
  */
-function isConfigEqual(a: InternalConfig, b: InternalConfig): boolean {
+const isConfigEqual = (a: InternalConfig, b: InternalConfig): boolean => {
   if (a.secret !== b.secret) return false;
   if (a.name !== b.name) return false;
   if (a.auth.baseURL !== b.auth.baseURL) return false;
+
+  // Compare plugins array by ID (order matters for better-auth)
+  const aPlugins = a.auth.plugins || [];
+  const bPlugins = b.auth.plugins || [];
+  if (aPlugins.length !== bPlugins.length) return false;
+  for (let i = 0; i < aPlugins.length; i++) {
+    if (aPlugins[i].id !== bPlugins[i].id) return false;
+  }
+
+  // Compare object configs via JSON (safe for plain data objects)
+  if (JSON.stringify(a.auth.emailAndPassword) !== JSON.stringify(b.auth.emailAndPassword)) return false;
+  if (JSON.stringify(a.auth.session) !== JSON.stringify(b.auth.session)) return false;
+  if (JSON.stringify(a.auth.trustedOrigins) !== JSON.stringify(b.auth.trustedOrigins)) return false;
+
+  // Compare optional top-level fields
+  if (JSON.stringify(a.plugins) !== JSON.stringify(b.plugins)) return false;
+  if (JSON.stringify(a.pages) !== JSON.stringify(b.pages)) return false;
+  if (JSON.stringify(a.admin) !== JSON.stringify(b.admin)) return false;
+
   return true;
 }
 
@@ -62,21 +85,25 @@ function isConfigEqual(a: InternalConfig, b: InternalConfig): boolean {
  * Extract pool reference from database.
  * For pg Pool passed to drizzle-orm/node-postgres, the pool is stored in $client.
  */
-function extractPool(db: PostgresJsDatabase): unknown {
+const extractPool = (db: PostgresJsDatabase): unknown => {
   return (db as unknown as { $client?: unknown }).$client;
 }
 
 /**
  * Get the Deesse singleton instance.
  * Cached on global to persist across HMR.
+ *
+ * Can be called without arguments if defineConfig() was called first,
+ * or with a config for explicit instantiation.
  */
 export const getDeesse = async (
-  config: InternalConfig
+  config?: InternalConfig
 ): Promise<Deesse> => {
+  const effectiveConfig = config ?? getGlobalConfig();
   const cache = getGlobalCache();
 
   // Case 1: Instance exists and config is semantically equal
-  if (cache.instance && cache.config && isConfigEqual(cache.config, config)) {
+  if (cache.instance && cache.config && isConfigEqual(cache.config, effectiveConfig)) {
     return cache.instance;
   }
 
@@ -84,9 +111,9 @@ export const getDeesse = async (
   if (
     cache.instance &&
     cache.config &&
-    !isConfigEqual(cache.config, config)
+    !isConfigEqual(cache.config, effectiveConfig)
   ) {
-    console.info("[deesse] Config changed, performing hot reload...");
+    console.warn("[deesse] Config changed, performing hot reload...");
 
     // Close the old pool before creating new instance (with 5s timeout)
     if (cache.pool) {
@@ -100,19 +127,19 @@ export const getDeesse = async (
     }
 
     // Create new instance with new config
-    const instance = createDeesse(config);
+    const instance = createDeesse(effectiveConfig);
     cache.pool = extractPool(instance.database);
     cache.instance = instance;
-    cache.config = config;
+    cache.config = effectiveConfig;
 
     return instance;
   }
 
   // Case 3: No instance exists - create one
-  const instance = createDeesse(config);
+  const instance = createDeesse(effectiveConfig);
   cache.pool = extractPool(instance.database);
   cache.instance = instance;
-  cache.config = config;
+  cache.config = effectiveConfig;
 
   return instance;
 };
@@ -136,7 +163,7 @@ export const shutdownDeesse = async (): Promise<void> => {
   const cache = getGlobalCache();
 
   if (cache.pool) {
-    console.info("[deesse] Closing database pool...");
+    console.warn("[deesse] Closing database pool...");
     const pool = cache.pool as { end?: () => Promise<void> };
     if (pool && typeof pool.end === "function") {
       await pool.end();
